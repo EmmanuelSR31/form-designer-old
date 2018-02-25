@@ -1,0 +1,193 @@
+<template>
+  <div class="tags-outer-con" ref="tagCon" @DOMMouseScroll="handlescroll" @mousewheel="handlescroll">
+    <div class="tags-scroll-con" ref="scrollCon" :style="{left: tagConLeft + 'px'}">
+      <Tag type="dot" v-for="item in pageTagsList" ref="tagsPageOpened" :name="item.name" :key="item.name"
+      :closable="item.name==='home'?false:true"
+      :color="item.children?(item.children[0].name===currentPageName?'blue':'default'):(item.name===currentPageName?'blue':'default')"
+      @on-close="closeTag(item.name)" @click.native="linkTo(item)" v-on:contextmenu.native="showTagMenu(item, $event)">{{item.title}}</Tag>
+      <div class="contextmenu-con" v-show="tagContextmenuShow" @mouseleave="contextMenuClose" :style="{left: axios.x + 'px', top: axios.y + 'px'}">
+        <ul>
+          <li v-for="item in contextMenuList" :key="item.name" @click="contextMenuClick(item.name)">
+            {{item.title}}
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</template>
+<script>
+export default {
+  name: 'openedPageTags',
+  data () {
+    return {
+      tagContextmenuShow: false,
+      axios: {
+        x: null,
+        y: null
+      },
+      tagConLeft: 0,
+      refsTag: []
+    }
+  },
+  props: {
+    pageTagsList: Array
+  },
+  computed: {
+    currentPageName: function () {
+      return this.$store.state.currentPageName
+    },
+    contextMenuList: function () {
+      return this.$store.state.contextMenuList
+    }
+  },
+  methods: {
+    closeTag: function (name) { // 关闭标签
+      let pageOpenedList = this.$store.state.pageOpenedList
+      let lastPageObj = pageOpenedList[0]
+      if (this.currentPageName === name) {
+        let len = pageOpenedList.length
+        for (let i = 0; i < len; i++) {
+          if (pageOpenedList[i].name === name) {
+            if (i < (len - 1)) {
+              lastPageObj = pageOpenedList[i + 1]
+            } else {
+              lastPageObj = pageOpenedList[i - 1]
+            }
+            break
+          }
+        }
+      }
+      this.$store.dispatch('removeTag', name)
+      this.$store.dispatch('closePage', name)
+      pageOpenedList = this.$store.state.pageOpenedList
+      localStorage.pageOpenedList = JSON.stringify(pageOpenedList)
+      if (this.currentPageName === name) {
+        this.linkTo(lastPageObj)
+      }
+    },
+    linkTo: function (item) { // 跳转页面
+      this.$router.push({
+        path: '/' + item.name
+      })
+      this.$store.dispatch('setCurrentPageName', item.name)
+    },
+    showTagMenu: function (item, event) { // 打开右键菜单
+      event.preventDefault()
+      var x = event.clientX - 5
+      var y = event.clientY - 5
+      this.$store.dispatch('setContextMenuOpenedTag', item.name)
+      this.tagContextmenuShow = true
+      this.axios.x = x
+      this.axios.y = y
+    },
+    contextMenuClick: function (name) { // 点击右键菜单
+      if (name === 'close' && this.$store.state.contextMenuOpenedTag !== 'home') {
+        let pageOpenedList = this.$store.state.pageOpenedList
+        let lastPageObj = pageOpenedList[0]
+        if (this.currentPageName === this.$store.state.contextMenuOpenedTag) {
+          let len = pageOpenedList.length
+          for (let i = 0; i < len; i++) {
+            if (pageOpenedList[i].name === this.$store.state.contextMenuOpenedTag) {
+              if (i < (len - 1)) {
+                lastPageObj = pageOpenedList[i + 1]
+              } else {
+                lastPageObj = pageOpenedList[i - 1]
+              }
+              break
+            }
+          }
+        }
+        this.$store.dispatch('closeCurrentTag')
+        if (this.currentPageName === this.$store.state.contextMenuOpenedTag) {
+          this.linkTo(lastPageObj)
+        }
+      } else if (name === 'closeOther') {
+        this.$store.dispatch('closeOtherTag')
+        this.linkTo({name: this.$store.state.contextMenuOpenedTag})
+      } else if (name === 'closeAll') {
+        this.$store.dispatch('closeAllTag')
+        this.linkTo({name: 'home'})
+      }
+      this.contextMenuClose()
+    },
+    contextMenuClose: function () { // 关闭右键菜单
+      this.tagContextmenuShow = false
+    },
+    handlescroll: function (e) { // 鼠标中键滚动
+      var type = e.type
+      let delta = 0
+      if (type === 'DOMMouseScroll' || type === 'mousewheel') {
+        delta = (e.wheelDelta) ? e.wheelDelta : -(e.detail || 0) * 40
+      }
+      let left = 0
+      if (delta > 0) {
+        left = Math.min(0, this.tagConLeft + delta)
+      } else {
+        if (this.$refs.tagCon.offsetWidth < this.$refs.scrollCon.offsetWidth) {
+          if (this.tagConLeft < -(this.$refs.scrollCon.offsetWidth - this.$refs.tagCon.offsetWidth)) {
+            left = this.tagConLeft
+          } else {
+            left = Math.max(this.tagConLeft + delta, this.$refs.tagCon.offsetWidth - this.$refs.scrollCon.offsetWidth)
+          }
+        } else {
+          this.tagConLeft = 0
+        }
+      }
+      this.tagConLeft = left
+    },
+    moveToView (tag) {
+      if (tag.offsetLeft < -this.tagConLeft) { // 标签在可视区域左侧
+        this.tagConLeft = -tag.offsetLeft - 10
+      } else if (this.$refs.tagCon.offsetWidth < tag.offsetLeft + this.tagConLeft + tag.offsetWidth) { // 标签在可视区域右侧
+        this.tagConLeft = -(tag.offsetLeft - (this.$refs.tagCon.offsetWidth - tag.offsetWidth) + 20)
+      } else {
+        // 标签在可视区域
+      }
+    }
+  },
+  mounted () {
+    this.refsTag = this.$refs.tagsPageOpened
+  },
+  watch: {
+    '$route' (to) {
+      this.currentPageName = to.name
+      this.$nextTick(() => {
+        this.refsTag.forEach((item, index) => {
+          if (to.path === ('/' + item.name)) {
+            let tag = this.refsTag[index].$el
+            this.moveToView(tag)
+          }
+        })
+      })
+    }
+  }
+}
+</script>
+<style lang="scss">
+.tags-outer-con{
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.tags-scroll-con{
+  position: absolute;
+  top: 0;
+  overflow: visible;
+  white-space: nowrap;
+  transition: left 0.3s ease;
+}
+.contextmenu-con{
+  position: fixed;
+  z-index: 100;
+  background-color: #ffffff;
+  padding: 5px 0;
+  li{
+    padding: 5px 15px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    &:hover{
+      background-color: #eeeeee;
+    }
+  }
+}
+</style>

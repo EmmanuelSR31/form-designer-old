@@ -1,0 +1,243 @@
+<template>
+<div>
+  <Row>
+    <Col span="8">
+      <div class="table-search-con">
+        <Button type="primary" @click="addSelect">新增</Button>
+      </div>
+      <div class="bg-white padding10">
+        <Tree :data="treeData" @on-select-change="initOptions"></Tree>
+      </div>
+    </Col>
+    <Col span="15" offset="1">
+      <div class="table-search-con">
+        <Button type="primary" @click="addOption">新增</Button>
+      </div>
+      <Table border :loading="loading" :columns="columns" :data="data" stripe></Table>
+    </Col>
+  </Row>
+  <Modal v-model="modalSelect" :title="modalSelectTitle" @on-ok="saveSelect">
+    <div class="modal-field-con">
+      <div>
+        <Form ref="formSelect" :model="selectObj" :label-width="120">
+          <FormItem label="数据库名" class="whole-line-703">
+            <Input v-model="selectObj.tableName"></Input>
+          </FormItem>
+          <FormItem label="标题" class="whole-line-703">
+            <Input v-model="selectObj.title"></Input>
+          </FormItem>
+        </Form>
+      </div>
+    </div>
+  </Modal>
+  <Modal v-model="modalOption" :title="modalOptionTitle" @on-ok="saveOption">
+    <div class="modal-field-con">
+      <div>
+        <Form ref="formOption" :model="optionObj" :label-width="120">
+          <FormItem label="数据库字段名" class="whole-line-703">
+            <Input v-model="optionObj.text"></Input>
+          </FormItem>
+        </Form>
+      </div>
+    </div>
+  </Modal>
+</div>
+</template>
+<script>
+export default {
+  data () {
+    return {
+      modalSelect: false,
+      modalOption: false,
+      modalSelectTitle: '新增下拉',
+      modalOptionTitle: '新增选项',
+      loading: false,
+      treeData: [ // 下拉表数据
+        {
+          title: '下拉列表',
+          expand: true,
+          children: []
+        }
+      ],
+      columns: [
+        {
+          type: 'index',
+          title: '序列',
+          width: 64,
+          align: 'center'
+        },
+        {
+          title: '选项名称',
+          key: 'text'
+        },
+        {
+          title: '操作',
+          key: 'action',
+          width: 126,
+          align: 'center',
+          render: (h, params) => {
+            return h('div', [
+              h('Button', {
+                props: {
+                  type: 'primary',
+                  size: 'small'
+                },
+                style: {
+                  marginRight: '5px'
+                },
+                on: {
+                  click: () => {
+                    this.editOption(params)
+                  }
+                }
+              }, '修改'),
+              h('Button', {
+                props: {
+                  type: 'error',
+                  size: 'small'
+                },
+                on: {
+                  click: () => {
+                    this.deleteOption(params)
+                  }
+                }
+              }, '删除')
+            ])
+          }
+        }
+      ],
+      data: [], // 选项数据
+      selectObj: {}, // 下拉对象
+      optionObj: {}, // 选项对象
+      currentSelect: '' // 选中下拉表
+    }
+  },
+  methods: {
+    init: function () { // 取左侧下拉列表
+      this.$api.post('/crm/ActionFormUtil/getByTableName.do', {tableName: 'table_manage_select'}, r => {
+        if (r.data) {
+          this.treeData[0].children = r.data.rows
+        }
+      })
+    },
+    initOptions: function (row) { // 取选项数据
+      this.loading = true
+      let tableName = row[0].table_name
+      this.currentSelect = tableName
+      this.data = []
+      this.$api.post('/crm/ActionFormUtil/getByTableName.do', {tableName: tableName}, r => {
+        if (r.data) {
+          this.data = r.data.rows
+          this.loading = false
+        }
+      })
+    },
+    addSelect: function () { // 新增下拉表
+      this.selectObj = {}
+      this.modalSelect = true
+    },
+    saveSelect: function () { // 保存下拉表
+      this.selectObj.tableName = 'select_' + this.selectObj.tableName
+      this.selectObj.valueField = 'id'
+      this.selectObj.textField = 'text'
+      this.selectObj.type = '0'
+      let infoStr = JSON.stringify(this.selectObj)
+      this.$api.post('/pages/crminterface/creatSelectTable.do', {jsonStr: infoStr}, r => {
+        if (r.data === '创建成功') {
+          this.$Message.success('新建下拉成功')
+          this.modalSelect = false
+          this.init()
+        } else if (r.data === '表名已存在') {
+          this.$Message.warning('表名已存在，请更改')
+        } else {
+          this.$Message.error('新建下拉失败')
+        }
+      })
+    },
+    addOption: function () { // 新增选项
+      if (this.currentSelect === '') {
+        this.$Message.warning('请先选择一条下拉表')
+      } else {
+        this.optionObj = {}
+        this.modalOption = true
+        this.modalOptionTitle = '新增选项'
+      }
+    },
+    editOption: function (row) { // 修改选项
+      let temp = row.row
+      delete temp._index
+      delete temp.orwKey
+      this.optionObj = temp
+      this.modalOption = true
+      this.modalOptionTitle = '修改选项'
+    },
+    saveOption: function () { // 保存选项
+      this.optionObj.title = this.currentSelect
+      this.optionObj.text = '\'' + this.optionObj.text + '\''
+      let infoStr = JSON.stringify(this.optionObj)
+      if (this.optionObj.id === undefined) {
+        this.$api.post('/crm/ActionFormSelectUtil/Select/insert.do', {jsonStr: infoStr}, r => {
+          if (r.data === 1) {
+            this.$Message.success('新建选项成功')
+            this.modalOption = false
+            this.loading = true
+            this.$api.post('/crm/ActionFormUtil/getByTableName.do', {tableName: this.currentSelect}, r => {
+              if (r.data) {
+                this.data = r.data.rows
+                this.loading = false
+              }
+            })
+          } else {
+            this.$Message.error('新建选项失败')
+          }
+        })
+      } else {
+        this.$api.post('/crm/ActionFormSelectUtil/Select/update.do', {jsonStr: infoStr, id: this.optionObj.id}, r => {
+          if (r.data === 1) {
+            this.$Message.success('修改选项成功')
+            this.modalOption = false
+            this.loading = true
+            this.$api.post('/crm/ActionFormUtil/getByTableName.do', {tableName: this.currentSelect}, r => {
+              if (r.data) {
+                this.data = r.data.rows
+                this.loading = false
+              }
+            })
+          } else {
+            this.$Message.error('修改选项失败')
+          }
+        })
+      }
+    },
+    deleteOption: function (row) { // 删除选项
+      this.$Modal.confirm({
+        title: '',
+        content: '确认删除此选项？',
+        onOk: () => {
+          this.$api.post('/crm/ActionFormSelectUtil/Select/delete.do', {tableName: this.currentSelect, id: row.row.id}, r => {
+            if (r.data === '0') {
+              this.$Message.error('删除选项失败')
+            } else {
+              this.$Message.success('删除选项成功')
+              this.loading = true
+              this.$api.post('/crm/ActionFormUtil/getByTableName.do', {tableName: this.currentSelect}, r => {
+                if (r.data) {
+                  this.data = r.data.rows
+                  this.loading = false
+                }
+              })
+            }
+          })
+        },
+        onCancel: () => {
+        }
+      })
+    }
+  },
+  mounted () {
+    this.init()
+  }
+}
+</script>
+<style>
+</style>
