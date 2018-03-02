@@ -3,10 +3,17 @@
   <div class="table-search-con">
     <Button type="primary" @click="addFormData">新增</Button>
   </div>
-  <Table :height="tableHeight" border :loading="loading" :columns="columns" :data="data" stripe></Table>
-  <div class="page-con">
-    <Page :total="totalRows" :current="currentPage" :page-size="pageSize" placement="top" @on-change="changePage" @on-page-size-change="changePageSize" show-elevator show-sizer></Page>
-  </div>
+  <Row>
+    <Col v-if="formObj.needTree === 'true'" :span="formObj.needTree === 'true' ? 8 : 0">
+      <Tree :data="treeData" @on-select-change="setPid" ref="treeTable"></Tree>
+    </Col>
+    <Col :span="formObj.needTree === 'true' ? 16 : 24">
+      <Table :height="tableHeight" border :loading="loading" :columns="columns" :data="data" stripe></Table>
+      <div class="page-con">
+        <Page :total="totalRows" :current="currentPage" :page-size="pageSize" placement="top" @on-change="changePage" @on-page-size-change="changePageSize" show-elevator show-sizer></Page>
+      </div>
+    </Col>
+  </Row>
 </div>
 </template>
 <script>
@@ -16,13 +23,23 @@ export default {
     return {
       tableName: this.$route.params.tableName, // 表单名
       formObj: {}, // 表单对象
-      loading: true, // 加载中
+      loading: false, // 加载中
       currentPage: 1, // 当前页码
       pageSize: 10, // 每页显示数
       totalRows: 0, // 数据总数
-      columns: [],
+      columns: [
+        {
+          type: 'index',
+          title: '序列',
+          width: 50,
+          align: 'center'
+        }
+      ],
       data: [],
-      selectData: this.$store.state.selectData // 下拉数据
+      selectData: this.$store.state.selectData, // 下拉数据
+      treeData: [], // 树形表数据
+      pid: '', // 父ID
+      formAttrObj: {} // 表单配置对象
     }
   },
   computed: {
@@ -32,12 +49,21 @@ export default {
   },
   methods: {
     changePage: function (current) { // 改变页码
+      this.loading = true
       this.currentPage = current
-      this.$api.post('/crm/ActionFormUtil/getByTableName.do', {rows: this.pageSize, page: this.currentPage, tableName: this.tableName}, r => {
-        this.totalRows = r.data.total
-        this.data = r.data.rows
-        this.loading = false
-      })
+      if (this.formObj.needTree === 'true' && this.formObj.treeForm !== '') {
+        this.$api.post('/crm/ActionFormUtil/getByTableNameAndPid.do', {rows: this.pageSize, page: this.currentPage, tableName: this.tableName, pid: this.pid}, r => {
+          this.totalRows = r.data.total
+          this.data = r.data.rows
+          this.loading = false
+        })
+      } else {
+        this.$api.post('/crm/ActionFormUtil/getByTableName.do', {rows: this.pageSize, page: this.currentPage, tableName: this.tableName}, r => {
+          this.totalRows = r.data.total
+          this.data = r.data.rows
+          this.loading = false
+        })
+      }
     },
     changePageSize: function (size) { // 改变每页显示数
       this.pageSize = size
@@ -45,9 +71,18 @@ export default {
     },
     addFormData: function () { // 新增数据
       this.$store.dispatch('setCurrentEditForm', this.formObj)
+      let pid = ''
+      if (this.formObj.needTree === 'true' && this.formObj.treeForm !== '') {
+        if (this.pid === '') {
+          this.$Message.error('请先选择左侧一条数据')
+          return false
+        } else {
+          pid = this.pid
+        }
+      }
       this.$router.push({
         name: 'addFormData',
-        params: {tableName: this.tableName}
+        params: {tableName: this.tableName, pid: pid}
       })
     },
     viewFormData: function (params) { // 查看数据
@@ -84,23 +119,37 @@ export default {
         }
       })
     },
+    setPid: function (row) { // 点击数据设置父ID
+      this.pid = row[0].id
+      this.currentPage = 1
+      this.changePage(this.currentPage)
+    },
     init: function () {
       this.$api.post('/pages/crminterface/getDatagridForJson.do', {tableName: this.tableName}, r => {
         this.formObj = r.data
-        this.initColumns(r.data.field)
+        if (this.formObj.needTree === 'true' && this.formObj.treeForm !== '') {
+          this.$api.post('/pages/crminterface/getDatagridForJson.do', {tableName: this.formObj.treeForm}, r => {
+            let treeField = r.data.treeField
+            this.$api.post('/crm/ActionFormUtil/getByTableName.do', {rows: this.pageSize, page: this.currentPage, tableName: this.formObj.treeForm}, r => {
+              this.treeData = Util.dataConvertForTree(r.data, treeField)
+            })
+          })
+        } else {
+          this.changePage(this.currentPage)
+        }
+        this.$api.post('/pages/button/framework/get.do', {title: this.tableName}, r => {
+          if (r.data.obj !== null) {
+            this.formAttrObj = r.data.obj
+            this.columns.join(JSON.parse(this.formAttrObj.columns))
+          } else {
+            this.initColumns(r.data.field)
+          }
+        })
       })
-      this.changePage(this.currentPage)
     },
     initColumns: function (fields) { // 生成表格列
-      this.columns = []
-      this.columns.push({
-        type: 'index',
-        title: '序列',
-        width: 50,
-        align: 'center'
-      })
       for (let variable of fields) {
-        if (variable.listDisplay === 'true' || variable.listDisplay) {
+        if (variable.listDisplay === 'true' || variable.listDisplay === true) {
           if (variable.fieldType === 'tablebox') {
             this.columns.push({
               title: variable.title,
@@ -142,6 +191,24 @@ export default {
                   }
                 }
                 return h('div', valueTemp)
+              }
+            })
+          } else if (variable.fieldType === 'filebox') {
+            this.columns.push({
+              title: variable.title,
+              key: variable.text,
+              render: (h, params) => {
+                let temp = params.row[variable.text]
+                let files = temp.split(',')
+                return h('div', files.map(function (item) {
+                  return h('a', {
+                    attrs: {
+                      href: item,
+                      download: item.split('/')[3].substring(36),
+                      target: '_blank'
+                    }
+                  }, item.split('/')[3].substring(36) + ',')
+                }))
               }
             })
           } else {

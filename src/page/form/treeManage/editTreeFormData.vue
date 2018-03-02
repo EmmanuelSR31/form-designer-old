@@ -50,6 +50,9 @@
               <Input v-model="formDataObj[item.text]" :key="item.text"><Button slot="append" icon="ios-upload-outline" @click="openUpload(item)"></Button></Input>
             </template>
           </FormItem>
+          <FormItem  v-if="pid !== 0" label="上级">
+            <Input v-model="pdata" readonly></Input>
+          </FormItem>
         </Form>
       </div>
       <div class="text-center">
@@ -62,8 +65,8 @@
 </template>
 <script>
 import Util from '@/utils/index'
-import childTable from './childTable/childTable.vue'
-import filesManage from './fileManage/filesManage.vue'
+import childTable from '../childTable/childTable.vue'
+import filesManage from '../fileManage/filesManage.vue'
 export default {
   components: {
     childTable
@@ -75,7 +78,8 @@ export default {
       formControls: [], // 表单字段
       formObj: this.$store.state.currentEditForm, // 表单对象
       formDataObj: this.$store.state.currentEditFormData, // 表单数据对象
-      selectData: this.$store.state.selectData // 下拉数据
+      selectData: this.$store.state.selectData, // 下拉数据
+      pdata: '' // 父数据
     }
   },
   methods: {
@@ -86,6 +90,7 @@ export default {
       let obj = {}
       obj.title = this.tableName
       delete this.formDataObj.uuid
+      delete this.formDataObj.pid
       obj.field = Util.getFormValues(this.formDataObj)
       let jsonStr = JSON.stringify(obj)
       console.log(jsonStr)
@@ -105,6 +110,12 @@ export default {
       delete this.formDataObj.taskid
       delete this.formDataObj._index
       delete this.formDataObj._rowKey
+      if (this.formDataObj.pid !== 0) { // 初始化上级数据
+        this.$api.post('/crm/ActionFormUtil/getDataById.do', {tableName: this.tableName, id: this.formDataObj.pid}, r => {
+          let temp = r.data.rows[0]
+          this.pdata = temp[this.formObj.treeField]
+        })
+      }
     },
     changeQuoteSelectData: function (field) { // 引用下拉写入其他字段
       if (field.selectType === '1' & field.selectFields !== '') {

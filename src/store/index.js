@@ -95,7 +95,59 @@ const state = {
   currentEditChildFormData: {}, // 当前修改子表数据
   selectData: {}, // 下拉数据
   normalSelect: [], // 普通下拉
-  quoteSelect: [] // 引用下拉
+  quoteSelect: [], // 引用下拉
+  searchInputType: [ // 搜索输入框类型
+    {
+      type: 'textbox',
+      text: '文本框'
+    },
+    {
+      type: 'combobox',
+      text: '下拉框'
+    },
+    {
+      type: 'datebox',
+      text: '日期框'
+    }
+  ],
+  searchCondition: [ // 搜索条件
+    {
+      text: '包含',
+      value: 'like'
+    },
+    {
+      text: '不包含',
+      value: 'not like'
+    },
+    {
+      text: '等于',
+      value: '='
+    },
+    {
+      text: '不等于',
+      value: '<>'
+    },
+    {
+      text: '大于',
+      value: '>'
+    },
+    {
+      text: '大于等于',
+      value: '>='
+    },
+    {
+      text: '小于',
+      value: '<'
+    },
+    {
+      text: '小于等于',
+      value: '<='
+    },
+    {
+      text: '是否为空',
+      value: 'isEmpty'
+    }
+  ]
 }
 
 export default new Vuex.Store({

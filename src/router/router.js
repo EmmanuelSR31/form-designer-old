@@ -48,8 +48,9 @@ export const otherRouter = {
     { path: 'ownspace', title: '个人中心', name: 'ownspace', component: resolve => { require(['@/page/own-space/own-space.vue'], resolve) } },
     { path: 'addForm', title: '新增表单', name: 'addForm', component: resolve => { require(['@/page/form/addForm.vue'], resolve) } },
     { path: 'editForm', title: '修改表单', name: 'editForm', component: resolve => { require(['@/page/form/editForm.vue'], resolve) } },
+    { path: 'editFormAttr', title: '配置表单', name: 'editFormAttr', component: resolve => { require(['@/page/form/editFormAttr.vue'], resolve) } },
     { path: 'formDataManage/:tableName', title: '栏目数据管理', name: 'formDataManage', component: resolve => { require(['@/page/form/formDataManage.vue'], resolve) } },
-    { path: 'addFormData/:tableName', title: '新增数据', name: 'addFormData', component: resolve => { require(['@/page/form/addFormData.vue'], resolve) } },
+    { path: 'addFormData/:tableName/:pid', title: '新增数据', name: 'addFormData', component: resolve => { require(['@/page/form/addFormData.vue'], resolve) } },
     { path: 'editFormData/:tableName/:id', title: '修改数据', name: 'editFormData', component: resolve => { require(['@/page/form/editFormData.vue'], resolve) } },
     { path: 'viewFormData/:tableName/:id', title: '查看数据', name: 'viewFormData', component: resolve => { require(['@/page/form/viewFormData.vue'], resolve) } },
     { path: 'childTableManage/:tableName/:recordID', title: '子表数据管理', name: 'childTableManage', component: resolve => { require(['@/page/form/childTable/childTableManage.vue'], resolve) } },
@@ -58,7 +59,10 @@ export const otherRouter = {
     { path: 'viewChildFormData/:tableName/:id/:recordID', title: '查看子表数据', name: 'viewChildFormData', component: resolve => { require(['@/page/form/childTable/viewChildFormData.vue'], resolve) } },
     { path: 'filesManage/:field/:paths', title: '附件上传', name: 'filesManage', component: resolve => { require(['@/page/form/fileManage/filesManage.vue'], resolve) } },
     { path: 'addUrl/:pid', title: '新增URL', name: 'addUrl', component: resolve => { require(['@/page/urlManage/addUrl.vue'], resolve) } },
-    { path: 'editUrl', title: '修改URL', name: 'editUrl', component: resolve => { require(['@/page/urlManage/editUrl.vue'], resolve) } }
+    { path: 'editUrl', title: '修改URL', name: 'editUrl', component: resolve => { require(['@/page/urlManage/editUrl.vue'], resolve) } },
+    { path: 'addTreeFormData/:tableName/:pid', title: '新增数据', name: 'addTreeFormData', component: resolve => { require(['@/page/form/treeManage/addTreeFormData.vue'], resolve) } },
+    { path: 'editTreeFormData/:tableName/:id', title: '修改数据', name: 'editTreeFormData', component: resolve => { require(['@/page/form/treeManage/editTreeFormData.vue'], resolve) } },
+    { path: 'viewTreeFormData/:tableName/:id', title: '查看数据', name: 'viewTreeFormData', component: resolve => { require(['@/page/form/treeManage/viewTreeFormData.vue'], resolve) } }
   ]
 }
 
@@ -128,6 +132,13 @@ export const appRouter = [
         name: 'urlManage',
         title: '链接管理',
         component: resolve => { require(['@/page/urlManage/urlManage.vue'], resolve) }
+      },
+      {
+        path: '/treeFormDataManage',
+        icon: 'compose',
+        name: 'treeFormDataManage',
+        title: '树形表管理',
+        component: resolve => { require(['@/page/form/treeManage/treeFormDataManage.vue'], resolve) }
       }
     ]
   }

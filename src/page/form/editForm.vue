@@ -21,6 +21,7 @@
               <Select v-model="formObj.type" disabled>
                 <Option value="0">主表</Option>
                 <Option value="1">子表</Option>
+                <Option value="2">树形表</Option>
               </Select>
             </FormItem>
             <FormItem label="表单列数">
@@ -29,6 +30,22 @@
                 <Option value="2">每行2列</Option>
                 <Option value="3">每行3列</Option>
                 <Option value="4">每行4列</Option>
+              </Select>
+            </FormItem>
+            <FormItem label="树节点字段" v-if="formObj.type === '2'">
+              <Select v-model="formObj.treeField">
+                <Option v-for="item in formControls" :value="item.text" :key="item.text">{{item.title}}</Option>
+              </Select>
+            </FormItem>
+            <FormItem label="是否需要树结构" v-if="formObj.type !== '2'">
+              <Select v-model="formObj.needTree">
+                <Option value="false">否</Option>
+                <Option value="true">是</Option>
+              </Select>
+            </FormItem>
+            <FormItem label="树结构表单" v-if="formObj.needTree === 'true' && formObj.type !== '2'">
+              <Select v-model="formObj.treeForm">
+                <Option v-for="item in treeForms" :value="item.title" :key="item.title">{{item.name}}</Option>
               </Select>
             </FormItem>
           </Form>
@@ -121,10 +138,16 @@
                       </FormItem>
                     </template>
                     <FormItem label="是否必填">
-                      <i-switch v-model="field.required"></i-switch>
+                      <Select v-model="field.required">
+                        <Option value="false">否</Option>
+                        <Option value="true">是</Option>
+                      </Select>
                     </FormItem>
                     <FormItem label="是否列表显示">
-                      <i-switch v-model="field.listDisplay"></i-switch>
+                      <Select v-model="field.listDisplay">
+                        <Option value="true">是</Option>
+                        <Option value="false">否</Option>
+                      </Select>
                     </FormItem>
                     <template v-if="field.fieldType !== 'radio' && field.fieldType !== 'checkbox' && field.fieldType !== 'switch'">
                       <FormItem label="提示信息">
@@ -289,15 +312,21 @@ export default {
         {field: 'type', title: '类型', width: 150, titleAlign: 'center', columnAlign: 'center', isResize: true},
         {field: 'inputName', title: '组件名', width: 150, titleAlign: 'center', columnAlign: 'center', isEdit: true, isResize: true}
       ],
-      quoteSelectTableData: [] // 引用输出字段表格数据
+      quoteSelectTableData: [], // 引用输出字段表格数据
+      treeForms: [] // 树结构表单数据
     }
   },
   methods: {
     init: function () {
-      this.formControls = this.formObj.field
+      this.formControls = Util.removeFieldTable(this.formObj.field)
       this.$api.post('/crm/ActionFormUtil/getChildTableByType.do', {}, r => { // 取所有子表
         if (r.data) {
           this.childTables = r.data.rows
+        }
+      })
+      this.$api.post('/crm/ActionFormUtil/getByType.do', {type: 2}, r => { // 取树结构表单
+        if (r.data) {
+          this.treeForms = r.data
         }
       })
     },
@@ -398,6 +427,9 @@ export default {
       delete this.formObj.id
       delete this.formObj._index
       delete this.formObj._rowKey
+      if (this.formObj.type === '2') {
+        this.formControls.push({fieldType: 'textbox', text: 'pid', title: '父ID', listDisplay: false, type: 'int'})
+      }
       this.formObj.field = Util.fieldsAddType(this.formControls)
       let infoStr = JSON.stringify(this.formObj)
       console.log(infoStr)

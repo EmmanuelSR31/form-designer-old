@@ -43,6 +43,8 @@ export default {
               return h('div', '主表')
             } else if (params.row.type === '1') {
               return h('div', '子表')
+            } else if (params.row.type === '2') {
+              return h('div', '树形表')
             }
           }
         },
@@ -65,7 +67,7 @@ export default {
         {
           title: '操作',
           key: 'action',
-          width: 126,
+          width: 150,
           align: 'center',
           render: (h, params) => {
             return h('div', [
@@ -83,6 +85,20 @@ export default {
                   }
                 }
               }, '修改'),
+              h('Button', {
+                props: {
+                  type: 'success',
+                  size: 'small'
+                },
+                style: {
+                  marginRight: '5px'
+                },
+                on: {
+                  click: () => {
+                    this.editFormAttr(params)
+                  }
+                }
+              }, '配置'),
               h('Button', {
                 props: {
                   type: 'error',
@@ -129,6 +145,13 @@ export default {
       this.$store.dispatch('setCurrentEditForm', JSON.parse(strJson))
       this.$router.push({
         name: 'editForm'
+      })
+    },
+    editFormAttr: function (params) { // 配置表单
+      let strJson = params.row.str_json
+      this.$store.dispatch('setCurrentEditForm', JSON.parse(strJson))
+      this.$router.push({
+        name: 'editFormAttr'
       })
     },
     deleteForm: function (params) { // 删除表单

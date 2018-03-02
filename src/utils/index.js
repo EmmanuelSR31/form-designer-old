@@ -87,10 +87,10 @@ util.getFormValues = function (fields) { // 保存数据格式化
   return data
 }
 
-util.removeFieldTable = function (fields) { // 去除字段子表
+util.removeFieldTable = function (fields) { // 去除不展示字段
   let arr = []
   for (let variable of fields) {
-    if (variable.text !== 'create_user_id' && variable.text !== 'taskid') {
+    if (variable.text !== 'create_user_id' && variable.text !== 'taskid' && variable.text !== 'pid') {
       arr.push(variable)
     }
   }
@@ -129,6 +129,33 @@ util.getCurrentDate = function () { // 获取当前的日期
   }
   let currentdate = date.getFullYear() + seperator1 + month + seperator1 + strDate + ' ' + date.getHours() + seperator2 + date.getMinutes() + seperator2 + date.getSeconds()
   return currentdate
+}
+
+util.dataConvertForTree = function (tableData, treeField) { // 数据转换为树结构数据格式
+  let datas = tableData.rows
+  let arr = []
+  for (let iterator of datas) {
+    iterator.title = iterator[treeField]
+  }
+  for (let i = 0; i < datas.length; i++) {
+    datas[i].pid = parseInt(datas[i].pid)
+    if (datas[i].pid === 0) {
+      datas[i].children = []
+      for (let j = 0; j < datas.length; j++) {
+        datas[j].children = []
+        for (let z = 0; z < datas.length; z++) {
+          if (datas[z].pid === datas[j].id) {
+            datas[j].children.push(datas[z])
+          }
+        }
+        if (datas[j].pid === datas[i].id) {
+          datas[i].children.push(datas[j])
+        }
+      }
+      arr.push(datas[i])
+    }
+  }
+  return arr
 }
 
 export default util

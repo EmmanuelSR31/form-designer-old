@@ -15,6 +15,8 @@ import 'vue-easytable/libs/themes-base/index.css'
 import {VTable, VPagination} from 'vue-easytable'
 import 'vue-multiselect/dist/vue-multiselect.min.css'
 import Multiselect from 'vue-multiselect'
+import VueCodemirror from 'vue-codemirror'
+import 'codemirror/lib/codemirror.css'
 
 Vue.use(iView)
 Vue.use(VueAwesomeSwiper)
@@ -31,6 +33,8 @@ Vue.component(VTable.name, VTable)
 Vue.component(VPagination.name, VPagination)
 
 Vue.component('multiselect', Multiselect)
+
+Vue.use(VueCodemirror)
 
 /* eslint-disable no-new */
 new Vue({

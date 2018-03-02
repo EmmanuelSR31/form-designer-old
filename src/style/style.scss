@@ -18,6 +18,9 @@ html{
 .padding10{
   padding: 0.1rem!important;
 }
+.mr2{
+  margin-right: 0.02rem!important;
+}
 .mr20{
   margin-right: 0.2rem!important;
 }
@@ -29,6 +32,10 @@ html{
 }
 .bg-white{
   background-color: #ffffff!important;
+}
+.tip-text{
+  font-size: 12px;
+  color: #9ea7b4;
 }
 .table-search-con{
   margin: 5px 10px;
@@ -117,6 +124,12 @@ html{
 }
 .ivu-table-cell{
   padding: 0;
+}
+.ivu-form-item{
+  min-height: 33px;
+}
+.ivu-modal-body{
+  overflow: auto;
 }
 .modal-field-2{
   .ivu-form-item{

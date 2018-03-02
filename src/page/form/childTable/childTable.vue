@@ -143,7 +143,7 @@ export default {
         align: 'center'
       })
       for (let variable of fields) {
-        if ((variable.listDisplay === 'true' || variable.listDisplay) && variable.text !== 'record_id') {
+        if ((variable.listDisplay === 'true' || variable.listDisplay === true) && variable.text !== 'record_id') {
           if (variable.fieldType === 'combobox') {
             this.columns.push({
               title: variable.title,
@@ -165,6 +165,24 @@ export default {
                   }
                 }
                 return h('div', valueTemp)
+              }
+            })
+          } else if (variable.fieldType === 'filebox') {
+            this.columns.push({
+              title: variable.title,
+              key: variable.text,
+              render: (h, params) => {
+                let temp = params.row[variable.text]
+                let files = temp.split(',')
+                return h('div', files.map(function (item) {
+                  return h('a', {
+                    attrs: {
+                      href: item,
+                      download: item.split('/')[3].substring(36),
+                      target: '_blank'
+                    }
+                  }, item.split('/')[3].substring(36) + ',')
+                }))
               }
             })
           } else {

@@ -74,7 +74,8 @@ export default {
       formControls: [], // 表单字段
       formObj: this.$store.state.currentEditForm, // 表单对象
       formDataObj: {}, // 表单数据对象
-      selectData: this.$store.state.selectData // 下拉数据
+      selectData: this.$store.state.selectData, // 下拉数据
+      pid: this.$route.params.pid // 父ID
     }
   },
   methods: {
@@ -95,6 +96,9 @@ export default {
       obj.field = Util.getFormValues(this.formDataObj)
       obj.field.push({text: 'create_user_id', value: '0'})
       obj.field.push({text: 'taskid', value: '0'})
+      if (this.formObj.needTree === 'true' && this.pid !== '' && this.pid !== null) {
+        obj.field.push({text: 'pid', value: '\'' + this.pid + '\''})
+      }
       let jsonStr = JSON.stringify(obj)
       console.log(jsonStr)
       this.$api.post('/crm/ActionFormUtil/insert.do', {jsonStr: jsonStr}, r => {
