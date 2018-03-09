@@ -1,5 +1,5 @@
 <template>
-<div>
+<div class="form-con">
   <Form :label-width="120">
     <FormItem label="请选择：" class="whole-line-703">
       <Select v-model="currentChart" @on-change="initChartCondition" style="width:400px">

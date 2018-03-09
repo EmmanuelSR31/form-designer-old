@@ -26,7 +26,10 @@
       <Button class="header-menu-icon" :style="{transform: 'rotateZ(' + (this.shrink ? '-90' : '0') + 'deg)'}" type="text" @click="this.shrink = !this.shrink">
         <Icon type="navicon" size="32"></Icon>
       </Button>
-      <span class="header-title">克莱特商务云平台</span>
+      <span class="header-title">
+        <img v-if="systemObj.system_icon !== '' && systemObj.system_icon !== undefined" :src="iconPath" class="header-icon">
+        {{systemObj.system_name}}
+      </span>
       <div class="user-dropdown-menu-con">
         <Dropdown transfer placement="bottom-end" @on-click="handleClickUserDropdown">
           <a href="javascript:void(0)">
@@ -62,7 +65,8 @@ export default {
       leftMenuTheme: this.$store.state.leftMenuTheme, // 左侧菜单样式
       leftMenuWidth: 200, // 左侧菜单宽度
       shrink: false, // 左侧菜单切换
-      userName: ''
+      userName: '',
+      systemObj: {system_name: '克莱特商务云平台'} // 系统名称对象
     }
   },
   computed: {
@@ -74,6 +78,9 @@ export default {
     },
     pageTagsList: function () {
       return this.$store.state.pageOpenedList // 打开的页面列表
+    },
+    iconPath () { // 系统图标路径
+      return '/apis' + this.systemObj.system_icon
     }
   },
   methods: {
@@ -81,6 +88,11 @@ export default {
       this.$store.dispatch('updateMenuList')
       this.userName = localStorage.userName
       this.$store.dispatch('setSelectData')
+      this.$api.post('/crm/ActionFormUtil/getByTableName.do', {tableName: 'system_set'}, r => {
+        if (r.data.rows.length > 0) {
+          this.systemObj = r.data.rows[0]
+        }
+      })
     },
     handleClickUserDropdown (name) {
       if (name === 'ownSpace') {

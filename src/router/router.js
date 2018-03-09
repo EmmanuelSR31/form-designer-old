@@ -149,6 +149,13 @@ export const appRouter = [
         name: 'chartsManage',
         title: '图表管理',
         component: resolve => { require(['@/page/chartsManage/chartsManage.vue'], resolve) }
+      },
+      {
+        path: '/systemSet',
+        icon: 'compose',
+        name: 'systemSet',
+        title: '系统名称设置',
+        component: resolve => { require(['@/page/system/systemSet.vue'], resolve) }
       }
     ]
   }
