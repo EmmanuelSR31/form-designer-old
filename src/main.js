@@ -17,6 +17,7 @@ import 'vue-multiselect/dist/vue-multiselect.min.css'
 import Multiselect from 'vue-multiselect'
 import VueCodemirror from 'vue-codemirror'
 import 'codemirror/lib/codemirror.css'
+import ECharts from 'vue-echarts/components/ECharts.vue'
 
 Vue.use(iView)
 Vue.use(VueAwesomeSwiper)
@@ -35,6 +36,8 @@ Vue.component(VPagination.name, VPagination)
 Vue.component('multiselect', Multiselect)
 
 Vue.use(VueCodemirror)
+
+Vue.component('chart', ECharts)
 
 /* eslint-disable no-new */
 new Vue({

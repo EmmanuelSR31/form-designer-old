@@ -1,10 +1,9 @@
 <template>
 <div>
   <div class="button-con">
-    <Upload multiple action="/apis/upload/file" :show-upload-list="false" :on-success="uploadSuccess">
+    <Upload multiple action="/apis/upload/file?fileType=file" :show-upload-list="false" :on-success="uploadSuccess">
       <Button type="primary" icon="ios-cloud-upload-outline">上传</Button>
     </Upload>
-    <Button type="primary" @click="uploadFile">上传</Button>
   </div>
   <ul class="fileList">
     <li v-for="(item, index) in files" :key="index">
@@ -12,17 +11,21 @@
       <a :href="item" :download="pathToName(item)" target="_blank">{{pathToName(item)}}</a>
     </li>
   </ul>
+  <div class="button-con">
+    <Button type="primary" @click="close">关闭</Button>
+  </div>
 </div>
 </template>
 <script>
 export default {
   props: {
     field: String, // 附件字段
-    paths: String, // 附件数组字符串
-    files: [] // 附件数组
+    paths: String // 附件数组字符串
   },
   data () {
-    return {}
+    return {
+      files: [] // 附件数组
+    }
   },
   methods: {
     init: function () {
@@ -36,7 +39,6 @@ export default {
     pathToName: function (path) { // 截取文件名
       return path.split('/')[3].substring(36)
     },
-    uploadFile: function () {},
     deleteFile: function (file) { // 删除文件
       this.$Modal.confirm({
         title: '',
@@ -48,10 +50,15 @@ export default {
         }
       })
     },
-    uploadSuccess: function (response, file, fileList) {
+    uploadSuccess: function (response, file, fileList) { // 上传成功
       console.log(response)
-      console.log(file)
-      console.log(fileList)
+      console.log(typeof this.files)
+      this.files.push(response.obj.filePath)
+      console.log(this.files)
+    },
+    close: function () {
+      this.$parent.formDataObj[this.field] = this.files.join(',')
+      this.$parent.$layer.closeAll()
     }
   },
   mounted () {

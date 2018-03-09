@@ -15,11 +15,11 @@ export const router = new Router(RouterConfig)
 
 router.beforeEach((to, from, next) => {
   iView.LoadingBar.start()
-  if (Util.isEmpty(localStorage.userName) && to.name !== 'login') { // 判断是否已经登录且前往的页面不是登录页
+  if (Util.isEmpty(sessionStorage.user) && to.name !== 'login') { // 判断是否已经登录且前往的页面不是登录页
     next({
       name: 'login'
     })
-  } else if (!Util.isEmpty(localStorage.userName) && to.name === 'login') { // 判断是否已经登录且前往的是登录页
+  } else if (!Util.isEmpty(sessionStorage.user) && to.name === 'login') { // 判断是否已经登录且前往的是登录页
     next({
       name: 'home'
     })

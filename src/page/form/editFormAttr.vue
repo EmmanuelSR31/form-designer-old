@@ -242,7 +242,7 @@ export default {
         {
           title: '操作',
           key: 'action',
-          width: 125,
+          width: 185,
           align: 'center',
           render: (h, params) => {
             return h('div', [
@@ -265,12 +265,44 @@ export default {
                   type: 'error',
                   size: 'small'
                 },
+                style: {
+                  marginRight: '5px'
+                },
                 on: {
                   click: () => {
                     this.columnsDelete(params)
                   }
                 }
-              }, '删除')
+              }, '删除'),
+              h('Button', {
+                props: {
+                  type: 'primary',
+                  size: 'small'
+                },
+                style: {
+                  marginRight: '5px',
+                  display: params.index > 0 ? 'inline-block' : 'none'
+                },
+                on: {
+                  click: () => {
+                    this.columnsUp(params)
+                  }
+                }
+              }, '上移'),
+              h('Button', {
+                props: {
+                  type: 'primary',
+                  size: 'small'
+                },
+                style: {
+                  display: params.index < this.formColumns.length - 1 ? 'inline-block' : 'none'
+                },
+                on: {
+                  click: () => {
+                    this.columnsDown(params)
+                  }
+                }
+              }, '下移')
             ])
           }
         }
@@ -287,7 +319,7 @@ export default {
         {
           title: '操作',
           key: 'action',
-          width: 125,
+          width: 185,
           align: 'center',
           render: (h, params) => {
             return h('div', [
@@ -310,12 +342,44 @@ export default {
                   type: 'error',
                   size: 'small'
                 },
+                style: {
+                  marginRight: '5px'
+                },
                 on: {
                   click: () => {
                     this.buttonsDelete(params)
                   }
                 }
-              }, '删除')
+              }, '删除'),
+              h('Button', {
+                props: {
+                  type: 'primary',
+                  size: 'small'
+                },
+                style: {
+                  marginRight: '5px',
+                  display: params.index > 0 ? 'inline-block' : 'none'
+                },
+                on: {
+                  click: () => {
+                    this.buttonsUp(params)
+                  }
+                }
+              }, '上移'),
+              h('Button', {
+                props: {
+                  type: 'primary',
+                  size: 'small'
+                },
+                style: {
+                  display: params.index < this.formButtons.length - 1 ? 'inline-block' : 'none'
+                },
+                on: {
+                  click: () => {
+                    this.buttonsDown(params)
+                  }
+                }
+              }, '下移')
             ])
           }
         }
@@ -334,7 +398,7 @@ export default {
         {
           title: '操作',
           key: 'action',
-          width: 125,
+          width: 185,
           align: 'center',
           render: (h, params) => {
             return h('div', [
@@ -357,12 +421,44 @@ export default {
                   type: 'error',
                   size: 'small'
                 },
+                style: {
+                  marginRight: '5px'
+                },
                 on: {
                   click: () => {
                     this.searchsDelete(params)
                   }
                 }
-              }, '删除')
+              }, '删除'),
+              h('Button', {
+                props: {
+                  type: 'primary',
+                  size: 'small'
+                },
+                style: {
+                  marginRight: '5px',
+                  display: params.index > 0 ? 'inline-block' : 'none'
+                },
+                on: {
+                  click: () => {
+                    this.searchsUp(params)
+                  }
+                }
+              }, '上移'),
+              h('Button', {
+                props: {
+                  type: 'primary',
+                  size: 'small'
+                },
+                style: {
+                  display: params.index < this.formSearchs.length - 1 ? 'inline-block' : 'none'
+                },
+                on: {
+                  click: () => {
+                    this.searchsDown(params)
+                  }
+                }
+              }, '下移')
             ])
           }
         }
@@ -379,7 +475,7 @@ export default {
         {
           title: '操作',
           key: 'action',
-          width: 125,
+          width: 185,
           align: 'center',
           render: (h, params) => {
             return h('div', [
@@ -402,12 +498,44 @@ export default {
                   type: 'error',
                   size: 'small'
                 },
+                style: {
+                  marginRight: '5px'
+                },
                 on: {
                   click: () => {
                     this.buttonSearchsDelete(params)
                   }
                 }
-              }, '删除')
+              }, '删除'),
+              h('Button', {
+                props: {
+                  type: 'primary',
+                  size: 'small'
+                },
+                style: {
+                  marginRight: '5px',
+                  display: params.index > 0 ? 'inline-block' : 'none'
+                },
+                on: {
+                  click: () => {
+                    this.buttonSearchsUp(params)
+                  }
+                }
+              }, '上移'),
+              h('Button', {
+                props: {
+                  type: 'primary',
+                  size: 'small'
+                },
+                style: {
+                  display: params.index < this.formSearchButtons.length - 1 ? 'inline-block' : 'none'
+                },
+                on: {
+                  click: () => {
+                    this.buttonSearchsDown(params)
+                  }
+                }
+              }, '下移')
             ])
           }
         }
@@ -449,6 +577,20 @@ export default {
     columnsDelete: function (params) { // 删除表格表头
       this.formColumns.splice(params.index, 1)
     },
+    columnsUp: function (params) { // 表格表头上移
+      if (params.index > 0) {
+        let temp = this.formColumns[params.index]
+        this.formColumns.splice(params.index, 1)
+        this.formColumns.splice(params.index - 1, 0, temp)
+      }
+    },
+    columnsDown: function (params) { // 表格表头下移
+      if (params.index < this.formColumns.length - 1) {
+        let temp = this.formColumns[params.index]
+        this.formColumns.splice(params.index, 1)
+        this.formColumns.splice(params.index + 1, 0, temp)
+      }
+    },
     buttonsAdd: function () { // 新增表格按钮
       this.buttonsObj = {}
       this.modalButtonsAdd = true
@@ -468,6 +610,20 @@ export default {
     },
     buttonsDelete: function (params) { // 删除表格按钮
       this.formButtons.splice(params.index, 1)
+    },
+    buttonsUp: function (params) { // 表格按钮上移
+      if (params.index > 0) {
+        let temp = this.formButtons[params.index]
+        this.formButtons.splice(params.index, 1)
+        this.formButtons.splice(params.index - 1, 0, temp)
+      }
+    },
+    buttonsDown: function (params) { // 表格按钮下移
+      if (params.index < this.formButtons.length - 1) {
+        let temp = this.formButtons[params.index]
+        this.formButtons.splice(params.index, 1)
+        this.formButtons.splice(params.index + 1, 0, temp)
+      }
     },
     searchsAdd: function () { // 新增表格搜索
       this.searchsObj = {}
@@ -489,6 +645,20 @@ export default {
     searchsDelete: function (params) { // 删除表格搜索
       this.formSearchs.splice(params.index, 1)
     },
+    searchsUp: function (params) { // 表格搜索上移
+      if (params.index > 0) {
+        let temp = this.formSearchs[params.index]
+        this.formSearchs.splice(params.index, 1)
+        this.formSearchs.splice(params.index - 1, 0, temp)
+      }
+    },
+    searchsDown: function (params) { // 表格搜索下移
+      if (params.index < this.formSearchs.length - 1) {
+        let temp = this.formSearchs[params.index]
+        this.formSearchs.splice(params.index, 1)
+        this.formSearchs.splice(params.index + 1, 0, temp)
+      }
+    },
     searchButtonsAdd: function () { // 新增表格搜索按钮
       this.searchButtonsObj = {}
       this.modalSearchButtonsAdd = true
@@ -508,6 +678,20 @@ export default {
     },
     searchButtonsDelete: function (params) { // 删除表格搜索按钮
       this.formSearchButtons.splice(params.index, 1)
+    },
+    searchButtonsUp: function (params) { // 表格搜索按钮上移
+      if (params.index > 0) {
+        let temp = this.formSearchButtons[params.index]
+        this.formSearchButtons.splice(params.index, 1)
+        this.formSearchButtons.splice(params.index - 1, 0, temp)
+      }
+    },
+    searchButtonsDown: function (params) { // 表格搜索按钮下移
+      if (params.index < this.formSearchButtons.length - 1) {
+        let temp = this.formSearchButtons[params.index]
+        this.formSearchButtons.splice(params.index, 1)
+        this.formSearchButtons.splice(params.index + 1, 0, temp)
+      }
     },
     cancel: function () {
       this.$router.go(-1)
@@ -591,14 +775,14 @@ export default {
     this.init()
   },
   computed: {
-    formFieldsTitle () {
+    formFieldsTitle () { // 表单字段中文名
       let arrTemp = []
       for (let iterator of this.formFields) {
         arrTemp.push(iterator.title)
       }
       return arrTemp
     },
-    formFieldsText () {
+    formFieldsText () { // 表单字段英文名
       let arrTemp = []
       for (let iterator of this.formFields) {
         arrTemp.push(iterator.text)

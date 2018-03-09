@@ -215,6 +215,14 @@
                       一行一个选项
                     </FormItem>
                   </template>
+                  <template v-if="field.fieldType === 'datebox' || field.fieldType === 'datetimebox'">
+                    <FormItem label="是否取当前时间">
+                      <Select v-model="field.currentDate">
+                        <Option value="false">否</Option>
+                        <Option value="true">是</Option>
+                      </Select>
+                    </FormItem>
+                  </template>
                   <template v-if="field.fieldType === 'tablebox'">
                     <FormItem label="子表">
                       <Select v-model="field.tableTitle">
@@ -427,7 +435,7 @@ export default {
       delete this.formObj.id
       delete this.formObj._index
       delete this.formObj._rowKey
-      if (this.formObj.type === '2') {
+      if (this.formObj.type === '2' || this.formObj.needTree === 'true') {
         this.formControls.push({fieldType: 'textbox', text: 'pid', title: '父ID', listDisplay: false, type: 'int'})
       }
       this.formObj.field = Util.fieldsAddType(this.formControls)

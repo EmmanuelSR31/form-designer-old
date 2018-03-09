@@ -62,7 +62,10 @@ export const otherRouter = {
     { path: 'editUrl', title: '修改URL', name: 'editUrl', component: resolve => { require(['@/page/urlManage/editUrl.vue'], resolve) } },
     { path: 'addTreeFormData/:tableName/:pid', title: '新增数据', name: 'addTreeFormData', component: resolve => { require(['@/page/form/treeManage/addTreeFormData.vue'], resolve) } },
     { path: 'editTreeFormData/:tableName/:id', title: '修改数据', name: 'editTreeFormData', component: resolve => { require(['@/page/form/treeManage/editTreeFormData.vue'], resolve) } },
-    { path: 'viewTreeFormData/:tableName/:id', title: '查看数据', name: 'viewTreeFormData', component: resolve => { require(['@/page/form/treeManage/viewTreeFormData.vue'], resolve) } }
+    { path: 'viewTreeFormData/:tableName/:id', title: '查看数据', name: 'viewTreeFormData', component: resolve => { require(['@/page/form/treeManage/viewTreeFormData.vue'], resolve) } },
+    { path: 'addChart/:tableName', title: '新增图表', name: 'addChart', component: resolve => { require(['@/page/chartsManage/addChart.vue'], resolve) } },
+    { path: 'editChart/:id', title: '修改图表', name: 'editChart', component: resolve => { require(['@/page/chartsManage/editChart.vue'], resolve) } },
+    { path: 'formChart/:tableName', title: '表单图表', name: 'formChart', component: resolve => { require(['@/page/chartsManage/formChart.vue'], resolve) } }
   ]
 }
 
@@ -139,6 +142,13 @@ export const appRouter = [
         name: 'treeFormDataManage',
         title: '树形表管理',
         component: resolve => { require(['@/page/form/treeManage/treeFormDataManage.vue'], resolve) }
+      },
+      {
+        path: '/chartsManage',
+        icon: 'compose',
+        name: 'chartsManage',
+        title: '图表管理',
+        component: resolve => { require(['@/page/chartsManage/chartsManage.vue'], resolve) }
       }
     ]
   }

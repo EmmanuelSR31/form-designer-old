@@ -3,12 +3,12 @@
   <Row>
     <Col span="8">
       <div class="bg-white padding10">
-        <Tree :data="treeData" @on-select-change="initUrls"></Tree>
+        <Tree :data="treeData" @on-select-change="initCharts"></Tree>
       </div>
     </Col>
     <Col span="15" offset="1">
       <div class="table-search-con">
-        <Button type="primary" @click="addUrl">新增</Button>
+        <Button type="primary" @click="addChart">新增</Button>
       </div>
       <Table border :loading="loading" :columns="columns" :data="data" stripe></Table>
     </Col>
@@ -17,8 +17,8 @@
 </template>
 <script>
 import Util from '@/utils/index'
-import addUrl from './addUrl.vue'
-import editUrl from './editUrl.vue'
+import addChart from './addChart.vue'
+import editChart from './editChart.vue'
 export default {
   data () {
     return {
@@ -32,8 +32,8 @@ export default {
           align: 'center'
         },
         {
-          title: 'pid',
-          key: 'pid'
+          title: '表单',
+          key: 'form_name'
         },
         {
           title: '名称',
@@ -44,8 +44,16 @@ export default {
           key: 'descr'
         },
         {
-          title: 'URL类型',
+          title: '图表类型',
           key: 'type'
+        },
+        {
+          title: 'X轴字段',
+          key: 'x_field'
+        },
+        {
+          title: 'Y轴字段',
+          key: 'y_field'
         },
         {
           title: '创建人',
@@ -72,7 +80,7 @@ export default {
                 },
                 on: {
                   click: () => {
-                    this.editUrl(params)
+                    this.editChart(params)
                   }
                 }
               }, '修改'),
@@ -83,7 +91,7 @@ export default {
                 },
                 on: {
                   click: () => {
-                    this.deleteUrl(params)
+                    this.deleteChart(params)
                   }
                 }
               }, '删除')
@@ -91,8 +99,8 @@ export default {
           }
         }
       ],
-      data: [], // url数据
-      urlObj: {}, // url对象
+      data: [], // 图表数据
+      chartObj: {}, // 图表对象
       currentForm: '' // 选中栏目
     }
   },
@@ -104,71 +112,70 @@ export default {
         }
       })
     },
-    initUrls: function (row) { // 选择栏目
-      this.currentForm = row[0].id
+    initCharts: function (row) { // 选择栏目
+      this.currentForm = row[0].url.split('=')[1]
       this.data = []
-      this.initUrlsData()
+      this.initChartsData()
     },
-    initUrlsData: function () { // 取链接数据
+    initChartsData: function () { // 取图表数据
       this.loading = true
-      this.$api.post('/develop/url/getByPid.do', {pid: this.currentForm}, r => {
-        console.log(r.data)
-        this.data = r.data
+      this.$api.post('/crm/ActionFormSelectUtil/Select/getChartsByFormName.do', {formName: this.currentForm}, r => {
+        this.data = r.data.rows
         this.loading = false
       })
     },
-    addUrl: function () { // 新增URL
+    addChart: function () { // 新增图表
       if (this.currentForm === '') {
         this.$Message.warning('请先选择一条目录')
       } else {
         this.$layer.iframe({
           type: 2,
           content: {
-            content: addUrl, // 传递的组件对象
+            content: addChart, // 传递的组件对象
             parent: this, // 当前的vue对象
             data: {
-              pid: this.currentForm
+              tableName: this.currentForm
             }
           },
           shadeClose: false,
           shade: false,
           maxmin: true,
           area: ['800px', document.body.clientHeight - 20 + 'px'],
-          title: '新增URL'
+          title: '新增图表'
         })
       }
     },
-    editUrl: function (row) { // 修改URL
+    editChart: function (row) { // 修改图表
       let temp = row.row
       delete temp._index
       delete temp.orwKey
       this.$layer.open({
         type: 2,
         content: {
-          content: editUrl, // 传递的组件对象
+          content: editChart, // 传递的组件对象
           parent: this, // 当前的vue对象
           data: {
-            urlObj: temp
+            chartObj: temp
           }
         },
         shadeClose: false,
         shade: false,
         maxmin: true,
         area: ['800px', document.body.clientHeight - 20 + 'px'],
-        title: '修改URL'
+        title: '修改图表'
       })
     },
-    deleteUrl: function (row) { // 删除选项
+    deleteChart: function (row) { // 删除图表
       this.$Modal.confirm({
         title: '',
-        content: '确认删除此选项？',
+        content: '确认删除此图表？',
         onOk: () => {
-          this.$api.post('/crm/ActionFormSelectUtil/Select/delete.do', {tableName: this.currentForm, id: row.row.id}, r => {
+          this.$api.post('/crm/ActionFormSelectUtil/Select/deleteCharts.do', {id: row.row.id}, r => {
             if (r.data === '0') {
-              this.$Message.error('删除选项失败')
+              this.$Message.error('删除图表失败')
             } else {
-              this.$Message.success('删除选项成功')
-              this.initUrlsData()
+              this.$Message.success('删除图表成功')
+              this.initChartsData()
             }
           })
         },
@@ -182,5 +189,3 @@ export default {
   }
 }
 </script>
-<style>
-</style>

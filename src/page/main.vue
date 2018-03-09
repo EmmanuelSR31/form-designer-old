@@ -80,6 +80,7 @@ export default {
     init: function () {
       this.$store.dispatch('updateMenuList')
       this.userName = localStorage.userName
+      this.$store.dispatch('setSelectData')
     },
     handleClickUserDropdown (name) {
       if (name === 'ownSpace') {
@@ -103,7 +104,6 @@ export default {
   },
   mounted () {
     this.init()
-    this.$store.dispatch('setSelectData')
   }
 }
 </script>

@@ -158,4 +158,23 @@ util.dataConvertForTree = function (tableData, treeField) { // 数据转换为�
   return arr
 }
 
+util.columnsFormatter = function (columns) { // 表头属性修改
+  for (let iterator of columns) {
+    iterator.key = iterator.field
+    delete iterator.field
+  }
+  return columns
+}
+
+util.getCurrentDate = function () { // 获取当前日期
+  let date = new Date()
+  let year = date.getFullYear()
+  let month = date.getMonth() + 1
+  let day = date.getDate()
+  let hour = date.getHours()
+  let minutes = date.getMinutes()
+  let second = date.getSeconds()
+  return year + '-' + month + '-' + day + ' ' + hour + ':' + minutes + ':' + second
+}
+
 export default util

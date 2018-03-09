@@ -2,6 +2,7 @@
 <div>
   <div class="table-search-con">
     <Button type="primary" @click="addFormData">新增</Button>
+    <Button type="primary" @click="setCharts">生成图表</Button>
   </div>
   <Row>
     <Col v-if="formObj.needTree === 'true'" :span="formObj.needTree === 'true' ? 8 : 0">
@@ -27,14 +28,7 @@ export default {
       currentPage: 1, // 当前页码
       pageSize: 10, // 每页显示数
       totalRows: 0, // 数据总数
-      columns: [
-        {
-          type: 'index',
-          title: '序列',
-          width: 50,
-          align: 'center'
-        }
-      ],
+      columns: [],
       data: [],
       selectData: this.$store.state.selectData, // 下拉数据
       treeData: [], // 树形表数据
@@ -61,6 +55,7 @@ export default {
         this.$api.post('/crm/ActionFormUtil/getByTableName.do', {rows: this.pageSize, page: this.currentPage, tableName: this.tableName}, r => {
           this.totalRows = r.data.total
           this.data = r.data.rows
+          console.log(this.columns)
           this.loading = false
         })
       }
@@ -125,24 +120,34 @@ export default {
       this.changePage(this.currentPage)
     },
     init: function () {
+      this.columns = [
+        {
+          type: 'index',
+          title: '序列',
+          width: 50,
+          align: 'center'
+        }
+      ]
+      this.data = []
       this.$api.post('/pages/crminterface/getDatagridForJson.do', {tableName: this.tableName}, r => {
         this.formObj = r.data
-        if (this.formObj.needTree === 'true' && this.formObj.treeForm !== '') {
-          this.$api.post('/pages/crminterface/getDatagridForJson.do', {tableName: this.formObj.treeForm}, r => {
-            let treeField = r.data.treeField
-            this.$api.post('/crm/ActionFormUtil/getByTableName.do', {rows: this.pageSize, page: this.currentPage, tableName: this.formObj.treeForm}, r => {
-              this.treeData = Util.dataConvertForTree(r.data, treeField)
-            })
-          })
-        } else {
-          this.changePage(this.currentPage)
-        }
         this.$api.post('/pages/button/framework/get.do', {title: this.tableName}, r => {
           if (r.data.obj !== null) {
             this.formAttrObj = r.data.obj
-            this.columns.join(JSON.parse(this.formAttrObj.columns))
+            this.columns = this.columns.concat(Util.columnsFormatter(JSON.parse(this.formAttrObj.columns)))
+            this.columnsAddAction()
           } else {
-            this.initColumns(r.data.field)
+            this.initColumns(this.formObj.field)
+          }
+          if (this.formObj.needTree === 'true' && this.formObj.treeForm !== '') {
+            this.$api.post('/pages/crminterface/getDatagridForJson.do', {tableName: this.formObj.treeForm}, r => {
+              let treeField = r.data.treeField
+              this.$api.post('/crm/ActionFormUtil/getByTableName.do', {rows: this.pageSize, page: this.currentPage, tableName: this.formObj.treeForm}, r => {
+                this.treeData = Util.dataConvertForTree(r.data, treeField)
+              })
+            })
+          } else {
+            this.changePage(this.currentPage)
           }
         })
       })
@@ -219,6 +224,9 @@ export default {
           }
         }
       }
+      this.columnsAddAction()
+    },
+    columnsAddAction: function () { // 表头加操作列
       this.columns.push({
         title: '操作',
         key: 'action',
@@ -273,6 +281,12 @@ export default {
       this.$router.push({
         name: 'childTableManage',
         params: {tableName: tableTitle, recordID: params.row.uuid}
+      })
+    },
+    setCharts: function () { // 生成图表
+      this.$router.push({
+        name: 'formChart',
+        params: {tableName: this.tableName}
       })
     }
   },

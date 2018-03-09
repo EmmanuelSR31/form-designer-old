@@ -199,6 +199,7 @@ export default {
       this.$api.post('/develop/url/save.do', {url: jsonStr, UrlIutputPara: inStr, UrlOutputPara: outStr}, r => {
         if (r.data.result) {
           this.$Message.success('新增URL成功')
+          this.$parent.initUrlsData()
           this.$parent.$layer.closeAll()
         } else {
           this.$Message.error('新增URL失败')

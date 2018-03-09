@@ -180,3 +180,12 @@ body .ivu-modal .ivu-select-dropdown, body .notify-iframe .ivu-select-dropdown{
   left: auto!important;
   top: auto!important;
 }
+.fileList{
+  padding: 0 20px;
+  li{
+    margin-bottom: 5px;
+  }
+}
+.ivu-form-inline .ivu-form-item .ivu-form-item-content{
+  display: inline-block;
+}

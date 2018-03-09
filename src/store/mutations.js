@@ -39,8 +39,8 @@ export default {
       title: '栏目',
       children: []
     }
-    api.post('/crm/ActionFormUtil/getAllTable.do', {}, r => {
-      for (let variable of r.data.rows) {
+    api.post('/crm/ActionFormUtil/getByType.do', {type: 0}, r => {
+      for (let variable of r.data) {
         if (variable.type === '0') {
           menuTemp.children.push({
             name: 'formDataManage/' + variable.title,

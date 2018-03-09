@@ -38,10 +38,20 @@
               <i-switch v-model="formDataObj[item.text]" :key="item.text"></i-switch>
             </template>
             <template v-else-if="item.fieldType === 'datebox'">
-              <DatePicker type="date" :value="formDataObj[item.text]" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" :key="item.text"></DatePicker>
+              <template v-if="item.currentDate === 'true'">
+                <DatePicker type="date" :value="currentDate" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" :key="item.text"></DatePicker>
+              </template>
+              <template v-else>
+                <DatePicker type="date" :value="formDataObj[item.text]" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" :key="item.text"></DatePicker>
+              </template>
             </template>
             <template v-else-if="item.fieldType === 'datetimebox'">
-              <DatePicker type="datetime" :value="formDataObj[item.text]" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" :key="item.text"></DatePicker>
+              <template v-if="item.currentDate === 'true'">
+                <DatePicker type="datetime" :value="currentDate" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" :key="item.text"></DatePicker>
+              </template>
+              <template v-else>
+                <DatePicker type="datetime" :value="formDataObj[item.text]" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" :key="item.text"></DatePicker>
+              </template>
             </template>
             <template v-else-if="item.fieldType === 'filebox'">
               <Input v-model="formDataObj[item.text]" :key="item.text"><Button slot="append" icon="ios-upload-outline" @click="openUpload(item)"></Button></Input>

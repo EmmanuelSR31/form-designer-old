@@ -96,6 +96,16 @@ const state = {
   selectData: {}, // 下拉数据
   normalSelect: [], // 普通下拉
   quoteSelect: [], // 引用下拉
+  searchManner: [ // 搜索方式
+    {
+      text: '并且',
+      value: 'and'
+    },
+    {
+      text: '或者',
+      value: 'or'
+    }
+  ],
   searchInputType: [ // 搜索输入框类型
     {
       type: 'textbox',

@@ -54,8 +54,11 @@ export default {
     handleSubmit: function () {
       this.$refs.loginForm.validate((valid) => {
         if (valid) {
-          localStorage.setItem('userName', this.form.userName)
-          localStorage.setItem('password', this.form.password)
+          let user = {
+            id: '10010',
+            userName: this.form.userName
+          }
+          sessionStorage.setItem('user', user)
           this.$router.push({
             name: 'home'
           })
