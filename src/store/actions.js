@@ -45,3 +45,9 @@ export const setCurrentEditChildFormData = ({ commit }, dataObj) => {
 export const setSelectData = ({ commit }) => {
   commit(types.SET_SELECTDATA)
 }
+export const setPositionList = ({ commit }) => {
+  commit(types.SET_POSITIONLIST)
+}
+export const setUserStatusList = ({ commit }) => {
+  commit(types.SET_USERSTATUS)
+}

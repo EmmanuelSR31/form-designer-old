@@ -157,7 +157,9 @@ const state = {
       text: '是否为空',
       value: 'isEmpty'
     }
-  ]
+  ],
+  positionList: [], // 用户职位列表
+  userStatusList: [] // 用户状态列表
 }
 
 export default new Vuex.Store({

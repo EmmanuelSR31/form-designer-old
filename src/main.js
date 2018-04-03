@@ -9,20 +9,21 @@ import {router} from './router/index'
 import api from './api/index.js'
 import VueAwesomeSwiper from 'vue-awesome-swiper'
 import 'swiper/dist/css/swiper.css'
-import Vuetable from 'vuetable-2'
+// import Vuetable from 'vuetable-2'
 import layer from 'vue-layer'
-import 'vue-easytable/libs/themes-base/index.css'
+/* import 'vue-easytable/libs/themes-base/index.css'
 import {VTable, VPagination} from 'vue-easytable'
 import 'vue-multiselect/dist/vue-multiselect.min.css'
-import Multiselect from 'vue-multiselect'
+import Multiselect from 'vue-multiselect' */
 import VueCodemirror from 'vue-codemirror'
 import 'codemirror/lib/codemirror.css'
-import ECharts from 'vue-echarts/components/ECharts.vue'
+// import ECharts from 'vue-echarts/components/ECharts.vue'
+// import VueCharts from 'vue-chartjs'
 
 Vue.use(iView)
 Vue.use(VueAwesomeSwiper)
-Vue.use(Vuetable)
-Vue.component('vuetable', Vuetable)
+/* Vue.use(Vuetable)
+Vue.component('vuetable', Vuetable) */
 
 Vue.prototype.$api = api
 Vue.config.productionTip = false
@@ -30,14 +31,14 @@ Vue.config.devtools = true
 
 Vue.prototype.$layer = layer(Vue)
 
-Vue.component(VTable.name, VTable)
+/* Vue.component(VTable.name, VTable)
 Vue.component(VPagination.name, VPagination)
 
-Vue.component('multiselect', Multiselect)
+Vue.component('multiselect', Multiselect) */
 
 Vue.use(VueCodemirror)
 
-Vue.component('chart', ECharts)
+// Vue.component('chart', ECharts)
 
 /* eslint-disable no-new */
 new Vue({

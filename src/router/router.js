@@ -156,6 +156,20 @@ export const appRouter = [
         name: 'systemSet',
         title: '系统名称设置',
         component: resolve => { require(['@/page/system/systemSet.vue'], resolve) }
+      },
+      {
+        path: '/menuManage',
+        icon: 'compose',
+        name: 'menuManage',
+        title: '菜单管理',
+        component: resolve => { require(['@/page/menuManage/menuManage.vue'], resolve) }
+      },
+      {
+        path: '/userManage',
+        icon: 'compose',
+        name: 'userManage',
+        title: '用户管理',
+        component: resolve => { require(['@/page/userManage/userManage.vue'], resolve) }
       }
     ]
   }

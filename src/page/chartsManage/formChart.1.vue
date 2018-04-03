@@ -40,20 +40,16 @@
     </template>
   </Form>
   <div v-show="showChart">
-    <div id="main" style="width: 600px;height: 400px;"></div>
+    <chart :options="option"></chart>
   </div>
 </div>
 </template>
 <script>
-import echarts from 'echarts/lib/echarts'
-require('echarts/lib/chart/pie')
-require('echarts/lib/chart/bar')
-require('echarts/lib/chart/line')
-require('echarts/lib/component/tooltip')
-require('echarts/lib/component/title')
-require('echarts/lib/component/legend')
-require('echarts/lib/component/toolbox')
-require('es6-promise').polyfill()
+import Util from '@/utils/index'
+import 'echarts/lib/chart/line'
+import 'echarts/lib/chart/bar'
+import 'echarts/lib/chart/pie'
+import 'echarts/lib/component/tooltip'
 export default {
   data () {
     return {
@@ -66,8 +62,7 @@ export default {
       selectData: this.$store.state.selectData, // 下拉数据
       pageSize: '20', // 查询条数
       option: {},
-      showChart: false, // 显示图表
-      charts: '',
+      showChart: false // 显示图表
     }
   },
   methods: {
@@ -118,9 +113,8 @@ export default {
       })
     },
     createChart: function () { // 生成图表
-      this.charts = echarts.init(document.getElementById('main'))
       if (this.currentChart.type === 'line' || this.currentChart.type === 'bar') {
-        this.charts.setOption({
+        this.option = {
           title: {
             text: this.currentChart.name,
             left: 'center'
@@ -163,7 +157,7 @@ export default {
               data: this.currentChart.yData
             }
           ]
-        })
+        }
       } else if (this.currentChart.type === 'pie') {
         let pieData = []
         this.currentChart.xData.forEach((element, index) => {
@@ -172,7 +166,7 @@ export default {
             value: this.currentChart.yData[index]
           })
         })
-        this.charts.setOption({
+        this.option = {
           title: {
             text: this.currentChart.name,
             x: 'center'
@@ -209,7 +203,7 @@ export default {
               }
             }
           ]
-        })
+        }
       }
       this.showChart = true
     }

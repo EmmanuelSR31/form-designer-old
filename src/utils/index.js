@@ -107,28 +107,17 @@ util.formatterTreeData = function (data) { // 格式化树数据
         if (temp.children.length > 0) {
           for (let tmp of temp.children) {
             tmp.title = tmp.text
+            if (tmp.children.length > 0) {
+              for (let tp of tmp.children) {
+                tp.title = tp.text
+              }
+            }
           }
         }
       }
     }
   }
   return data
-}
-
-util.getCurrentDate = function () { // 获取当前的日期
-  let date = new Date()
-  let seperator1 = '-'
-  let seperator2 = ':'
-  let month = date.getMonth() + 1
-  let strDate = date.getDate()
-  if (month >= 1 && month <= 9) {
-    month = '0' + month
-  }
-  if (strDate >= 0 && strDate <= 9) {
-    strDate = '0' + strDate
-  }
-  let currentdate = date.getFullYear() + seperator1 + month + seperator1 + strDate + ' ' + date.getHours() + seperator2 + date.getMinutes() + seperator2 + date.getSeconds()
-  return currentdate
 }
 
 util.dataConvertForTree = function (tableData, treeField) { // 数据转换为树结构数据格式

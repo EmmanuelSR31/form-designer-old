@@ -1,6 +1,6 @@
 <template>
 <div class="form-con">
-  <Form ref="formField" :model="urlObj" :label-width="120">
+  <Form :model="urlObj" :label-width="120">
     <FormItem label="接口名(英文)">
       <Input v-model="urlObj.name"></Input>
     </FormItem>

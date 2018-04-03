@@ -1,13 +1,13 @@
 <template>
 <div>
-  <div class="button-con">
+  <div v-if="!isView" class="button-con">
     <Upload multiple action="/apis/upload/file?fileType=file" :show-upload-list="false" :on-success="uploadSuccess">
       <Button type="primary" icon="ios-cloud-upload-outline">上传</Button>
     </Upload>
   </div>
   <ul class="fileList">
     <li v-for="(item, index) in files" :key="index">
-      <Button @click="deleteFile(item)">删除</Button>
+      <Button v-if="!isView" @click="deleteFile(item)">删除</Button>
       <a :href="item" :download="pathToName(item)" target="_blank">{{pathToName(item)}}</a>
     </li>
   </ul>
@@ -20,7 +20,8 @@
 export default {
   props: {
     field: String, // 附件字段
-    paths: String // 附件数组字符串
+    paths: String, // 附件数组字符串
+    isView: Boolean // 是否查看
   },
   data () {
     return {

@@ -3,6 +3,21 @@
   <div class="left-menu-con" :style="{width:leftMenuWidth + 'px'}">
     <Menu :theme="leftMenuTheme" :width="200" active-name="menulist" :open-names="['1']" accordion @on-select="routeTo">
       <template v-for="item in menuList">
+        <!-- <template v-if="item.children.length>0">
+          <Submenu :name="item" :key="item.url">
+            <template slot="title">
+              <Icon :type="item.iconCls"></Icon>
+              {{item.text}}
+            </template>
+            <MenuItem v-for="tmp in item.children" :name="tmp" :key="tmp.url">{{tmp.text}}</MenuItem>
+          </Submenu>
+        </template>
+        <template v-else>
+          <MenuItem :name="item" :key="item.url">
+            <Icon :type="item.iconCls" :key="item.url"></Icon>
+            {{item.text}}
+          </MenuItem>
+        </template> -->
         <template v-if="item.children.length>0">
           <Submenu :name="item" :key="item.name">
             <template slot="title">
@@ -14,8 +29,8 @@
         </template>
         <template v-else>
           <MenuItem :name="item" :key="item.name">
-          <Icon :type="item.icon"></Icon>
-          {{item.title}}
+            <Icon :type="item.icon" :key="item.name"></Icon>
+            {{item.title}}
           </MenuItem>
         </template>
       </template>

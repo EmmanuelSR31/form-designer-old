@@ -1,6 +1,6 @@
 <template>
 <div>
-  <div class="table-search-con">
+  <div v-if="!isView" class="table-search-con">
     <Button type="primary" @click="addFormData">新增</Button>
   </div>
   <Table :height="tableHeight" border :loading="loading" :columns="columns" :data="data" stripe></Table>
@@ -15,7 +15,8 @@ export default {
   name: 'childTable',
   props: {
     childTableName: String, // 表单名
-    recordID: String // 主表数据ID
+    recordID: String, // 主表数据ID
+    isView: Boolean // 是否查看
   },
   data () {
     return {

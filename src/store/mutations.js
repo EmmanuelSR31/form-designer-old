@@ -20,6 +20,16 @@ export default {
   },
   [types.UPDATE_MENULIST] (state) { // 更新菜单
     let menuList = []
+    /* api.post('/topJUI/index/getMenu.do', {name: '1', position_id: '9'}, r => {
+      menuList = r.data
+      for (let iterator of menuList) {
+        api.post('/topJUI/index/getMenu.do', {name: iterator.id, position_id: '9'}, rs => {
+          iterator.children = rs.data
+        })
+      }
+      state.menuList = menuList
+      console.log(menuList)
+    }) */
     appRouter.forEach((item, index) => {
       if (item.children.length === 1) {
         menuList.push(item)
@@ -136,6 +146,16 @@ export default {
         })
       }
       state.quoteSelect = r.data
+    })
+  },
+  [types.SET_POSITIONLIST] (state) { // 设置用户职位数据
+    api.post('/system/user/position/getAll.do', {}, r => {
+      state.positionList = r.data
+    })
+  },
+  [types.SET_USERSTATUS] (state) { // 设置用户状态数据
+    api.post('/system/user/userStatus/getAll.do', {}, r => {
+      state.userStatusList = r.data
     })
   }
 }
