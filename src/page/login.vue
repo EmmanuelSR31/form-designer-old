@@ -7,23 +7,23 @@
         欢迎登录
       </p>
       <div class="form-con">
-        <Form ref="loginForm" :model="form" :rules="rules">
+        <Form ref="loginForm" :model="loginObj" :rules="rules">
           <FormItem prop="userName">
-            <Input v-model="form.userName" placeholder="请输入用户名">
+            <Input v-model="loginObj.userName" placeholder="请输入用户名">
               <span slot="prepend">
                 <Icon :size="16" type="person"></Icon>
               </span>
             </Input>
           </FormItem>
           <FormItem prop="password">
-            <Input type="password" v-model="form.password" placeholder="请输入密码">
+            <Input type="password" v-model="loginObj.password" placeholder="请输入密码">
               <span slot="prepend">
                 <Icon :size="14" type="locked"></Icon>
               </span>
             </Input>
           </FormItem>
           <FormItem>
-            <Button @click="handleSubmit" type="primary" long>登录</Button>
+            <Button @click="login" type="primary" long>登录</Button>
           </FormItem>
         </Form>
         <p class="login-tip">输入任意用户名和密码即可</p>
@@ -33,10 +33,11 @@
 </div>
 </template>
 <script>
+import Util from '@/utils/index'
 export default {
   data () {
     return {
-      form: {
+      loginObj: {
         userName: 'admin',
         password: 'pass'
       },
@@ -51,14 +52,16 @@ export default {
     }
   },
   methods: {
-    handleSubmit: function () {
+    login: function () {
       this.$refs.loginForm.validate((valid) => {
         if (valid) {
           let user = {
             id: '10010',
-            userName: this.form.userName
+            userName: this.loginObj.userName
           }
           sessionStorage.setItem('user', user)
+          Util.setCookie('userName', this.loginObj.userName)
+          Util.setCookie('password', this.loginObj.password)
           this.$router.push({
             name: 'home'
           })

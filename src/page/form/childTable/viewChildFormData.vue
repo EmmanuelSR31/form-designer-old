@@ -6,45 +6,40 @@
         <Form :model="formDataObj" :label-width="120">
           <FormItem v-for="(item, index) in formControls" :key="index" :class="['whole-line-'+item.width, 'whole-line-'+item.fieldType]" :label="item.title">
             <template v-if="item.fieldType === 'textbox'">
-              <Input v-model="formDataObj[item.text]" :placeholder="item.prompt" :key="item.text"></Input>
+              <Input v-model="formDataObj[item.text]" :placeholder="item.prompt" readonly="true" :key="item.text"></Input>
             </template>
             <template v-else-if="item.fieldType === 'textboxMultiline'">
-              <Input type="textarea" v-model="formDataObj[item.text]" :rows="item.rows" :placeholder="item.prompt" :key="item.text"></Input>
+              <Input type="textarea" v-model="formDataObj[item.text]" :rows="item.rows" :placeholder="item.prompt" readonly="true" :key="item.text"></Input>
             </template>
             <template v-else-if="item.fieldType === 'numberbox'">
-              <template v-if="item.precision !== ''">
-                <InputNumber v-model="formDataObj[item.text]" :min="item.min !== '' ? item.min : -Infinity" :max="item.max !== '' ? item.max : Infinity" :precision="item.precision" :placeholder="item.prompt" :key="item.text"></InputNumber>
-              </template>
-              <template v-else>
-                <InputNumber v-model="formDataObj[item.text]" :min="item.min !== '' ? item.min : -Infinity" :max="item.max !== '' ? item.max : Infinity" :placeholder="item.prompt" :key="item.text"></InputNumber>
-              </template>
+              <InputNumber v-model="formDataObj[item.text]" readonly="true" :key="item.text"></InputNumber>
             </template>
             <template v-else-if="item.fieldType === 'combobox'">
-              <Select v-model="formDataObj[item.text]" :multiple="item.multiple" :placeholder="item.prompt" @on-change="changeQuoteSelectData(item)" :key="item.text">
-                <Option v-for="tmp in selectData[item.selectID]" :value="tmp.id" :key="tmp.id">{{tmp.text}}</Option>
+              <Select v-model="formDataObj[item.text]" :multiple="item.multiple" :placeholder="item.prompt" @on-change="changeQuoteSelectData(item)" disabled="true" :key="item.text">
+                <Option v-for="tmp in selectData[item.selectID]" :value="tmp.id + ''" :key="tmp.id">{{tmp.text}}</Option>
               </Select>
             </template>
             <template v-else-if="item.fieldType === 'radio'">
               <RadioGroup v-model="formDataObj[item.text]">
-                <Radio v-for="(radioItem, index) in item.radios" :key="index" :label="radioItem"></Radio>
+                <Radio v-for="(radioItem, index) in item.radios" disabled="true" :key="index" :label="radioItem"></Radio>
               </RadioGroup>
             </template>
             <template v-else-if="item.fieldType === 'checkbox'">
               <CheckboxGroup v-model="formDataObj[item.text]">
-              <Checkbox v-for="(checkboxItem, index) in item.checkboxs" :key="index" :label="checkboxItem"></Checkbox>
+                <Checkbox v-for="(checkboxItem, index) in item.checkboxs" disabled="true" :key="index" :label="checkboxItem"></Checkbox>
               </CheckboxGroup>
             </template>
             <template v-else-if="item.fieldType === 'switch'">
-              <i-switch v-model="formDataObj[item.text]" :key="item.text"></i-switch>
+              <i-switch v-model="formDataObj[item.text]" disabled="true" :key="item.text"></i-switch>
             </template>
             <template v-else-if="item.fieldType === 'datebox'">
-              <DatePicker type="date" :value="formDataObj[item.text]" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" :key="item.text"></DatePicker>
+              <DatePicker type="date" :value="formDataObj[item.text]" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" readonly="true" :key="item.text"></DatePicker>
             </template>
             <template v-else-if="item.fieldType === 'datetimebox'">
-              <DatePicker type="datetime" :value="formDataObj[item.text]" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" :key="item.text"></DatePicker>
+              <DatePicker type="datetime" :value="formDataObj[item.text]" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" readonly="true" :key="item.text"></DatePicker>
             </template>
             <template v-else-if="item.fieldType === 'filebox'">
-              <Input v-model="formDataObj[item.text]" :key="item.text"><Button slot="append" icon="ios-upload-outline" @click="openUpload(item)"></Button></Input>
+              <Button type="ghost" @click="openUpload(item)">查看</Button>
             </template>
           </FormItem>
         </Form>
@@ -60,14 +55,16 @@
 import Util from '@/utils/index'
 import filesManage from '../fileManage/filesManage.vue'
 export default {
+  props: {
+    tableName: String, // 表单名
+    recordID: String, // 主表数据ID
+    id: String // 数据ID
+  },
   data () {
     return {
-      tableName: this.$route.params.tableName, // 表单名
-      id: this.$route.params.id, // 数据ID
-      recordID: this.$route.params.recordID, // 主表数据ID
       formControls: [], // 表单字段
-      formObj: this.$store.state.currentEditForm, // 表单对象
-      formDataObj: this.$store.state.currentEditFormData, // 表单数据对象
+      formObj: this.$store.state.currentEditChildForm, // 表单对象
+      formDataObj: this.$store.state.currentEditChildFormData, // 表单数据对象
       selectData: this.$store.state.selectData // 下拉数据
     }
   },
@@ -76,13 +73,8 @@ export default {
       this.$parent.$layer.closeAll()
     },
     init: function () {
-      this.initColumns(this.formObj.field)
-      delete this.formDataObj.id
-      delete this.formDataObj.create_user_id
-      delete this.formDataObj.taskid
-      delete this.formDataObj.uuid
-      delete this.formDataObj._index
-      delete this.formDataObj._rowKey
+      this.formControls = Util.removeFieldTable(this.formObj.field)
+      this.formDataObj = Util.formatFormData(this.formControls, this.formDataObj)
       console.log(this.formControls)
     },
     changeQuoteSelectData: function (field) { // 引用下拉写入其他字段

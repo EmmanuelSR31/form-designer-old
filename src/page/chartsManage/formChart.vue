@@ -45,6 +45,7 @@
 </div>
 </template>
 <script>
+import Util from '@/utils/index'
 import echarts from 'echarts/lib/echarts'
 require('echarts/lib/chart/pie')
 require('echarts/lib/chart/bar')
@@ -67,7 +68,7 @@ export default {
       pageSize: '20', // 查询条数
       option: {},
       showChart: false, // 显示图表
-      charts: '',
+      charts: ''
     }
   },
   methods: {

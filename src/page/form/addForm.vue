@@ -137,6 +137,18 @@
                         </Select>
                       </FormItem>
                     </template>
+                    <FormItem label="是否禁用">
+                      <Select v-model="field.disabled">
+                        <Option value="false">否</Option>
+                        <Option value="true">是</Option>
+                      </Select>
+                    </FormItem>
+                    <FormItem label="是否只读">
+                      <Select v-model="field.readonly">
+                        <Option value="false">否</Option>
+                        <Option value="true">是</Option>
+                      </Select>
+                    </FormItem>
                     <FormItem label="是否必填">
                       <Select v-model="field.required">
                         <Option value="false">否</Option>
@@ -170,6 +182,25 @@
                     <FormItem label="数值精度">
                       <InputNumber v-model="field.precision" :min="0" :step="1"></InputNumber>
                     </FormItem>
+                    <FormItem label="是否需要计算">
+                      <Select v-model="field.needCalculate">
+                        <Option value="false">否</Option>
+                        <Option value="true">是</Option>
+                      </Select>
+                    </FormItem>
+                    <template v-if="field.needCalculate === 'true'">
+                      <FormItem label="从哪些字段计算">
+                        <Select v-model="field.calculateFields" multiple>
+                          <Option v-for="item in fieldsForSelect" :value="item.text" :key="item.text">{{ item.title }}</Option>
+                        </Select>
+                      </FormItem>
+                      <FormItem label="计算方式">
+                        <Select v-model="field.calculateType">
+                          <Option value="multiply">乘</Option>
+                          <Option value="plus">加</Option>
+                        </Select>
+                      </FormItem>
+                    </template>
                   </template>
                   <template v-if="field.fieldType === 'combobox'">
                     <FormItem label="是否支持多选">
@@ -196,22 +227,18 @@
                       </Select>
                     </FormItem>
                     <FormItem v-if="field.selectType === '1' && field.selectID !== ''" class="whole-line-tablebox" label="">
-                      <v-table is-horizontal-resize style="width:100%" :columns="quoteSelectColumns" :table-data="quoteSelectTableData" row-hover-color="#eee" row-click-color="#edf7ff" :cell-edit-done="cellEditDone"></v-table>
+                      <Table border :columns="quoteSelectColumns" :data="quoteSelectTableData" stripe></Table>
                     </FormItem>
                   </template>
                   <template v-if="field.fieldType === 'radio'">
                     <FormItem label="选项">
                       <Input v-model="radiosText" type="textarea" :rows="5"></Input>
-                    </FormItem>
-                    <FormItem label="">
                       一行一个选项
                     </FormItem>
                   </template>
                   <template v-if="field.fieldType === 'checkbox'">
                     <FormItem label="选项">
                       <Input v-model="checkboxsText" type="textarea" :rows="5"></Input>
-                    </FormItem>
-                    <FormItem label="">
                       一行一个选项
                     </FormItem>
                   </template>
@@ -288,6 +315,25 @@
       </div>
     </swiper-slide>
   </swiper>
+  <Modal v-model="modalQuoteSelect" title="修改输出字段" @on-ok="saveQuoteSelectData">
+    <div class="modal-field-con">
+      <div>
+        <Form :model="quoteSelectObj" :label-width="120">
+          <FormItem label="字段名">
+            <Input v-model="quoteSelectObj.name"></Input>
+          </FormItem>
+          <FormItem label="类型">
+            <Input v-model="quoteSelectObj.type"></Input>
+          </FormItem>
+          <FormItem label="组件名">
+            <Select v-model="quoteSelectObj.inputName">
+              <Option v-for="item in formControls" :value="item.text" :key="item.text">{{ item.title }}</Option>
+            </Select>
+          </FormItem>
+        </Form>
+      </div>
+    </div>
+  </Modal>
 </div>
 </template>
 <script>
@@ -316,11 +362,37 @@ export default {
       },
       childTables: [], // 子表数组
       quoteSelectColumns: [ // 引用输出字段表格表头
-        {field: 'name', title: '字段名', width: 150, titleAlign: 'center', columnAlign: 'center', isResize: true},
-        {field: 'type', title: '类型', width: 150, titleAlign: 'center', columnAlign: 'center', isResize: true},
-        {field: 'inputName', title: '组件名', width: 150, titleAlign: 'center', columnAlign: 'center', isEdit: true, isResize: true}
+        {key: 'name', title: '字段名'},
+        {key: 'type', title: '类型'},
+        {key: 'inputName', title: '组件名'},
+        {
+          title: '操作',
+          key: 'action',
+          width: 80,
+          align: 'center',
+          render: (h, params) => {
+            return h('div', [
+              h('Button', {
+                props: {
+                  type: 'primary',
+                  size: 'small'
+                },
+                style: {
+                  marginRight: '5px'
+                },
+                on: {
+                  click: () => {
+                    this.editQuoteSelectData(params)
+                  }
+                }
+              }, '修改')
+            ])
+          }
+        }
       ],
       quoteSelectTableData: [], // 引用输出字段表格数据
+      modalQuoteSelect: false,
+      quoteSelectObj: {}, // 引用输出字段对象
       treeForms: [] // 树结构表单数据
     }
   },
@@ -387,8 +459,11 @@ export default {
       } else {
         this.checkboxsText = ''
       }
-      if (this.field.fieldType === 'numberbox' && this.field.precision === 'undefined') {
+      if (this.field.fieldType === 'numberbox' && this.field.precision === undefined) {
         this.field.precision = 0
+      }
+      if (this.field.fieldType === 'numberbox' && this.field.calculateFields === undefined) {
+        this.field.calculateFields = []
       }
       this.modalField = true
     },
@@ -414,13 +489,18 @@ export default {
       for (let variable of this.quoteSelect) {
         if (variable.name === value) {
           this.$api.post('/develop/url/getUrlById.do', {id: variable.id}, r => {
+            console.log(r.data)
             this.quoteSelectTableData = r.data.urlOutputPara
           })
         }
       }
     },
-    cellEditDone: function (newValue, oldValue, rowIndex, rowData, field) {
-      this.quoteSelectTableData[rowIndex][field] = newValue
+    editQuoteSelectData: function (params) { // 修改输出字段
+      this.quoteSelectObj = params.row
+      this.modalQuoteSelect = true
+    },
+    saveQuoteSelectData: function () { // 保存输出字段
+      this.quoteSelectTableData[this.quoteSelectObj._index] = this.quoteSelectObj
     },
     checkTableName: function () { // 判断表名重复
       this.$api.post('/pages/crminterface/IsExistenceForTableName.do', {tableName: this.formObj.title}, r => {
@@ -466,6 +546,9 @@ export default {
     },
     swiper () {
       return this.$refs.mySwiper.swiper
+    },
+    fieldsForSelect () {
+      return Util.fieldsForSelect(this.formControls)
     }
   },
   mounted () {

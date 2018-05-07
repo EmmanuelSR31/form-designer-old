@@ -3,13 +3,20 @@
   <div class="table-search-con">
     <Button type="primary" @click="addFormData">新增</Button>
     <Button type="primary" @click="setCharts">生成图表</Button>
+    <Button type="primary" onclick="aaaa()">开启</Button>
+    <Button v-for="(item, index) in buttons" type="primary" :onclick="item.buttonFunction.replace(/&acute;/g, '\'')" :key="index">{{item.buttonName}}</Button>
+    <span class="pull-right">
+      <Input v-for="(item, index) in searchs" v-model="searchObj[item.buttonId]" style="width:100px" :key="index"></Input>
+      <Button v-for="(item, index) in searchButtons" type="primary" :onclick="item.buttonFunction.replace(/&acute;/g, '\'')" :key="index">{{item.buttonName}}</Button>
+    </span>
   </div>
   <Row>
     <Col v-if="formObj.needTree === 'true'" :span="formObj.needTree === 'true' ? 8 : 0">
-      <Tree :data="treeData" @on-select-change="setPid" ref="treeTable"></Tree>
+      <!-- <Tree :data="treeData" @on-select-change="setPid" ref="treeTable"></Tree> -->
+      <tree-grid :items="treeData" :columns="treeColumns" @on-row-click="rowClick"></tree-grid>
     </Col>
     <Col :span="formObj.needTree === 'true' ? 16 : 24">
-      <Table :height="tableHeight" border :loading="loading" :columns="columns" :data="data" stripe></Table>
+      <Table :height="tableHeight" border :loading="loading" :columns="columns" :data="data" stripe highlight-row @on-current-change="setCurrentData"></Table>
       <div class="page-con">
         <Page :total="totalRows" :current="currentPage" :page-size="pageSize" placement="top" @on-change="changePage" @on-page-size-change="changePageSize" show-elevator show-sizer></Page>
       </div>
@@ -19,7 +26,11 @@
 </template>
 <script>
 import Util from '@/utils/index'
+import TreeGrid from '../components/treeGrid2.0.vue'
 export default {
+  components: {
+    TreeGrid
+  },
   data () {
     return {
       tableName: this.$route.params.tableName, // 表单名
@@ -30,10 +41,16 @@ export default {
       totalRows: 0, // 数据总数
       columns: [],
       data: [],
+      currentData: {}, // 选中数据
       selectData: this.$store.state.selectData, // 下拉数据
+      treeColumns: [], // 树形表表头
       treeData: [], // 树形表数据
       pid: '', // 父ID
-      formAttrObj: {} // 表单配置对象
+      formAttrObj: {}, // 表单配置对象
+      buttons: [], // 表单配置按钮
+      searchs: [], // 表单配置搜索栏
+      searchButtons: [], // 表单配置搜索按钮
+      searchObj: {} // 表单搜索对象
     }
   },
   computed: {
@@ -63,6 +80,10 @@ export default {
     changePageSize: function (size) { // 改变每页显示数
       this.pageSize = size
       this.changePage(this.currentPage)
+    },
+    setCurrentData: function (currentRow, oldCurrentRow) { // 选中数据
+      this.currentData = currentRow
+      currentData1 = currentRow
     },
     addFormData: function () { // 新增数据
       this.$store.dispatch('setCurrentEditForm', this.formObj)
@@ -114,34 +135,44 @@ export default {
         }
       })
     },
-    setPid: function (row) { // 点击数据设置父ID
-      this.pid = row[0].id
+    rowClick: function (data, index, event) { // 点击一行
+      this.pid = data.id
       this.currentPage = 1
       this.changePage(this.currentPage)
     },
+    /* setPid: function (row) { // 点击数据设置父ID
+      this.pid = row[0].id
+      this.currentPage = 1
+      this.changePage(this.currentPage)
+    }, */
     init: function () {
-      this.columns = [
-        {
-          type: 'index',
-          title: '序列',
-          width: 50,
-          align: 'center'
-        }
-      ]
       this.data = []
       this.$api.post('/pages/crminterface/getDatagridForJson.do', {tableName: this.tableName}, r => {
         this.formObj = r.data
         this.$api.post('/pages/button/framework/get.do', {title: this.tableName}, r => {
           if (r.data.obj !== null) {
             this.formAttrObj = r.data.obj
+            console.log(this.formAttrObj)
             this.columns = this.columns.concat(Util.columnsFormatter(JSON.parse(this.formAttrObj.columns)))
-            this.columnsAddAction()
+            this.columns = this.columnsAddAction(this.columns)
+            this.buttons = JSON.parse(this.formAttrObj.buttons)
+            this.searchs = JSON.parse(this.formAttrObj.searchs)
+            this.searchButtons = JSON.parse(this.formAttrObj.search_buttons)
+            let script = document.createElement('script')
+            script.type = 'text/javascript'
+            try {
+              script.appendChild(document.createTextNode(this.formAttrObj.js_code.replace(/&quot;/g, '"').replace(/换行符/g, '\n').replace(/&acute;/g, '\'')))
+            } catch (ex) {
+              script.text = this.formAttrObj.js_code.replace(/&quot;/g, '"').replace(/换行符/g, '\n').replace(/&acute;/g, '\'')
+            }
+            document.body.appendChild(script)
           } else {
-            this.initColumns(this.formObj.field)
+            this.columns = this.initColumns(this.formObj.field, true)
           }
           if (this.formObj.needTree === 'true' && this.formObj.treeForm !== '') {
             this.$api.post('/pages/crminterface/getDatagridForJson.do', {tableName: this.formObj.treeForm}, r => {
               let treeField = r.data.treeField
+              this.treeColumns = this.initColumns(r.data.field, false)
               this.$api.post('/crm/ActionFormUtil/getByTableName.do', {rows: this.pageSize, page: this.currentPage, tableName: this.formObj.treeForm}, r => {
                 this.treeData = Util.dataConvertForTree(r.data, treeField)
               })
@@ -152,11 +183,20 @@ export default {
         })
       })
     },
-    initColumns: function (fields) { // 生成表格列
+    initColumns: function (fields, flag) { // 生成表格列
+      let columnsTemp = []
+      if (flag) {
+        columnsTemp.push({
+          type: 'index',
+          title: '序列',
+          width: 50,
+          align: 'center'
+        })
+      }
       for (let variable of fields) {
         if (variable.listDisplay === 'true' || variable.listDisplay === true) {
           if (variable.fieldType === 'tablebox') {
-            this.columns.push({
+            columnsTemp.push({
               title: variable.title,
               key: variable.text,
               width: 80,
@@ -176,58 +216,24 @@ export default {
               }
             })
           } else if (variable.fieldType === 'combobox') {
-            this.columns.push({
-              title: variable.title,
-              key: variable.text,
-              width: 80,
-              align: 'center',
-              render: (h, params) => {
-                let fieldText = params.column.key
-                let selectId = variable.selectID
-                let valueTemp = ''
-                if (!Util.isEmpty(params.row[fieldText]) && !Util.isEmpty(this.selectData[selectId])) {
-                  let valueTemp1 = this.selectData[selectId].find(function (value, index, arr) {
-                    if (value.id.toString() === params.row[fieldText]) {
-                      return value
-                    }
-                  })
-                  if (!Util.isEmpty(valueTemp1)) {
-                    valueTemp = valueTemp1.text
-                  }
-                }
-                return h('div', valueTemp)
-              }
-            })
+            columnsTemp.push(Util.comboboxColumns(variable, this.selectData))
           } else if (variable.fieldType === 'filebox') {
-            this.columns.push({
-              title: variable.title,
-              key: variable.text,
-              render: (h, params) => {
-                let temp = params.row[variable.text]
-                let files = temp.split(',')
-                return h('div', files.map(function (item) {
-                  return h('a', {
-                    attrs: {
-                      href: item,
-                      download: item.split('/')[3].substring(36),
-                      target: '_blank'
-                    }
-                  }, item.split('/')[3].substring(36) + ',')
-                }))
-              }
-            })
+            columnsTemp.push(Util.fileColumns(variable))
           } else {
-            this.columns.push({
+            columnsTemp.push({
               title: variable.title,
               key: variable.text
             })
           }
         }
       }
-      this.columnsAddAction()
+      if (flag) {
+        columnsTemp = this.columnsAddAction(columnsTemp)
+      }
+      return columnsTemp
     },
-    columnsAddAction: function () { // 表头加操作列
-      this.columns.push({
+    columnsAddAction: function (columnsTemp) { // 表头加操作列
+      columnsTemp.push({
         title: '操作',
         key: 'action',
         width: 150,
@@ -276,6 +282,7 @@ export default {
           ])
         }
       })
+      return columnsTemp
     },
     childTableManage: function (params, tableTitle) { // 管理子表数据
       this.$router.push({
@@ -298,6 +305,15 @@ export default {
       this.tableName = to.params.tableName
       this.init()
     }
+  },
+  ready: function () {
+    window.vm = this
   }
+}
+var currentData1
+window.aaaa = function () {
+  console.log(currentData1)
+  console.log(window)
+  // console.log(window.vm.$children[0].$data.tableName)
 }
 </script>

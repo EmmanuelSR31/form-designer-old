@@ -489,7 +489,7 @@ export default {
                 },
                 on: {
                   click: () => {
-                    this.buttonSearchsEdit(params)
+                    this.searchButtonsEdit(params)
                   }
                 }
               }, '修改'),
@@ -503,7 +503,7 @@ export default {
                 },
                 on: {
                   click: () => {
-                    this.buttonSearchsDelete(params)
+                    this.searchButtonsDelete(params)
                   }
                 }
               }, '删除'),
@@ -518,7 +518,7 @@ export default {
                 },
                 on: {
                   click: () => {
-                    this.buttonSearchsUp(params)
+                    this.searchButtonsUp(params)
                   }
                 }
               }, '上移'),
@@ -532,7 +532,7 @@ export default {
                 },
                 on: {
                   click: () => {
-                    this.buttonSearchsDown(params)
+                    this.searchButtonsDown(params)
                   }
                 }
               }, '下移')
@@ -567,12 +567,14 @@ export default {
     },
     columnsEdit: function (params) { // 修改表格表头
       this.columnsObj = params.row
-      delete this.columnsObj._index
-      delete this.columnsObj._rowKey
       this.modalColumnsEdit = true
     },
     saveColumnsEdit: function () { // 修改保存表格表头
       this.modalColumnsEdit = false
+      let i = this.columnsObj._index
+      delete this.columnsObj._index
+      delete this.columnsObj._rowKey
+      this.formColumns[i] = this.columnsObj
     },
     columnsDelete: function (params) { // 删除表格表头
       this.formColumns.splice(params.index, 1)
@@ -601,12 +603,14 @@ export default {
     },
     buttonsEdit: function (params) { // 修改表格按钮
       this.buttonsObj = params.row
-      delete this.buttonsObj._index
-      delete this.buttonsObj._rowKey
       this.modalButtonsEdit = true
     },
     saveButtonsEdit: function () { // 修改保存表格按钮
       this.modalButtonsEdit = false
+      let i = this.buttonsObj._index
+      delete this.buttonsObj._index
+      delete this.buttonsObj._rowKey
+      this.formButtons[i] = this.buttonsObj
     },
     buttonsDelete: function (params) { // 删除表格按钮
       this.formButtons.splice(params.index, 1)
@@ -635,12 +639,14 @@ export default {
     },
     searchsEdit: function (params) { // 修改表格搜索
       this.searchsObj = params.row
-      delete this.searchsObj._index
-      delete this.searchsObj._rowKey
       this.modalSearchsEdit = true
     },
     saveSearchsEdit: function () { // 修改保存表格搜索
       this.modalSearchsEdit = false
+      let i = this.searchsObj._index
+      delete this.searchsObj._index
+      delete this.searchsObj._rowKey
+      this.formSearchs[i] = this.searchsObj
     },
     searchsDelete: function (params) { // 删除表格搜索
       this.formSearchs.splice(params.index, 1)
@@ -669,12 +675,14 @@ export default {
     },
     searchButtonsEdit: function (params) { // 修改表格搜索按钮
       this.searchButtonsObj = params.row
-      delete this.searchButtonsObj._index
-      delete this.searchButtonsObj._rowKey
       this.modalSearchButtonsEdit = true
     },
     saveSearchButtonsEdit: function () { // 修改保存表格搜索按钮
       this.modalSearchButtonsEdit = false
+      let i = this.searchButtonsObj._index
+      delete this.searchButtonsObj._index
+      delete this.searchButtonsObj._rowKey
+      this.formSearchButtons[i] = this.searchButtonsObj
     },
     searchButtonsDelete: function (params) { // 删除表格搜索按钮
       this.formSearchButtons.splice(params.index, 1)
@@ -702,10 +710,16 @@ export default {
       this.formAttrObj.buttons = this.formButtons
       this.formAttrObj.searchs = this.formSearchs
       this.formAttrObj.search_buttons = this.formSearchButtons
+      for (let iterator of this.formAttrObj.buttons) {
+        iterator.buttonFunction = iterator.buttonFunction.replace(/'/g, '&acute;')
+      }
+      for (let iterator of this.formAttrObj.search_buttons) {
+        iterator.buttonFunction = iterator.buttonFunction.replace(/'/g, '&acute;')
+      }
       delete this.formAttrObj.js_code
       let infoStr = JSON.stringify(this.formAttrObj)
       console.log(infoStr)
-      this.$api.post('/pages/button/framework/create.do', {jsonStr: infoStr, jsCode: this.jsCode}, r => {
+      this.$api.post('/pages/button/framework/create.do', {jsonStr: infoStr, jsCode: this.jsCode.replace(/"/g, '&quot;').replace(/\n/g, '换行符').replace(/'/g, '&acute;')}, r => {
         if (r.data) {
           this.$Message.success('保存表单配置成功')
           this.$router.go(-1)
@@ -732,7 +746,13 @@ export default {
         this.formButtons = JSON.parse(this.formAttrObj.buttons)
         this.formSearchs = JSON.parse(this.formAttrObj.searchs)
         this.formSearchButtons = JSON.parse(this.formAttrObj.search_buttons)
-        this.jsCode = this.formAttrObj.js_code
+        for (let iterator of this.formButtons) {
+          iterator.buttonFunction = iterator.buttonFunction.replace(/&acute;/g, '\'')
+        }
+        for (let iterator of this.formSearchButtons) {
+          iterator.buttonFunction = iterator.buttonFunction.replace(/&acute;/g, '\'')
+        }
+        this.jsCode = this.formAttrObj.js_code.replace(/&quot;/g, '"').replace(/换行符/g, '\n').replace(/&acute;/g, '\'')
       } else { // 无数据时加默认值
         for (let iterator of this.formFields) {
           if (iterator.text !== 'pid') {

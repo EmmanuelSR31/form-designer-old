@@ -12,16 +12,11 @@
               <Input type="textarea" v-model="formDataObj[item.text]" :rows="item.rows" :placeholder="item.prompt" readonly="true" :key="item.text"></Input>
             </template>
             <template v-else-if="item.fieldType === 'numberbox'">
-              <template v-if="item.precision !== ''">
-                <InputNumber :value="0" v-model="formDataObj[item.text]" :min="item.min !== '' ? item.min : -Infinity" :max="item.max !== '' ? item.max : Infinity" :precision="item.precision" :placeholder="item.prompt" readonly="true" :key="item.text"></InputNumber>
-              </template>
-              <template v-else>
-                <InputNumber :value="0" v-model="formDataObj[item.text]" :min="item.min !== '' ? item.min : -Infinity" :max="item.max !== '' ? item.max : Infinity" :placeholder="item.prompt" readonly="true" :key="item.text"></InputNumber>
-              </template>
+              <InputNumber v-model="formDataObj[item.text]" readonly="true" :key="item.text"></InputNumber>
             </template>
             <template v-else-if="item.fieldType === 'combobox'">
               <Select v-model="formDataObj[item.text]" :multiple="item.multiple" :placeholder="item.prompt" @on-change="changeQuoteSelectData(item)" disabled="true" :key="item.text">
-                <Option v-for="tmp in selectData[item.selectID]" :value="tmp.id" :key="tmp.id">{{tmp.text}}</Option>
+                <Option v-for="tmp in selectData[item.selectID]" :value="tmp.id + ''" :key="tmp.id">{{tmp.text}}</Option>
               </Select>
             </template>
             <template v-else-if="item.fieldType === 'radio'">
@@ -31,7 +26,7 @@
             </template>
             <template v-else-if="item.fieldType === 'checkbox'">
               <CheckboxGroup v-model="formDataObj[item.text]">
-              <Checkbox v-for="(checkboxItem, index) in item.checkboxs" disabled="true" :key="index" :label="checkboxItem"></Checkbox>
+                <Checkbox v-for="(checkboxItem, index) in item.checkboxs" disabled="true" :key="index" :label="checkboxItem"></Checkbox>
               </CheckboxGroup>
             </template>
             <template v-else-if="item.fieldType === 'switch'">
@@ -84,11 +79,7 @@ export default {
     },
     init: function () {
       this.formControls = Util.removeFieldTable(this.formObj.field)
-      delete this.formDataObj.id
-      delete this.formDataObj.create_user_id
-      delete this.formDataObj.taskid
-      delete this.formDataObj._index
-      delete this.formDataObj._rowKey
+      this.formDataObj = Util.formatFormData(this.formControls, this.formDataObj)
     },
     changeQuoteSelectData: function (field) { // 引用下拉写入其他字段
       if (field.selectType === '1' & field.selectFields !== '') {

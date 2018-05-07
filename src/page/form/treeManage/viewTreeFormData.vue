@@ -12,42 +12,37 @@
               <Input type="textarea" v-model="formDataObj[item.text]" :rows="item.rows" :placeholder="item.prompt" readonly="true" :key="item.text"></Input>
             </template>
             <template v-else-if="item.fieldType === 'numberbox'">
-              <template v-if="item.precision !== ''">
-                <InputNumber :value="0" v-model="formDataObj[item.text]" :min="item.min !== '' ? item.min : -Infinity" :max="item.max !== '' ? item.max : Infinity" :precision="item.precision" :placeholder="item.prompt" :key="item.text"></InputNumber>
-              </template>
-              <template v-else>
-                <InputNumber :value="0" v-model="formDataObj[item.text]" :min="item.min !== '' ? item.min : -Infinity" :max="item.max !== '' ? item.max : Infinity" :placeholder="item.prompt" :key="item.text"></InputNumber>
-              </template>
+              <InputNumber v-model="formDataObj[item.text]" readonly="true" :key="item.text"></InputNumber>
             </template>
             <template v-else-if="item.fieldType === 'combobox'">
-              <Select v-model="formDataObj[item.text]" :multiple="item.multiple" :placeholder="item.prompt" @on-change="changeQuoteSelectData(item)" :key="item.text">
-                <Option v-for="tmp in selectData[item.selectID]" :value="tmp.id" :key="tmp.id">{{tmp.text}}</Option>
+              <Select v-model="formDataObj[item.text]" :multiple="item.multiple" :placeholder="item.prompt" @on-change="changeQuoteSelectData(item)" disabled="true" :key="item.text">
+                <Option v-for="tmp in selectData[item.selectID]" :value="tmp.id + ''" :key="tmp.id">{{tmp.text}}</Option>
               </Select>
             </template>
             <template v-else-if="item.fieldType === 'radio'">
               <RadioGroup v-model="formDataObj[item.text]">
-                <Radio v-for="(radioItem, index) in item.radios" :key="index" :label="radioItem"></Radio>
+                <Radio v-for="(radioItem, index) in item.radios" disabled="true" :key="index" :label="radioItem"></Radio>
               </RadioGroup>
             </template>
             <template v-else-if="item.fieldType === 'checkbox'">
               <CheckboxGroup v-model="formDataObj[item.text]">
-              <Checkbox v-for="(checkboxItem, index) in item.checkboxs" :key="index" :label="checkboxItem"></Checkbox>
+                <Checkbox v-for="(checkboxItem, index) in item.checkboxs" disabled="true" :key="index" :label="checkboxItem"></Checkbox>
               </CheckboxGroup>
             </template>
             <template v-else-if="item.fieldType === 'switch'">
-              <i-switch v-model="formDataObj[item.text]" :key="item.text"></i-switch>
+              <i-switch v-model="formDataObj[item.text]" disabled="true" :key="item.text"></i-switch>
             </template>
             <template v-else-if="item.fieldType === 'datebox'">
-              <DatePicker type="date" :value="formDataObj[item.text]" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" :key="item.text"></DatePicker>
+              <DatePicker type="date" :value="formDataObj[item.text]" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" readonly="true" :key="item.text"></DatePicker>
             </template>
             <template v-else-if="item.fieldType === 'datetimebox'">
-              <DatePicker type="datetime" :value="formDataObj[item.text]" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" :key="item.text"></DatePicker>
+              <DatePicker type="datetime" :value="formDataObj[item.text]" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" readonly="true" :key="item.text"></DatePicker>
             </template>
             <template v-else-if="item.fieldType === 'tablebox'">
-              <childTable :childTableName="item.tableTitle" :recordID="formDataObj.uuid"></childTable>
+              <childTable :childTableName="item.tableTitle" :recordID="formDataObj.uuid" :isView="true"></childTable>
             </template>
             <template v-else-if="item.fieldType === 'filebox'">
-              <Input v-model="formDataObj[item.text]" :key="item.text"><Button slot="append" icon="ios-upload-outline" @click="openUpload(item)"></Button></Input>
+              <Button type="ghost" @click="openUpload(item)">查看</Button>
             </template>
           </FormItem>
           <FormItem  v-if="pid !== 0" label="上级">
@@ -88,11 +83,7 @@ export default {
     },
     init: function () {
       this.formControls = Util.removeFieldTable(this.formObj.field)
-      delete this.formDataObj.id
-      delete this.formDataObj.create_user_id
-      delete this.formDataObj.taskid
-      delete this.formDataObj._index
-      delete this.formDataObj._rowKey
+      this.formDataObj = Util.formatFormData(this.formControls, this.formDataObj)
       if (this.formDataObj.pid !== 0) { // 初始化上级数据
         this.$api.post('/crm/ActionFormUtil/getDataById.do', {tableName: this.tableName, id: this.formDataObj.pid}, r => {
           let temp = r.data.rows[0]

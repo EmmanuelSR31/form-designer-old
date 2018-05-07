@@ -14,6 +14,7 @@ module.exports = {
       '/apis': {
         // 测试环境
         target: 'http://localhost:9005',  // 接口域名
+        // target: 'http://shuohe-tech.imwork.net:10000',  // 接口域名
         changeOrigin: true,  //是否跨域
         pathRewrite: {
           '^/apis': ''   //需要rewrite重写的,

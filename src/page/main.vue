@@ -1,7 +1,7 @@
 <template>
 <div class="main-con">
   <div class="left-menu-con" :style="{width:leftMenuWidth + 'px'}">
-    <Menu :theme="leftMenuTheme" :width="200" active-name="menulist" :open-names="['1']" accordion @on-select="routeTo">
+    <Menu :theme="leftMenuTheme" width="200px" active-name="menulist" :open-names="['1']" accordion @on-select="routeTo">
       <template v-for="item in menuList">
         <!-- <template v-if="item.children.length>0">
           <Submenu :name="item" :key="item.url">

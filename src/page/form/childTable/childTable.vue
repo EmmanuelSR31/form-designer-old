@@ -50,10 +50,10 @@ export default {
         content: {
           content: addChildFormData, // 传递的组件对象
           parent: this, // 当前的vue对象
-          data: [{
+          data: {
             tableName: this.childTableName,
             recordID: this.recordID
-          }]
+          }
         },
         shadeClose: false,
         shade: false,
@@ -76,11 +76,11 @@ export default {
         content: {
           content: editChildFormData, // 传递的组件对象
           parent: this, // 当前的vue对象
-          data: [{
+          data: {
             tableName: this.childTableName,
             recordID: this.recordID,
             id: params.row.id
-          }]
+          }
         },
         shadeClose: false,
         shade: false,
@@ -97,11 +97,11 @@ export default {
         content: {
           content: viewChildFormData, // 传递的组件对象
           parent: this, // 当前的vue对象
-          data: [{
+          data: {
             tableName: this.childTableName,
             recordID: this.recordID,
             id: params.row.id
-          }]
+          }
         },
         shadeClose: false,
         shade: false,
@@ -146,46 +146,9 @@ export default {
       for (let variable of fields) {
         if ((variable.listDisplay === 'true' || variable.listDisplay === true) && variable.text !== 'record_id') {
           if (variable.fieldType === 'combobox') {
-            this.columns.push({
-              title: variable.title,
-              key: variable.text,
-              width: 80,
-              align: 'center',
-              render: (h, params) => {
-                let fieldText = params.column.key
-                let selectId = variable.selectID
-                let valueTemp = ''
-                if (!Util.isEmpty(params.row[fieldText]) && !Util.isEmpty(this.selectData[selectId])) {
-                  let valueTemp1 = this.selectData[selectId].find(function (value, index, arr) {
-                    if (value.id.toString() === params.row[fieldText]) {
-                      return value
-                    }
-                  })
-                  if (!Util.isEmpty(valueTemp1)) {
-                    valueTemp = valueTemp1.text
-                  }
-                }
-                return h('div', valueTemp)
-              }
-            })
+            this.columns.push(Util.comboboxColumns(variable, this.selectData))
           } else if (variable.fieldType === 'filebox') {
-            this.columns.push({
-              title: variable.title,
-              key: variable.text,
-              render: (h, params) => {
-                let temp = params.row[variable.text]
-                let files = temp.split(',')
-                return h('div', files.map(function (item) {
-                  return h('a', {
-                    attrs: {
-                      href: item,
-                      download: item.split('/')[3].substring(36),
-                      target: '_blank'
-                    }
-                  }, item.split('/')[3].substring(36) + ',')
-                }))
-              }
-            })
+            this.columns.push(Util.fileColumns(variable))
           } else {
             this.columns.push({
               title: variable.title,
@@ -197,10 +160,24 @@ export default {
       this.columns.push({
         title: '操作',
         key: 'action',
-        width: 126,
+        width: 150,
         align: 'center',
         render: (h, params) => {
           return h('div', [
+            h('Button', {
+              props: {
+                type: 'success',
+                size: 'small'
+              },
+              style: {
+                marginRight: '5px'
+              },
+              on: {
+                click: () => {
+                  this.viewFormData(params)
+                }
+              }
+            }, '查看'),
             h('Button', {
               props: {
                 type: 'primary',

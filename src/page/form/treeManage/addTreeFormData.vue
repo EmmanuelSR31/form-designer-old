@@ -6,42 +6,62 @@
         <Form :model="formDataObj" :label-width="120">
           <FormItem v-for="(item, index) in formControls" :key="index" :class="['whole-line-'+item.width, 'whole-line-'+item.fieldType]" :label="item.title">
             <template v-if="item.fieldType === 'textbox'">
-              <Input v-model="formDataObj[item.text]" :placeholder="item.prompt" :key="item.text"></Input>
+              <Input v-model="formDataObj[item.text]" :placeholder="item.prompt" :disabled="strToBool(item.disabled)" :readonly="strToBool(item.readonly)" :key="item.text"></Input>
             </template>
             <template v-else-if="item.fieldType === 'textboxMultiline'">
-              <Input type="textarea" v-model="formDataObj[item.text]" :rows="item.height/32" :placeholder="item.prompt" :key="item.text"></Input>
+              <Input type="textarea" v-model="formDataObj[item.text]" :rows="item.height/32" :placeholder="item.prompt" :disabled="strToBool(item.disabled)" :readonly="strToBool(item.readonly)" :key="item.text"></Input>
             </template>
             <template v-else-if="item.fieldType === 'numberbox'">
-              <template v-if="item.precision !== ''">
-                <InputNumber :value="0" v-model="formDataObj[item.text]" :min="item.min !== '' ? item.min : -Infinity" :max="item.max !== '' ? item.max : Infinity" :precision="item.precision" :placeholder="item.prompt" :key="item.text"></InputNumber>
+              <template v-if="item.needCalculate === 'true'">
+                <template v-if="item.precision !== ''">
+                  <InputNumber :value="numberCalculate(item)" :min="item.min !== '' ? Number(item.min) : -Infinity" :max="item.max !== '' ? Number(item.max) : Infinity" :precision="Number(item.precision)" :placeholder="item.prompt" :disabled="strToBool(item.disabled)" :readonly="strToBool(item.readonly)" :key="item.text"></InputNumber>
+                </template>
+                <template v-else>
+                  <InputNumber :value="numberCalculate(item)" :min="item.min !== '' ? Number(item.min) : -Infinity" :max="item.max !== '' ? Number(item.max) : Infinity" :placeholder="item.prompt" :disabled="strToBool(item.disabled)" :readonly="strToBool(item.readonly)" :key="item.text"></InputNumber>
+                </template>
               </template>
               <template v-else>
-                <InputNumber :value="0" v-model="formDataObj[item.text]" :min="item.min !== '' ? item.min : -Infinity" :max="item.max !== '' ? item.max : Infinity" :placeholder="item.prompt" :key="item.text"></InputNumber>
+                <template v-if="item.precision !== ''">
+                  <InputNumber v-model="formDataObj[item.text]" :min="item.min !== '' ? Number(item.min) : -Infinity" :max="item.max !== '' ? Number(item.max) : Infinity" :precision="Number(item.precision)" :placeholder="item.prompt" :disabled="strToBool(item.disabled)" :readonly="strToBool(item.readonly)" :key="item.text"></InputNumber>
+                </template>
+                <template v-else>
+                  <InputNumber v-model="formDataObj[item.text]" :min="item.min !== '' ? Number(item.min) : -Infinity" :max="item.max !== '' ? Number(item.max) : Infinity" :placeholder="item.prompt" :disabled="strToBool(item.disabled)" :readonly="strToBool(item.readonly)" :key="item.text"></InputNumber>
+                </template>
               </template>
             </template>
             <template v-else-if="item.fieldType === 'combobox'">
-              <Select v-model="formDataObj[item.text]" :multiple="item.multiple" :placeholder="item.prompt" @on-change="changeQuoteSelectData(item)" :key="item.text">
+              <Select v-model="formDataObj[item.text]" :multiple="item.multiple" :placeholder="item.prompt" :disabled="strToBool(item.disabled)" @on-change="changeQuoteSelectData(item)" :key="item.text">
                 <Option v-for="tmp in selectData[item.selectID]" :value="tmp.id" :key="tmp.id">{{tmp.text}}</Option>
               </Select>
             </template>
             <template v-else-if="item.fieldType === 'radio'">
               <RadioGroup v-model="formDataObj[item.text]">
-                <Radio v-for="(radioItem, index) in item.radios" :key="index" :label="radioItem"></Radio>
+                <Radio v-for="(radioItem, index) in item.radios" :key="index" :label="radioItem" :disabled="strToBool(item.disabled)"></Radio>
               </RadioGroup>
             </template>
             <template v-else-if="item.fieldType === 'checkbox'">
               <CheckboxGroup v-model="formDataObj[item.text]">
-              <Checkbox v-for="(checkboxItem, index) in item.checkboxs" :key="index" :label="checkboxItem"></Checkbox>
+                <Checkbox v-for="(checkboxItem, index) in item.checkboxs" :key="index" :label="checkboxItem" :disabled="strToBool(item.disabled)"></Checkbox>
               </CheckboxGroup>
             </template>
             <template v-else-if="item.fieldType === 'switch'">
-              <i-switch v-model="formDataObj[item.text]" :key="item.text"></i-switch>
+              <i-switch v-model="formDataObj[item.text]" :key="item.text" :disabled="strToBool(item.disabled)"></i-switch>
             </template>
             <template v-else-if="item.fieldType === 'datebox'">
-              <DatePicker type="date" :value="formDataObj[item.text]" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" :key="item.text"></DatePicker>
+              <template v-if="item.currentDate === 'true'">
+                <DatePicker type="date" :value="currentDate" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" :disabled="strToBool(item.disabled)" :readonly="strToBool(item.readonly)" :key="item.text"></DatePicker>
+              </template>
+              <template v-else>
+                <DatePicker type="date" :value="formDataObj[item.text]" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" :disabled="strToBool(item.disabled)" :readonly="strToBool(item.readonly)" :key="item.text"></DatePicker>
+              </template>
             </template>
             <template v-else-if="item.fieldType === 'datetimebox'">
-              <DatePicker type="datetime" :value="formDataObj[item.text]" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" :key="item.text"></DatePicker>
+              <template v-if="item.currentDate === 'true'">
+                <DatePicker type="datetime" :value="currentDate" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" :disabled="strToBool(item.disabled)" :readonly="strToBool(item.readonly)" :key="item.text"></DatePicker>
+              </template>
+              <template v-else>
+                <DatePicker type="datetime" :value="formDataObj[item.text]" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" :disabled="strToBool(item.disabled)" :readonly="strToBool(item.readonly)" :key="item.text"></DatePicker>
+              </template>
             </template>
             <template v-else-if="item.fieldType === 'tablebox'">
               <childTable :childTableName="item.tableTitle" :recordID="formDataObj.uuid"></childTable>
@@ -114,13 +134,8 @@ export default {
     },
     init: function () {
       this.formControls = Util.removeFieldTable(this.formObj.field)
-      this.formDataObj = this.fieldArrToObj(this.formControls)
-      for (let variable of this.formControls) { // 数值加默认值
-        if (variable.fieldType === 'numberbox') {
-          this.formDataObj[variable.text] = 0
-        }
-      }
-      this.formDataObj.uuid = ''
+      this.formDataObj = Util.fieldArrToObj(this.formControls)
+      this.formDataObj.uuid = Util.uuid()
       if (this.pid !== 0) { // 初始化上级数据
         this.$api.post('/crm/ActionFormUtil/getDataById.do', {tableName: this.tableName, id: this.pid}, r => {
           let temp = r.data.rows[0]
@@ -162,6 +177,26 @@ export default {
         area: ['800px', document.body.clientHeight - 20 + 'px'],
         title: '附件上传'
       })
+    },
+    strToBool: function (str) { // string转为Boolean
+      return Util.strToBool(str)
+    },
+    numberCalculate: function (field) { // number字段值计算
+      let count = 0
+      for (let i = 0; i < field.calculateFields.length; i++) {
+        let temp = field.calculateFields[i]
+        if (i === 0) {
+          count = this.formDataObj[temp]
+        } else {
+          if (field.calculateType === 'multiply') {
+            count = Util.FloatMul(count, this.formDataObj[temp])
+          } else if (field.calculateType === 'plus') {
+            count = Util.FloatAdd(count, this.formDataObj[temp])
+          }
+        }
+      }
+      this.formDataObj[field.text] = count
+      return count
     }
   },
   computed: {
