@@ -41,10 +41,11 @@ Vue.use(VueCodemirror)
 // Vue.component('chart', ECharts)
 
 /* eslint-disable no-new */
-new Vue({
+const app = new Vue({
   el: '#app',
   router,
   store,
   template: '<App/>',
   components: { App }
 })
+console.log(app)
