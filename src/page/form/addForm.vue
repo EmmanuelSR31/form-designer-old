@@ -97,6 +97,9 @@
                     <template v-else-if="item.fieldType === 'datetimebox'">
                       <DatePicker type="datetime" :placeholder="item.prompt"></DatePicker>
                     </template>
+                    <template v-else-if="item.fieldType === 'monthbox'">
+                      <DatePicker type="month" :placeholder="item.prompt"></DatePicker>
+                    </template>
                     <template v-else-if="item.fieldType === 'tablebox'">
                       <Table></Table>
                     </template>
@@ -189,17 +192,31 @@
                       </Select>
                     </FormItem>
                     <template v-if="field.needCalculate === 'true'">
-                      <FormItem label="从哪些字段计算">
-                        <Select v-model="field.calculateFields" multiple>
-                          <Option v-for="item in fieldsForSelect" :value="item.text" :key="item.text">{{ item.title }}</Option>
-                        </Select>
-                      </FormItem>
                       <FormItem label="计算方式">
                         <Select v-model="field.calculateType">
                           <Option value="multiply">乘</Option>
                           <Option value="plus">加</Option>
+                          <option value="divide">除</option>
+                          <option value="minus">减</option>
                         </Select>
                       </FormItem>
+                      <FormItem v-show="field.calculateType === 'multiply' || field.calculateType === 'plus'" label="从哪些字段计算">
+                        <Select v-model="field.calculateFields" multiple>
+                          <Option v-for="item in fieldsForSelect" :value="item.text" :key="item.text">{{ item.title }}</Option>
+                        </Select>
+                      </FormItem>
+                      <template v-show="field.calculateType === 'divide' || field.calculateType === 'minus'">
+                        <FormItem label="前数">
+                          <Select v-model="field.calculateFirstField">
+                            <Option v-for="item in fieldsForSelect" :value="item.text" :key="item.text">{{ item.title }}</Option>
+                          </Select>
+                        </FormItem>
+                        <FormItem label="后数">
+                          <Select v-model="field.calculateLastField">
+                            <Option v-for="item in fieldsForSelect" :value="item.text" :key="item.text">{{ item.title }}</Option>
+                          </Select>
+                        </FormItem>
+                      </template>
                     </template>
                   </template>
                   <template v-if="field.fieldType === 'combobox'">
@@ -242,7 +259,7 @@
                       一行一个选项
                     </FormItem>
                   </template>
-                  <template v-if="field.fieldType === 'datebox' || field.fieldType === 'datetimebox'">
+                  <template v-if="field.fieldType === 'datebox' || field.fieldType === 'datetimebox' || field.fieldType === 'monthbox'">
                     <FormItem label="是否取当前时间">
                       <Select v-model="field.currentDate">
                         <Option value="false">否</Option>
@@ -297,6 +314,9 @@
                     </template>
                     <template v-else-if="item.fieldType === 'datetimebox'">
                       <DatePicker type="datetime"></DatePicker>
+                    </template>
+                    <template v-else-if="item.fieldType === 'monthbox'">
+                      <DatePicker type="month"></DatePicker>
                     </template>
                     <template v-else-if="item.fieldType === 'tablebox'">
                       <Table></Table>
@@ -438,10 +458,12 @@ export default {
         this.formControls.push(arr[7])
       } else if (type.indexOf('日期时间选择器') !== -1) {
         this.formControls.push(arr[8])
-      } else if (type.indexOf('子表') !== -1) {
+      } else if (type.indexOf('月份选择器') !== -1) {
         this.formControls.push(arr[9])
-      } else if (type.indexOf('附件上传') !== -1) {
+      } else if (type.indexOf('子表') !== -1) {
         this.formControls.push(arr[10])
+      } else if (type.indexOf('附件上传') !== -1) {
+        this.formControls.push(arr[11])
       }
     },
     leftDragEnd: function (event) {

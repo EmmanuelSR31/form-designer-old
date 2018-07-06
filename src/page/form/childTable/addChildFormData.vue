@@ -12,11 +12,21 @@
               <Input type="textarea" v-model="formDataObj[item.text]" :rows="item.height/32" :placeholder="item.prompt" :disabled="strToBool(item.disabled)" :readonly="strToBool(item.readonly)" :key="item.text"></Input>
             </template>
             <template v-else-if="item.fieldType === 'numberbox'">
-              <template v-if="item.precision !== ''">
-                <InputNumber :value="0" v-model="formDataObj[item.text]" :min="item.min !== '' ? item.min : -Infinity" :max="item.max !== '' ? item.max : Infinity" :precision="item.precision" :placeholder="item.prompt" :disabled="strToBool(item.disabled)" :readonly="strToBool(item.readonly)" :key="item.text"></InputNumber>
+              <template v-if="item.needCalculate === 'true'">
+                <template v-if="item.precision !== ''">
+                  <InputNumber :value="numberCalculate(item)" :min="item.min !== '' ? Number(item.min) : -Infinity" :max="item.max !== '' ? Number(item.max) : Infinity" :precision="Number(item.precision)" :placeholder="item.prompt" :disabled="strToBool(item.disabled)" :readonly="strToBool(item.readonly)" :key="item.text"></InputNumber>
+                </template>
+                <template v-else>
+                  <InputNumber :value="numberCalculate(item)" :min="item.min !== '' ? Number(item.min) : -Infinity" :max="item.max !== '' ? Number(item.max) : Infinity" :placeholder="item.prompt" :disabled="strToBool(item.disabled)" :readonly="strToBool(item.readonly)" :key="item.text"></InputNumber>
+                </template>
               </template>
               <template v-else>
-                <InputNumber :value="0" v-model="formDataObj[item.text]" :min="item.min !== '' ? item.min : -Infinity" :max="item.max !== '' ? item.max : Infinity" :placeholder="item.prompt" :disabled="strToBool(item.disabled)" :readonly="strToBool(item.readonly)" :key="item.text"></InputNumber>
+                <template v-if="item.precision !== ''">
+                  <InputNumber v-model="formDataObj[item.text]" :min="item.min !== '' ? Number(item.min) : -Infinity" :max="item.max !== '' ? Number(item.max) : Infinity" :precision="Number(item.precision)" :placeholder="item.prompt" :disabled="strToBool(item.disabled)" :readonly="strToBool(item.readonly)" :key="item.text"></InputNumber>
+                </template>
+                <template v-else>
+                  <InputNumber v-model="formDataObj[item.text]" :min="item.min !== '' ? Number(item.min) : -Infinity" :max="item.max !== '' ? Number(item.max) : Infinity" :placeholder="item.prompt" :disabled="strToBool(item.disabled)" :readonly="strToBool(item.readonly)" :key="item.text"></InputNumber>
+                </template>
               </template>
             </template>
             <template v-else-if="item.fieldType === 'combobox'">
@@ -51,6 +61,14 @@
               </template>
               <template v-else>
                 <DatePicker type="datetime" :value="formDataObj[item.text]" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" :disabled="strToBool(item.disabled)" :readonly="strToBool(item.readonly)" :key="item.text"></DatePicker>
+              </template>
+            </template>
+            <template v-else-if="item.fieldType === 'monthbox'">
+              <template v-if="item.currentDate === 'true'">
+                <DatePicker type="month" :value="currentDate" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" :disabled="strToBool(item.disabled)" :readonly="strToBool(item.readonly)" :key="item.text"></DatePicker>
+              </template>
+              <template v-else>
+                <DatePicker type="month" :value="formDataObj[item.text]" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" :disabled="strToBool(item.disabled)" :readonly="strToBool(item.readonly)" :key="item.text"></DatePicker>
               </template>
             </template>
             <template v-else-if="item.fieldType === 'filebox'">
@@ -146,6 +164,29 @@ export default {
     },
     strToBool: function (str) { // string转为Boolean
       return Util.strToBool(str)
+    },
+    numberCalculate: function (field) { // number字段值计算
+      let count = 0
+      if (field.calculateType === 'multiply' || field.calculateType === 'plus') {
+        for (let i = 0; i < field.calculateFields.length; i++) {
+          let temp = field.calculateFields[i]
+          if (i === 0) {
+            count = this.formDataObj[temp]
+          } else {
+            if (field.calculateType === 'multiply') {
+              count = Util.FloatMul(count, this.formDataObj[temp])
+            } else if (field.calculateType === 'plus') {
+              count = Util.FloatAdd(count, this.formDataObj[temp])
+            }
+          }
+        }
+      } else if (field.calculateType === 'divide') {
+        count = Util.FloatDiv(this.formDataObj[field.calculateFirstField], this.formDataObj[field.calculateLastField])
+      } else if (field.calculateType === 'minus') {
+        count = Util.FloatSub(this.formDataObj[field.calculateFirstField], this.formDataObj[field.calculateLastField])
+      }
+      this.formDataObj[field.text] = count
+      return count
     }
   },
   computed: {

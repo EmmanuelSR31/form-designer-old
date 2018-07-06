@@ -6,7 +6,28 @@
     <Button type="primary" onclick="aaaa()">开启</Button>
     <Button v-for="(item, index) in buttons" type="primary" :onclick="item.buttonFunction.replace(/&acute;/g, '\'')" :key="index">{{item.buttonName}}</Button>
     <span class="pull-right">
-      <Input v-for="(item, index) in searchs" v-model="searchObj[item.buttonId]" style="width:100px" :key="index"></Input>
+      <template v-for="(item, index) in searchs">
+        <template v-if="item.searchCondition === 'isEmpty'">
+          <Select v-model="searchObj[item.searchId]" :key="index">
+            <Option value="is null">为空</Option>
+            <Option value="is not null">不为空</Option>
+          </Select>
+        </template>
+        <template v-else-if="item.searchType === 'textbox'">
+          <Input v-model="searchObj[item.searchId]" style="width:100px" :key="index"></Input>
+        </template>
+        <template v-else-if="item.searchType === 'combobox'">
+          <Select v-model="searchObj[item.searchId]" :key="index">
+            <Option v-for="tmp in selectData[item.searchField]" :value="tmp.id" :key="tmp.id">{{tmp.text}}</Option>
+          </Select>
+        </template>
+        <template v-else-if="item.searchType === 'datebox'">
+          <DatePicker type="date" v-model="searchObj[item.searchId]" style="width:100px" :key="index"></DatePicker>
+        </template>
+        <template v-else-if="item.searchType === 'monthbox'">
+          <DatePicker type="month" v-model="searchObj[item.searchId]" style="width:100px" :key="index"></DatePicker>
+        </template>
+      </template>
       <Button v-for="(item, index) in searchButtons" type="primary" :onclick="item.buttonFunction.replace(/&acute;/g, '\'')" :key="index">{{item.buttonName}}</Button>
     </span>
   </div>
@@ -295,6 +316,29 @@ export default {
         name: 'formChart',
         params: {tableName: this.tableName}
       })
+    },
+    search1: function () {
+      let temp = ''
+      for (let iterator of this.searchs) {
+        if (!Util.isEmpty(this.searchObj[iterator.searchId])) {
+          temp += ' and ' + iterator.searchField
+          if (iterator.searchCondition === 'equal') {
+            temp += ' =\' ' + this.searchObj[iterator.searchId] + '\''
+          } else if (iterator.searchCondition === 'notEqual') {
+            temp += ' <>\' ' + this.searchObj[iterator.searchId] + '\''
+          } else if (iterator.searchCondition === 'contains') {
+            temp += ' like \'' + this.searchObj[iterator.searchId] + '\''
+          } else if (iterator.searchCondition === 'notContains') {
+            temp += ' not like \'' + this.searchObj[iterator.searchId] + '\''
+          } else if (iterator.searchCondition === 'isEmpty') {
+            temp += ' ' + this.searchObj[iterator.searchId] + ' '
+          } else if (iterator.searchCondition === 'greater') {
+            temp += ' > \'' + this.searchObj[iterator.searchId] + '\''
+          } else if (iterator.searchCondition === 'less') {
+            temp += ' < \'' + this.searchObj[iterator.searchId] + '\''
+          }
+        }
+      }
     }
   },
   mounted () {

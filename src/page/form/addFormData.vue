@@ -63,6 +63,14 @@
                 <DatePicker type="datetime" :value="formDataObj[item.text]" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" :disabled="strToBool(item.disabled)" :readonly="strToBool(item.readonly)" :key="item.text"></DatePicker>
               </template>
             </template>
+            <template v-else-if="item.fieldType === 'monthbox'">
+              <template v-if="item.currentDate === 'true'">
+                <DatePicker type="month" :value="currentDate" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" :disabled="strToBool(item.disabled)" :readonly="strToBool(item.readonly)" :key="item.text"></DatePicker>
+              </template>
+              <template v-else>
+                <DatePicker type="month" :value="formDataObj[item.text]" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" :disabled="strToBool(item.disabled)" :readonly="strToBool(item.readonly)" :key="item.text"></DatePicker>
+              </template>
+            </template>
             <template v-else-if="item.fieldType === 'tablebox'">
               <childTable :childTableName="item.tableTitle" :recordID="formDataObj.uuid"></childTable>
             </template>
@@ -182,17 +190,23 @@ export default {
     },
     numberCalculate: function (field) { // number字段值计算
       let count = 0
-      for (let i = 0; i < field.calculateFields.length; i++) {
-        let temp = field.calculateFields[i]
-        if (i === 0) {
-          count = this.formDataObj[temp]
-        } else {
-          if (field.calculateType === 'multiply') {
-            count = Util.FloatMul(count, this.formDataObj[temp])
-          } else if (field.calculateType === 'plus') {
-            count = Util.FloatAdd(count, this.formDataObj[temp])
+      if (field.calculateType === 'multiply' || field.calculateType === 'plus') {
+        for (let i = 0; i < field.calculateFields.length; i++) {
+          let temp = field.calculateFields[i]
+          if (i === 0) {
+            count = this.formDataObj[temp]
+          } else {
+            if (field.calculateType === 'multiply') {
+              count = Util.FloatMul(count, this.formDataObj[temp])
+            } else if (field.calculateType === 'plus') {
+              count = Util.FloatAdd(count, this.formDataObj[temp])
+            }
           }
         }
+      } else if (field.calculateType === 'divide') {
+        count = Util.FloatDiv(this.formDataObj[field.calculateFirstField], this.formDataObj[field.calculateLastField])
+      } else if (field.calculateType === 'minus') {
+        count = Util.FloatSub(this.formDataObj[field.calculateFirstField], this.formDataObj[field.calculateLastField])
       }
       this.formDataObj[field.text] = count
       return count

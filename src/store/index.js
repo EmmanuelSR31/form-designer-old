@@ -81,6 +81,10 @@ const state = {
       fieldType: 'datetimebox'
     },
     {
+      title: '月份选择器',
+      fieldType: 'monthbox'
+    },
+    {
       title: '子表',
       fieldType: 'tablebox'
     },
@@ -118,6 +122,10 @@ const state = {
     {
       type: 'datebox',
       text: '日期框'
+    },
+    {
+      type: 'monthbox',
+      text: '月份框'
     }
   ],
   searchCondition: [ // 搜索条件

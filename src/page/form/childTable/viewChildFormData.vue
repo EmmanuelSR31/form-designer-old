@@ -38,6 +38,9 @@
             <template v-else-if="item.fieldType === 'datetimebox'">
               <DatePicker type="datetime" :value="formDataObj[item.text]" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" readonly="true" :key="item.text"></DatePicker>
             </template>
+            <template v-else-if="item.fieldType === 'monthbox'">
+              <DatePicker type="month" :value="formDataObj[item.text]" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" readonly="true" :key="item.text"></DatePicker>
+            </template>
             <template v-else-if="item.fieldType === 'filebox'">
               <Button type="ghost" @click="openUpload(item)">查看</Button>
             </template>
