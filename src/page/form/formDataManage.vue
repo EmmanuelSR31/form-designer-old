@@ -14,7 +14,7 @@
           </Select>
         </template>
         <template v-else-if="item.searchType === 'textbox'">
-          <Input v-model="searchObj[item.searchId]" style="width:100px" :key="index"></Input>
+          <Input v-model="searchObj[item.searchId]" style="width:100px;" :key="index"></Input>
         </template>
         <template v-else-if="item.searchType === 'combobox'">
           <Select v-model="searchObj[item.searchId]" :key="index">
@@ -48,9 +48,11 @@
 <script>
 import Util from '@/utils/index'
 import TreeGrid from '../components/treeGrid2.0.vue'
+import processDetail from '../components/processDetail.vue'
 export default {
   components: {
-    TreeGrid
+    TreeGrid,
+    processDetail
   },
   data () {
     return {
@@ -67,6 +69,7 @@ export default {
       treeColumns: [], // 树形表表头
       treeData: [], // 树形表数据
       pid: '', // 父ID
+      isAct: 1, // 是否有流程
       formAttrObj: {}, // 表单配置对象
       buttons: [], // 表单配置按钮
       searchs: [], // 表单配置搜索栏
@@ -104,7 +107,6 @@ export default {
     },
     setCurrentData: function (currentRow, oldCurrentRow) { // 选中数据
       this.currentData = currentRow
-      currentData1 = currentRow
     },
     addFormData: function () { // 新增数据
       this.$store.dispatch('setCurrentEditForm', this.formObj)
@@ -170,37 +172,36 @@ export default {
       this.data = []
       this.$api.post('/pages/crminterface/getDatagridForJson.do', {tableName: this.tableName}, r => {
         this.formObj = r.data
-        this.$api.post('/pages/button/framework/get.do', {title: this.tableName}, r => {
-          if (r.data.obj !== null) {
-            this.formAttrObj = r.data.obj
-            console.log(this.formAttrObj)
-            this.columns = this.columns.concat(Util.columnsFormatter(JSON.parse(this.formAttrObj.columns)))
-            this.columns = this.columnsAddAction(this.columns)
-            this.buttons = JSON.parse(this.formAttrObj.buttons)
-            this.searchs = JSON.parse(this.formAttrObj.searchs)
-            this.searchButtons = JSON.parse(this.formAttrObj.search_buttons)
-            let script = document.createElement('script')
-            script.type = 'text/javascript'
-            try {
-              script.appendChild(document.createTextNode(this.formAttrObj.js_code.replace(/&quot;/g, '"').replace(/换行符/g, '\n').replace(/&acute;/g, '\'')))
-            } catch (ex) {
-              script.text = this.formAttrObj.js_code.replace(/&quot;/g, '"').replace(/换行符/g, '\n').replace(/&acute;/g, '\'')
+        this.$api.post('/profFormRel/isAct', {tableName: this.tableName}, r => {
+          this.isAct = r.data
+          this.$api.post('/pages/button/framework/get.do', {title: this.tableName}, r => {
+            if (r.data.obj !== null) {
+              this.formAttrObj = r.data.obj
+              console.log(this.formAttrObj)
+              this.columns = this.columns.concat(Util.columnsFormatter(JSON.parse(this.formAttrObj.columns)))
+              this.buttons = JSON.parse(this.formAttrObj.buttons)
+              this.searchs = JSON.parse(this.formAttrObj.searchs)
+              this.searchButtons = JSON.parse(this.formAttrObj.search_buttons)
+              eval(this.formAttrObj.js_code.replace(/&quot;/g, '"').replace(/换行符/g, '\n').replace(/&acute;/g, '\''))
+            } else {
+              this.columns = this.initColumns(this.formObj.field, true)
             }
-            document.body.appendChild(script)
-          } else {
-            this.columns = this.initColumns(this.formObj.field, true)
-          }
-          if (this.formObj.needTree === 'true' && this.formObj.treeForm !== '') {
-            this.$api.post('/pages/crminterface/getDatagridForJson.do', {tableName: this.formObj.treeForm}, r => {
-              let treeField = r.data.treeField
-              this.treeColumns = this.initColumns(r.data.field, false)
-              this.$api.post('/crm/ActionFormUtil/getByTableName.do', {rows: this.pageSize, page: this.currentPage, tableName: this.formObj.treeForm}, r => {
-                this.treeData = Util.dataConvertForTree(r.data, treeField)
+            this.columns = this.columnsAddAction(this.columns)
+            if (this.isAct === 0) {
+              this.columns = this.columnsAddProcess(this.columns)
+            }
+            if (this.formObj.needTree === 'true' && this.formObj.treeForm !== '') {
+              this.$api.post('/pages/crminterface/getDatagridForJson.do', {tableName: this.formObj.treeForm}, r => {
+                let treeField = r.data.treeField
+                this.treeColumns = this.initColumns(r.data.field, false)
+                this.$api.post('/crm/ActionFormUtil/getByTableName.do', {rows: this.pageSize, page: this.currentPage, tableName: this.formObj.treeForm}, r => {
+                  this.treeData = Util.dataConvertForTree(r.data, treeField)
+                })
               })
-            })
-          } else {
-            this.changePage(this.currentPage)
-          }
+            } else {
+              this.changePage(this.currentPage)
+            }
+          })
         })
       })
     },
@@ -247,9 +248,6 @@ export default {
             })
           }
         }
-      }
-      if (flag) {
-        columnsTemp = this.columnsAddAction(columnsTemp)
       }
       return columnsTemp
     },
@@ -305,10 +303,55 @@ export default {
       })
       return columnsTemp
     },
+    columnsAddProcess: function (columnsTemp) { // 表头加流程列
+      columnsTemp.push({
+        title: '流程进度',
+        key: 'msg',
+        width: 80,
+        align: 'center'
+      })
+      columnsTemp.push({
+        title: '流程详情',
+        key: 'process',
+        width: 80,
+        align: 'center',
+        render: (h, params) => {
+          return h('Button', {
+            props: {
+              type: 'success',
+              size: 'small'
+            },
+            on: {
+              click: () => {
+                this.viewProcessDetail(params)
+              }
+            }
+          }, '流程详情')
+        }
+      })
+      return columnsTemp
+    },
     childTableManage: function (params, tableTitle) { // 管理子表数据
       this.$router.push({
         name: 'childTableManage',
         params: {tableName: tableTitle, recordID: params.row.uuid}
+      })
+    },
+    viewProcessDetail: function (params) { // 查看流程详情
+      this.$layer.open({
+        type: 2,
+        content: {
+          content: processDetail, // 传递的组件对象
+          parent: this, // 当前的vue对象
+          data: {
+            uuid: params.row.uuid
+          }
+        },
+        shadeClose: false,
+        shade: false,
+        maxmin: true,
+        area: ['600px', document.body.clientHeight - 20 + 'px'],
+        title: '查看流程详情'
       })
     },
     setCharts: function () { // 生成图表
@@ -339,6 +382,7 @@ export default {
           }
         }
       }
+      return temp
     }
   },
   mounted () {
@@ -349,15 +393,6 @@ export default {
       this.tableName = to.params.tableName
       this.init()
     }
-  },
-  ready: function () {
-    window.vm = this
   }
-}
-var currentData1
-window.aaaa = function () {
-  console.log(currentData1)
-  console.log(window)
-  // console.log(window.vm.$children[0].$data.tableName)
 }
 </script>

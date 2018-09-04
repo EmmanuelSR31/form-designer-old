@@ -83,7 +83,6 @@
       <div class="text-center">
         <Button class="mr100" @click="cancel">取消</Button>
         <Button type="primary" @click="save">保存</Button>
-        <Button type="primary" @click="aaa">保存</Button>
       </div>
     </Col>
   </Row>
@@ -93,23 +92,12 @@
 import Util from '@/utils/index'
 import childTable from './childTable/childTable.vue'
 import filesManage from './fileManage/filesManage.vue'
-var temp1 = 'aaa: function () { console.log(\'aaaaaaaaaaa\') }'
-var temp2 = JSON.stringify(temp1)
-const jsCode = {
-  methods: {}
-}
-
-jsCode.methods = JSON.parse(temp2)
-console.log(typeof jsCode.methods)
-console.log(jsCode)
 export default {
-  mixins: [jsCode],
   components: {
     childTable
   },
   data () {
     return {
-      a: 'aaa',
       tableName: this.$route.params.tableName, // 表单名
       formControls: [], // 表单字段
       formObj: this.$store.state.currentEditForm, // 表单对象
@@ -148,7 +136,6 @@ export default {
       console.log(this.formControls)
       this.formDataObj = Util.fieldArrToObj(this.formControls)
       this.formDataObj.uuid = Util.uuid()
-      // this.formDataObj = formData
     },
     changeQuoteSelectData: function (field) { // 引用下拉写入其他字段
       if (field.selectType === '1' & field.selectFields !== '') {
@@ -225,23 +212,6 @@ export default {
   },
   mounted () {
     this.init()
-  },
-  ready: function () {
-    window.vm = this
   }
 }
-var jsCodeNode = document.getElementById('jsCode')
-if (jsCodeNode !== null) {
-  jsCodeNode.parentNode.removeChild(jsCodeNode)
-}
-var temp = 'var formData = {};formData.version = \'1001\';console.log(app)'
-var script = document.createElement('script')
-script.type = 'text/javascript'
-script.id = 'jsCode'
-try {
-  script.appendChild(document.createTextNode(temp))
-} catch (ex) {
-  script.text = temp
-}
-document.body.appendChild(script)
 </script>

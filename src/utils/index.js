@@ -340,4 +340,20 @@ util.delCookie = function (name) {
   }
 }
 
+util.flowStateFormat = function (value) {
+  if (value === 'Ready') {
+    return '可领取'
+  } else if (value === 'Completed') {
+    return '已完成'
+  } else if (value === 'Forwarded') {
+    return '已跳转'
+  } else if (value === 'Created') {
+    return '已创建'
+  } else if (value === 'Reserved') {
+    return '预分配'
+  } else if (value === 'Withdraw') {
+    return '退回'
+  }
+}
+
 export default util

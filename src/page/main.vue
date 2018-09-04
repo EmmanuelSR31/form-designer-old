@@ -1,6 +1,6 @@
 <template>
 <div class="main-con">
-  <div class="left-menu-con" :style="{width:leftMenuWidth + 'px'}">
+  <div class="left-menu-con" :style="{width: leftMenuWidth + 'px'}">
     <Menu :theme="leftMenuTheme" width="200px" active-name="menulist" :open-names="['1']" accordion @on-select="routeTo">
       <template v-for="item in menuList">
         <!-- <template v-if="item.children.length>0">
@@ -38,7 +38,7 @@
   </div>
   <div class="right-top-con" :style="{paddingLeft:leftMenuWidth + 'px'}">
     <div class="header">
-      <Button class="header-menu-icon" :style="{transform: 'rotateZ(' + (this.shrink ? '-90' : '0') + 'deg)'}" type="text" @click="this.shrink = !this.shrink">
+      <Button class="header-menu-icon" :style="{transform: 'rotateZ(' + (this.shrink ? '-90' : '0') + 'deg)'}" type="text" @click="changeMenuWidth">
         <Icon type="navicon" size="32"></Icon>
       </Button>
       <span class="header-title">
@@ -53,6 +53,7 @@
           </a>
           <DropdownMenu slot="list">
             <DropdownItem name="ownSpace">个人中心</DropdownItem>
+            <DropdownItem name="editPassword">修改密码</DropdownItem>
             <DropdownItem name="loginout" divided>退出登录</DropdownItem>
           </DropdownMenu>
         </Dropdown>
@@ -67,6 +68,23 @@
         <router-view></router-view>
     </keep-alive>
   </div>
+  <Modal v-model="modalPassword" title="修改密码" @on-ok="savePassword">
+    <div class="modal-field-con">
+      <div>
+        <Form ref="formPosition" :model="passwordObj" :label-width="120">
+          <FormItem label="旧密码" class="whole-line-703">
+            <Input v-model="passwordObj.oldPass" type="password"></Input>
+          </FormItem>
+          <FormItem label="新密码" class="whole-line-703">
+            <Input v-model="passwordObj.newPass" type="password"></Input>
+          </FormItem>
+          <FormItem label="确认新密码" class="whole-line-703">
+            <Input v-model="passwordObj.newPass1" type="password"></Input>
+          </FormItem>
+        </Form>
+      </div>
+    </div>
+  </Modal>
 </div>
 </template>
 <script>
@@ -81,7 +99,9 @@ export default {
       leftMenuWidth: 200, // 左侧菜单宽度
       shrink: false, // 左侧菜单切换
       userName: '',
-      systemObj: {system_name: '克莱特商务云平台'} // 系统名称对象
+      systemObj: {system_name: '克莱特商务云平台'}, // 系统名称对象
+      modalPassword: false,
+      passwordObj: {} // 密码对象
     }
   },
   computed: {
@@ -109,18 +129,30 @@ export default {
         }
       })
     },
-    handleClickUserDropdown (name) {
+    changeMenuWidth: function () { // 切换菜单显示
+      this.shrink = !this.shrink
+      if (this.shrink) {
+        this.leftMenuWidth = 0
+      } else {
+        this.leftMenuWidth = 200
+      }
+    },
+    handleClickUserDropdown (name) { // 用户菜单点击
       if (name === 'ownSpace') {
         this.$store.dispatch('increateTag', {title: '个人中心', path: '', name: 'ownspace'})
         this.$router.push({
           name: 'ownspace'
         })
+      } else if (name === 'editPassword') {
+        this.modalPassword = true
       } else if (name === 'loginout') {
         this.$store.commit('logout', this)
         this.$router.push({
           name: 'login'
         })
       }
+    },
+    savePassword: function () { // 保存密码
     },
     routeTo: function (e) {
       this.$store.dispatch('increateTag', e)

@@ -170,6 +170,56 @@ export const appRouter = [
         name: 'userManage',
         title: '用户管理',
         component: resolve => { require(['@/page/userManage/userManage.vue'], resolve) }
+      },
+      {
+        path: '/fileList',
+        icon: 'compose',
+        name: 'fileList',
+        title: '上传管理',
+        component: resolve => { require(['@/page/form/fileManage/fileList.vue'], resolve) }
+      },
+      {
+        path: '/positionManage',
+        icon: 'compose',
+        name: 'positionManage',
+        title: '职位管理',
+        component: resolve => { require(['@/page/position/positionManage.vue'], resolve) }
+      },
+      {
+        path: '/designer',
+        icon: 'compose',
+        name: 'designer',
+        title: '流程',
+        component: resolve => { require(['@/page/flow/designer.vue'], resolve) }
+      },
+      {
+        path: '/processInstanceList',
+        icon: 'compose',
+        name: 'processInstanceList',
+        title: '流程监控部署管理',
+        component: resolve => { require(['@/page/flow/processInstanceList.vue'], resolve) }
+      },
+      {
+        path: '/profFromRelList',
+        icon: 'compose',
+        name: 'profFromRelList',
+        title: '模型表单关系管理',
+        component: resolve => { require(['@/page/flow/profFromRel/profFromRelList.vue'], resolve) }
+      }
+    ]
+  },
+  {
+    path: '/flowManager',
+    icon: 'key',
+    name: 'flowManager',
+    title: '任务',
+    component: Main,
+    children: [
+      {
+        path: '/flowManager',
+        title: '个人任务',
+        name: 'flowManager',
+        component: resolve => { require(['@/page/flow/flowManager.vue'], resolve) }
       }
     ]
   }

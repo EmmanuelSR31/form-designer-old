@@ -166,7 +166,7 @@ export default {
     editOption: function (row) { // 修改选项
       let temp = row.row
       delete temp._index
-      delete temp.orwKey
+      delete temp.rowKey
       this.optionObj = temp
       this.modalOption = true
       this.modalOptionTitle = '修改选项'

@@ -21,6 +21,9 @@ html{
 .pull-right{
   float: right!important;
 }
+.color-red{
+  color: red!important;
+}
 .padding10{
   padding: 0.1rem!important;
 }
@@ -204,4 +207,42 @@ body .ivu-modal .ivu-select-dropdown, body .notify-iframe .ivu-select-dropdown{
 }
 .ivu-form-inline .ivu-form-item .ivu-form-item-content{
   display: inline-block;
+}
+.ivu-timeline-item-content label{
+  font-weight: 600;
+  margin-right: 5px;
+}
+// 附件管理
+.img-view-con{
+  background: rgba(0,0,0,0.3);
+  z-index: 100;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  a{
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+    background-color: rgba(0,0,0,0.6);
+    font-size: 30px;
+    color: #ffffff;
+    z-index: 101;
+  }
+  img{
+    max-width: 100%;
+    vertical-align: middle;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+  }
 }
