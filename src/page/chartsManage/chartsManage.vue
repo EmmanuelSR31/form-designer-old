@@ -1,187 +1,245 @@
 <template>
 <div>
   <Row>
-    <Col span="8">
-      <div class="bg-white padding10">
-        <Tree :data="treeData" @on-select-change="initCharts"></Tree>
+    <Col span="4">
+      <div class="edit-chart-left-con">
+        <div class="edit-chart-left-title">表单</div>
+        <Select v-model="currentForm" @on-change="changeForm">
+          <Option v-for="(item, index) in formList" :value="item" :key="index">{{ item.name }}</Option>
+        </Select>
+        <div class="edit-chart-left-line"></div>
+        <div class="edit-chart-left-title">字段</div>
+        <ul class="edit-chart-left-list">
+        <draggable v-model="fields" :options="dragOption" @end="dragEnd">
+          <li v-for="(item, index) in fields" :key="index">{{item.title}}</li>
+        </draggable>
+        </ul>
       </div>
     </Col>
-    <Col span="15" offset="1">
-      <div class="table-search-con">
-        <Button type="primary" @click="addChart">新增</Button>
+    <Col span="16" class="edit-chart-middle">
+      <div class="edit-chart-field-con">
+        <label>维度：</label>
+        <div class="edit-chart-field-inner">
+          <ul>
+            <draggable v-model="x_field" :options="dragToXOption">
+              <li v-for="(item, index) in x_field" :key="index">
+                <Dropdown trigger="click" placement="bottom-start">
+                  <Button type="primary">
+                    <template v-if="item.alias !== '' && item.alias !== undefined">{{item.alias}}</template>
+                    <template v-else>{{item.title}}</template>
+                    <Icon type="ios-arrow-down"></Icon>
+                  </Button>
+                  <DropdownMenu slot="list">
+                    <DropdownItem><a href="javascript:void(0)" @click="setFieldName(item)">设置字段</a></DropdownItem>
+                  </DropdownMenu>
+                </Dropdown>
+              </li>
+            </draggable>
+          </ul>
+        </div>
       </div>
-      <Table border :loading="loading" :columns="columns" :data="data" stripe></Table>
+      <div class="edit-chart-field-con">
+        <label>数值：</label>
+        <div class="edit-chart-field-inner">
+          <ul>
+            <draggable v-model="y_field" :options="dragToYOption" class="drag-y-con">
+              <li v-for="(item, index) in y_field" :key="index">
+                <Dropdown trigger="click" placement="bottom-start">
+                  <Button type="primary">
+                    <template v-if="item.alias !== '' && item.alias !== undefined">{{item.alias}}</template>
+                    <template v-else>{{item.title}}</template>
+                    <Icon type="ios-arrow-down"></Icon>
+                  </Button>
+                  <DropdownMenu slot="list">
+                    <DropdownItem><a href="javascript:void(0)" :class="{'selected': item.calculateType === 'sum'}" @click="setFieldCalculateType(item, 'sum')">求和</a></DropdownItem>
+                    <DropdownItem><a href="javascript:void(0)" :class="{'selected': item.calculateType === 'count'}" @click="setFieldCalculateType(item, 'count')">计数</a></DropdownItem>
+                    <DropdownItem divided><a href="javascript:void(0)" @click="setFieldName(item)">设置字段</a></DropdownItem>
+                  </DropdownMenu>
+                </Dropdown>
+              </li>
+            </draggable>
+          </ul>
+        </div>
+      </div>
+      <div id="main" style="height:400px;"></div>
+    </Col>
+    <Col span="4">
+
     </Col>
   </Row>
+  <Modal v-model="modalFieldName" title="设置字段" @on-ok="saveFieldName">
+    <div class="modal-field-con">
+      <div>
+        <Form ref="formFieldName" :model="currentField" :label-width="120">
+          <FormItem label="字段别名" class="whole-line-703">
+            <Input v-model="currentField.alias"></Input>
+          </FormItem>
+          <FormItem label="字段描述" class="whole-line-703">
+            <Input v-model="currentField.describe"></Input>
+          </FormItem>
+        </Form>
+      </div>
+    </div>
+  </Modal>
 </div>
 </template>
 <script>
 import Util from '@/utils/index'
-import addChart from './addChart.vue'
-import editChart from './editChart.vue'
+import draggable from 'vuedraggable'
+import echarts from 'echarts/lib/echarts'
+require('echarts/lib/chart/pie')
+require('echarts/lib/chart/bar')
+require('echarts/lib/chart/line')
+require('echarts/lib/component/tooltip')
+require('echarts/lib/component/title')
+require('echarts/lib/component/legend')
+require('echarts/lib/component/toolbox')
+require('es6-promise').polyfill()
 export default {
+  components: {
+    draggable
+  },
   data () {
     return {
       loading: false,
-      treeData: [], // 栏目数据
-      columns: [
-        {
-          type: 'index',
-          title: '序列',
-          width: 64,
-          align: 'center'
-        },
-        {
-          title: '表单',
-          key: 'form_name'
-        },
-        {
-          title: '名称',
-          key: 'name'
-        },
-        {
-          title: '描述',
-          key: 'descr'
-        },
-        {
-          title: '图表类型',
-          key: 'type'
-        },
-        {
-          title: 'X轴字段',
-          key: 'x_field'
-        },
-        {
-          title: 'Y轴字段',
-          key: 'y_field'
-        },
-        {
-          title: '创建人',
-          key: 'creater'
-        },
-        {
-          title: '创建时间',
-          key: 'create_date'
-        },
-        {
-          title: '操作',
-          key: 'action',
-          width: 126,
-          align: 'center',
-          render: (h, params) => {
-            return h('div', [
-              h('Button', {
-                props: {
-                  type: 'primary',
-                  size: 'small'
-                },
-                style: {
-                  marginRight: '5px'
-                },
-                on: {
-                  click: () => {
-                    this.editChart(params)
-                  }
-                }
-              }, '修改'),
-              h('Button', {
-                props: {
-                  type: 'error',
-                  size: 'small'
-                },
-                on: {
-                  click: () => {
-                    this.deleteChart(params)
-                  }
-                }
-              }, '删除')
-            ])
-          }
-        }
-      ],
-      data: [], // 图表数据
-      chartObj: {}, // 图表对象
-      currentForm: '' // 选中栏目
+      formList: [], // 表单数据
+      fields: [], // 表单字段
+      chartObj: {type: 'line'}, // 图表对象
+      currentForm: {}, // 选中表单
+      currentField: {},  // 选中字段
+      modalFieldName: false,
+      x_field: [], // 维度字段
+      y_field: [], // 数值字段
+      xData: [], // 维度数据
+      yData: [], // 数值数据
+      option: {},
+      charts: '',
+      searchConditions: [] // 筛选条件
     }
   },
   methods: {
-    init: function () { // 取左侧栏目列表
-      this.$api.post('/topJUI/index/getMenuList.do', {}, r => {
+    init: function () { // 取表单列表
+      this.$api.post('/crm/ActionFormUtil/getAllTable.do', {}, r => {
         if (r.data) {
-          this.treeData = Util.formatterTreeData(r.data)
+          this.formList = r.data.rows
         }
       })
     },
-    initCharts: function (row) { // 选择栏目
-      this.currentForm = row[0].url.split('=')[1]
-      this.data = []
-      this.initChartsData()
+    changeForm: function () { // 选择表单
+      this.fields = JSON.parse(this.currentForm.str_json).field
     },
-    initChartsData: function () { // 取图表数据
-      this.loading = true
-      this.$api.post('/crm/ActionFormSelectUtil/Select/getChartsByFormName.do', {formName: this.currentForm}, r => {
-        this.data = r.data.rows
-        this.loading = false
-      })
+    dragEnd: function (event) { // 拖拽结束
+      if (event.to.className === 'drag-y-con') {
+        this.setFieldCalculateType(this.y_field[this.y_field.length - 1], 'sum')
+      }
+      console.log(this.y_field)
+      this.dataChange()
     },
-    addChart: function () { // 新增图表
-      if (this.currentForm === '') {
-        this.$Message.warning('请先选择一条目录')
-      } else {
-        this.$layer.iframe({
-          type: 2,
-          content: {
-            content: addChart, // 传递的组件对象
-            parent: this, // 当前的vue对象
-            data: {
-              tableName: this.currentForm
-            }
-          },
-          shadeClose: false,
-          shade: false,
-          maxmin: true,
-          area: ['800px', document.body.clientHeight - 20 + 'px'],
-          title: '新增图表'
-        })
+    setFieldName: function (item) { // 设置字段名称
+      this.currentField = item
+      this.modalFieldName = true
+    },
+    saveFieldName: function () { // 保存字段名称
+      this.modalFieldName = false
+    },
+    setFieldCalculateType: function (item, calculateType) { // 设置字段计算方式
+      this.$set(item, 'calculateType', calculateType)
+    },
+    dataChange: function () { // 是否刷新图表
+      if (this.x_field.length > 0 && this.y_field.length > 0 && !Util.isEmpty(this.currentForm.title)) {
+        this.initChart()
       }
     },
-    editChart: function (row) { // 修改图表
-      let temp = row.row
-      delete temp._index
-      delete temp.orwKey
-      this.$layer.open({
-        type: 2,
-        content: {
-          content: editChart, // 传递的组件对象
-          parent: this, // 当前的vue对象
-          data: {
-            chartObj: temp
+    initChart: function () { // 取图表数据
+      let temp = ''
+      this.$api.post('/crm/ActionFormSelectUtil/Select/getChartsDataBySearch.do', {formName: this.currentForm.title, field: this.x_field, condition: temp, create_user_id: '1010'}, r => {
+        if (r.data.length > 0) {
+          this.xData = r.data.split(',')
+        }
+        this.$api.post('/crm/ActionFormSelectUtil/Select/getChartsDataBySearch.do', {formName: this.currentForm.title, field: this.y_field, condition: temp, create_user_id: '1010'}, r => {
+          if (r.data.length > 0) {
+            this.yData = r.data.split(',')
           }
-        },
-        shadeClose: false,
-        shade: false,
-        maxmin: true,
-        area: ['800px', document.body.clientHeight - 20 + 'px'],
-        title: '修改图表'
+          this.createChart()
+        })
       })
     },
-    deleteChart: function (row) { // 删除图表
-      this.$Modal.confirm({
-        title: '',
-        content: '确认删除此图表？',
-        onOk: () => {
-          this.$api.post('/crm/ActionFormSelectUtil/Select/deleteCharts.do', {id: row.row.id}, r => {
-            if (r.data === '0') {
-              this.$Message.error('删除图表失败')
-            } else {
-              this.$Message.success('删除图表成功')
-              this.initChartsData()
+    createChart: function () { // 生成图表
+      this.charts = echarts.init(document.getElementById('main'))
+      console.log(this.xData)
+      console.log(this.yData)
+      if (this.chartObj.type === 'line' || this.chartObj.type === 'bar') {
+        this.option = {
+          title: {
+            text: this.chartObj.name,
+            left: 'center'
+          },
+          tooltip: {
+            trigger: 'axis'
+          },
+          grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            containLabel: true
+          },
+          toolbox: {
+            feature: {
+              magicType: {
+                type: ['line', 'bar']
+              },
+              restore: {show: true},
+              saveAsImage: {show: true}
+            },
+            right: 25
+          },
+          xAxis: {
+            type: 'category',
+            boundaryGap: true,
+            name: this.chartObj.name_x,
+            nameLocation: 'center',
+            nameGap: 20,
+            data: this.xData
+          },
+          yAxis: {
+            type: 'value',
+            name: this.chartObj.name_y
+          },
+          series: [
+            {
+              name: this.chartObj.name_y,
+              type: this.chartObj.type,
+              data: this.yData
             }
-          })
-        },
-        onCancel: () => {
+          ]
         }
-      })
+      }
+      this.charts.setOption(this.option)
+    }
+  },
+  computed: {
+    dragOption () {
+      return {
+        group: {
+          name: 'fields',
+          pull: 'clone'
+        },
+        sort: false
+      }
+    },
+    dragToXOption () {
+      return {
+        group: {
+          put: ['fields']
+        }
+      }
+    },
+    dragToYOption () {
+      return {
+        group: {
+          put: ['fields']
+        }
+      }
     }
   },
   mounted () {
@@ -189,3 +247,61 @@ export default {
   }
 }
 </script>
+<style lang="scss">
+.edit-chart-left-con{
+  padding: 10px;
+  border-right: 1px solid #999;
+}
+.edit-chart-left-title{
+  font-size: 0.13rem;
+  font-weight: 600;
+  line-height: 30px;
+}
+.edit-chart-left-line{
+  height: 1px;
+  background-color: #ddd;
+  margin: 10px -10px;
+}
+.edit-chart-left-list{
+  border-top: 1px solid #ddd;
+  padding-left: 10px;
+  li{
+    line-height: 30px;
+    cursor: move;
+  }
+}
+.edit-chart-middle{
+  padding: 10px;
+}
+.edit-chart-field-con{
+  padding: 5px 0;
+  border-bottom: 1px solid #ddd;
+  label{
+    float: left;
+    width: 60px;
+    line-height: 34px;
+  }
+}
+.edit-chart-field-inner{
+  margin-left: 60px;
+  ul{
+    &>div{
+      min-height: 34px;
+    }
+    &>div>li{
+      float: left;
+      height: 34px;
+      line-height: 34px;
+    }
+  }
+  .ivu-dropdown{
+    margin-right: 10px;
+  }
+  a{
+    color: #333;
+    &.selected{
+      color: #2d8cf0;
+    }
+  }
+}
+</style>

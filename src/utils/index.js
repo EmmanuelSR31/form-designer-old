@@ -1,3 +1,6 @@
+import store from '@/store'
+import api from '@/api/index.js'
+
 let util = {}
 
 util.inOf = function (arr, targetArr) { // 两数组是否有重复
@@ -52,6 +55,10 @@ util.removeLastComma = function (str) { // 删除最后的逗号
 
 util.myTrim = function (str) { // 去除前后空格
   return str.replace(/^\s+|\s+$/gm, '')
+}
+
+util.strToInt = function (str) { // 字符串转为整数
+  return parseInt(str)
 }
 
 util.fieldsAddType = function (fields) { // 字段组加数据类型
@@ -135,6 +142,21 @@ util.formatFormData = function (fields, dataObj) { // 处理表单数据
     }
   }
   return dataObj
+}
+
+util.formatFieldFile = function (fields, dataObj) { // 处理附件字段的数据
+  let obj = {}
+  for (let i = 0; i < fields.length; i++) {
+    if (fields[i].fieldType === 'filebox') {
+      let paths = dataObj[fields[i].text]
+      if (this.isEmpty(paths)) {
+        obj[fields[i].text] = []
+      } else {
+        obj[fields[i].text] = paths.split(',')
+      }
+    }
+  }
+  return obj
 }
 
 util.formatterTreeData = function (data) { // 格式化树数据
@@ -340,7 +362,7 @@ util.delCookie = function (name) {
   }
 }
 
-util.flowStateFormat = function (value) {
+util.flowStateFormat = function (value) { // 流程状态
   if (value === 'Ready') {
     return '可领取'
   } else if (value === 'Completed') {
@@ -353,6 +375,55 @@ util.flowStateFormat = function (value) {
     return '预分配'
   } else if (value === 'Withdraw') {
     return '退回'
+  }
+}
+
+util.urlInParaTypeFormat = function (value) { // 链接输入参数条件
+  for (let i = 0; i < store.state.urlInParaCondition.length; i++) {
+    if (value === store.state.urlInParaCondition[i].value) {
+      value = store.state.urlInParaCondition[i].text
+      break
+    }
+  }
+  return value
+}
+
+util.trueFalseFormat = function (value) { // 是否
+  if (value || value === 'true') {
+    value = '是'
+  } else {
+    value = '否'
+  }
+  return value
+}
+
+util.urlInParaValueFormat = function (value) { // 引用下拉输入参数值
+  for (let i = 0; i < store.state.urlInParaValue.length; i++) {
+    if (value === store.state.urlInParaValue[i].value) {
+      value = store.state.urlInParaValue[i].text
+      break
+    }
+  }
+  return value
+}
+
+util.initFormQuoteSelectData = function (fields) { // 初始化表单引用下拉数据
+  for (let i = 0; i < fields.length; i++) {
+    if (fields[i].fieldType === 'combobox' && fields[i].selectType === '1') {
+      let obj = {}
+      obj.name = fields[i].selectID
+      if (!this.isEmpty(fields[i].inParas) && fields[i].inParas.length > 0) {
+        for (let j = 0; j < fields[i].inParas.length; j++) {
+          if (fields[i].inParas[j].value === 'userId') {
+            obj[fields[i].inParas[j].name] = store.state.user.id
+          }
+        }
+      }
+      api.post('/develop/url/getUrl.do', obj, r => {
+        store.state.selectData[fields[i].selectID] = r.data
+        console.log(store.state.selectData)
+      })
+    }
   }
 }
 

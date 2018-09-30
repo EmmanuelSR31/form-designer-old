@@ -43,7 +43,7 @@ export default {
       }
     })
     let menuTemp = {
-      icon: 'key',
+      icon: 'md-list',
       name: 'userDefined',
       path: '/userDefined',
       title: '栏目',
@@ -140,11 +140,11 @@ export default {
       state.normalSelect = r.data.rows
     })
     api.post('/develop/url/getAllUrl.do', {}, r => {
-      for (let variable of r.data) {
+      /* for (let variable of r.data) {
         api.post('/develop/url/getUrl.do', {name: variable.name}, rs => {
           state.selectData[variable.name] = rs.data
         })
-      }
+      } */
       state.quoteSelect = r.data
     })
   },

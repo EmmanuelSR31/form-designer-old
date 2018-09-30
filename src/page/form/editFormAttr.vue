@@ -6,6 +6,11 @@
           <FormItem label="数据库表名">
             <Input v-model="formObj.title" readonly></Input>
           </FormItem>
+          <FormItem label="数据来源">
+            <Select v-model="formObj.data_url">
+              <Option v-for="item in dataUrls" :value="item.name" :key="item.name">{{item.disc}}</Option>
+            </Select>
+          </FormItem>
           <FormItem label="表格表头">
             <div class="table-search-con">
               <Button type="primary" @click="columnsAdd">新增</Button>
@@ -50,6 +55,11 @@
           <FormItem label="表头id" class="whole-line-703">
             <AutoComplete v-model="columnsObj.field" :data="formFieldsText"></AutoComplete>
           </FormItem>
+          <FormItem label="对齐方式" class="whole-line-703">
+            <Select v-model="columnsObj.align">
+              <Option v-for="item in columnAlign" :value="item.value" :key="item.value">{{item.text}}</Option>
+            </Select>
+          </FormItem>
           <FormItem label="formatter" class="whole-line-703">
             <Input v-model="columnsObj.formatter"></Input>
           </FormItem>
@@ -67,6 +77,11 @@
           </FormItem>
           <FormItem label="表头id" class="whole-line-703">
             <AutoComplete v-model="columnsObj.field" :data="formFieldsText"></AutoComplete>
+          </FormItem>
+          <FormItem label="对齐方式" class="whole-line-703">
+            <Select v-model="columnsObj.align">
+              <Option v-for="item in columnAlign" :value="item.value" :key="item.value">{{item.text}}</Option>
+            </Select>
           </FormItem>
           <FormItem label="formatter" class="whole-line-703">
             <Input v-model="columnsObj.formatter"></Input>
@@ -233,11 +248,28 @@ export default {
       formObj: this.$store.state.currentEditForm, // 表单对象
       formFields: [], // 表单字段
       formAttrObj: {}, // 表单配置对象
+      dataUrls: [], // 数据来源url
+      columnAlign: this.$store.state.columnAlign, // 表头对齐方式
       searchInputType: this.$store.state.searchInputType, // 搜索输入框类型
       searchCondition: this.$store.state.searchCondition, // 搜索条件
       columnsColumns: [ // 表格表头表头
         {title: '表头名称', key: 'title', align: 'center'},
         {title: '表头id', key: 'field', align: 'center'},
+        {
+          title: '对齐方式',
+          key: 'align',
+          align: 'center',
+          render: (h, params) => {
+            let temp = params.row.align
+            for (let i = 0; i < this.columnAlign.length; i++) {
+              if (temp === this.columnAlign[i].value) {
+                temp = this.columnAlign[i].text
+                break
+              }
+            }
+            return h('div', temp)
+          }
+        },
         {title: 'formatter', key: 'formatter', align: 'center'},
         {
           title: '操作',
@@ -704,8 +736,9 @@ export default {
     cancel: function () {
       this.$router.go(-1)
     },
-    save: function () {
+    save: function () { // 保存
       this.formAttrObj.title = this.formObj.title
+      this.formAttrObj.data_url = this.formObj.data_url
       this.formAttrObj.columns = this.formColumns
       this.formAttrObj.buttons = this.formButtons
       this.formAttrObj.searchs = this.formSearchs
@@ -730,6 +763,10 @@ export default {
     },
     init: function () {
       this.formFields = this.formObj.field
+      this.$api.post('/develop/url/getAllUrl.do', {}, r => {
+        this.dataUrls = r.data
+        this.dataUrls.unshift({name: '', disc: '请选择'})
+      })
       this.$api.post('/pages/button/framework/get.do', {title: this.formObj.title}, r => {
         console.log(r.data)
         if (r.data.obj !== null) {
@@ -740,7 +777,7 @@ export default {
         }
       })
     },
-    initAttr: function (flag) {
+    initAttr: function (flag) { // 初始化数据
       if (flag) { // 有数据时
         this.formColumns = JSON.parse(this.formAttrObj.columns)
         this.formButtons = JSON.parse(this.formAttrObj.buttons)

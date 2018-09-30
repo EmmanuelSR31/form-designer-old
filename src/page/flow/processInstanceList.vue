@@ -93,7 +93,7 @@ export default {
                     this.editFormData(params)
                   }
                 }
-              }, [h('Icon', {props: {type: 'android-arrow-dropright-circle', size: 20, color: 'green'}})]
+              }, [h('Icon', {props: {type: 'md-arrow-dropright-circle', size: 20, color: 'green'}})]
               ),
               h('a', {
                 attrs: {
@@ -107,7 +107,7 @@ export default {
                     this.viewFile(params)
                   }
                 }
-              }, [h('Icon', {props: {type: 'eye', size: 20, color: 'blue'}})]
+              }, [h('Icon', {props: {type: 'md-eye', size: 20, color: 'blue'}})]
               ),
               h('a', {
                 attrs: {
@@ -118,7 +118,7 @@ export default {
                     this.delFile(params)
                   }
                 }
-              }, [h('Icon', {props: {type: 'close', size: 20, color: 'red'}})]
+              }, [h('Icon', {props: {type: 'md-close', size: 20, color: 'red'}})]
               )
             ])
           }

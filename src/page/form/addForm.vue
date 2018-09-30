@@ -60,7 +60,7 @@
       <Row>
         <Col span="12">
           <Form :label-width="150">
-            <draggable class="add-field-con" v-model="formControls" @end="leftDragEnd" :options="dragToOptions">
+            <draggable class="add-field-con" v-model="formControls" :options="dragToOptions">
               <FormItem v-for="(item, index) in formControls" :key="index" :label="item.title">
                 <Row>
                   <Col span="14">
@@ -239,13 +239,18 @@
                     <FormItem v-if="field.selectType === '1'" label="关联选项">
                       <Select v-model="field.selectID" @on-change="changeQuoteSelect">
                         <Option v-for="(item, index) in quoteSelect" :key="index" :value="item.name">
-                          {{item.descr}}
+                          {{item.disc}}
                         </Option>
                       </Select>
                     </FormItem>
-                    <FormItem v-if="field.selectType === '1' && field.selectID !== ''" class="whole-line-tablebox" label="">
-                      <Table border :columns="quoteSelectColumns" :data="quoteSelectTableData" stripe></Table>
-                    </FormItem>
+                    <template v-if="field.selectType === '1' && field.selectID !== ''">
+                      <FormItem class="whole-line-tablebox" label="输出参数">
+                        <Table border :columns="quoteSelectInColumns" :data="quoteSelectInTableData" stripe></Table>
+                      </FormItem>
+                      <FormItem class="whole-line-tablebox" label="输出参数">
+                        <Table border :columns="quoteSelectColumns" :data="quoteSelectTableData" stripe></Table>
+                      </FormItem>
+                    </template>
                   </template>
                   <template v-if="field.fieldType === 'radio'">
                     <FormItem label="选项">
@@ -283,7 +288,7 @@
         <Col span="10" offset="2">
           <div class="controls-con">
             <Form :label-width="120">
-              <draggable v-model="controlArray" @end="dragEnd" :options="dragOptions">
+              <draggable v-model="controlArray" :options="dragOptions">
                 <transition-group>
                   <FormItem v-for="(item, index) in controlArray" :key="index" :label="item.title">
                     <template v-if="item.fieldType === 'textbox' || item.fieldType === 'filebox'">
@@ -354,6 +359,31 @@
       </div>
     </div>
   </Modal>
+  <Modal v-model="modalQuoteSelectIn" title="修改输入字段" @on-ok="saveQuoteSelectInData">
+    <div class="modal-field-con">
+      <div>
+        <Form :model="quoteSelectInObj" :label-width="120">
+          <FormItem label="名称">
+            <Input :value="quoteSelectInObj.name"></Input>
+          </FormItem>
+          <FormItem label="数据库字段">
+            <Input :value="quoteSelectInObj.sql_para_name"></Input>
+          </FormItem>
+          <FormItem label="条件">
+            <Input :value="urlInParaTypeFormat(quoteSelectInObj.type)"></Input>
+          </FormItem>
+          <FormItem label="是否必须">
+            <Input :value="trueFalseFormat(quoteSelectInObj.is_necessary)"></Input>
+          </FormItem>
+          <FormItem label="组件名">
+            <Select v-model="quoteSelectInObj.value">
+              <Option v-for="item in urlInParaValue" :value="item.value" :key="item.value">{{ item.text }}</Option>
+            </Select>
+          </FormItem>
+        </Form>
+      </div>
+    </div>
+  </Modal>
 </div>
 </template>
 <script>
@@ -373,6 +403,7 @@ export default {
       formControls: [], // 表单字段
       normalSelect: this.$store.state.normalSelect, // 普通下拉选项
       quoteSelect: this.$store.state.quoteSelect, // 引用下拉选项
+      urlInParaValue: this.$store.state.urlInParaValue, // 引用下拉输入参数值列表
       radiosText: '', // 单选框文本
       radioTemp: '',
       checkboxsText: '', // 多选框文本
@@ -413,6 +444,58 @@ export default {
       quoteSelectTableData: [], // 引用输出字段表格数据
       modalQuoteSelect: false,
       quoteSelectObj: {}, // 引用输出字段对象
+      quoteSelectInColumns: [ // 引用输入字段表格表头
+        {key: 'name', title: '名称'},
+        {key: 'sql_para_name', title: '数据库字段'},
+        {
+          key: 'type',
+          title: '条件',
+          render: (h, params) => {
+            return h('div', Util.urlInParaTypeFormat(params.row.type))
+          }
+        },
+        {
+          key: 'is_necessary',
+          title: '是否必须',
+          render: (h, params) => {
+            return h('div', Util.trueFalseFormat(params.row.is_necessary))
+          }
+        },
+        {
+          key: 'value',
+          title: '输入值',
+          render: (h, params) => {
+            return h('div', Util.urlInParaValueFormat(params.row.value))
+          }
+        },
+        {
+          title: '操作',
+          key: 'action',
+          width: 80,
+          align: 'center',
+          render: (h, params) => {
+            return h('div', [
+              h('Button', {
+                props: {
+                  type: 'primary',
+                  size: 'small'
+                },
+                style: {
+                  marginRight: '5px'
+                },
+                on: {
+                  click: () => {
+                    this.editQuoteSelectInData(params)
+                  }
+                }
+              }, '修改')
+            ])
+          }
+        }
+      ],
+      quoteSelectInTableData: [], // 引用输入字段表格数据
+      modalQuoteSelectIn: false,
+      quoteSelectInObj: {}, // 引用输入字段对象
       treeForms: [] // 树结构表单数据
     }
   },
@@ -437,38 +520,6 @@ export default {
       this.currentStep = 1
       this.swiper.slideNext()
     },
-    dragEnd: function (evt) {
-      let type = evt.item.innerText
-      let arr = Util.copyArr(this.controlArray)
-      if (type.indexOf('多行文本输入框') !== -1) {
-        this.formControls.push(arr[1])
-      } else if (type.indexOf('文本输入框') !== -1) {
-        this.formControls.push(arr[0])
-      } else if (type.indexOf('数字输入框') !== -1) {
-        this.formControls.push(arr[2])
-      } else if (type.indexOf('下拉选择器') !== -1) {
-        this.formControls.push(arr[3])
-      } else if (type.indexOf('单选框') !== -1) {
-        this.formControls.push(arr[4])
-      } else if (type.indexOf('多选框') !== -1) {
-        this.formControls.push(arr[5])
-      } else if (type.indexOf('开关选择器') !== -1) {
-        this.formControls.push(arr[6])
-      } else if (type.indexOf('日期选择器') !== -1) {
-        this.formControls.push(arr[7])
-      } else if (type.indexOf('日期时间选择器') !== -1) {
-        this.formControls.push(arr[8])
-      } else if (type.indexOf('月份选择器') !== -1) {
-        this.formControls.push(arr[9])
-      } else if (type.indexOf('子表') !== -1) {
-        this.formControls.push(arr[10])
-      } else if (type.indexOf('附件上传') !== -1) {
-        this.formControls.push(arr[11])
-      }
-    },
-    leftDragEnd: function (event) {
-      // console.log(this.formControls)
-    },
     showSet: function (item) { // 开始设置字段属性
       this.field = item
       if (item.radios) {
@@ -486,6 +537,14 @@ export default {
       }
       if (this.field.fieldType === 'numberbox' && this.field.calculateFields === undefined) {
         this.field.calculateFields = []
+      }
+      if (this.field.fieldType === 'combobox' && this.field.selectType === '1') {
+        if (this.field.selectFields !== undefined) {
+          this.quoteSelectTableData = this.field.selectFields
+        }
+        if (this.field.inParas !== undefined) {
+          this.quoteSelectInTableData = this.field.inParas
+        }
       }
       this.modalField = true
     },
@@ -505,6 +564,7 @@ export default {
       this.field.checkboxs = this.checkboxsText.split('\n')
       if (this.field.fieldType === 'combobox' && this.field.selectType === '1') {
         this.field.selectFields = this.quoteSelectTableData
+        this.field.inParas = this.quoteSelectInTableData
       }
     },
     changeQuoteSelect: function (value) { // 选择引用
@@ -513,9 +573,24 @@ export default {
           this.$api.post('/develop/url/getUrlById.do', {id: variable.id}, r => {
             console.log(r.data)
             this.quoteSelectTableData = r.data.urlOutputPara
+            this.quoteSelectInTableData = r.data.urlIutputPara
           })
         }
       }
+    },
+    urlInParaTypeFormat: function (value) { // 链接输入参数条件
+      return Util.urlInParaTypeFormat(value)
+    },
+    trueFalseFormat: function (value) { // 是否
+      return Util.trueFalseFormat(value)
+    },
+    editQuoteSelectInData: function (params) { // 修改输入字段
+      this.quoteSelectInObj = params.row
+      this.modalQuoteSelectIn = true
+    },
+    saveQuoteSelectInData: function () { // 保存输入字段
+      this.quoteSelectInTableData[this.quoteSelectInObj._index] = this.quoteSelectInObj
+      console.log(this.quoteSelectInTableData)
     },
     editQuoteSelectData: function (params) { // 修改输出字段
       this.quoteSelectObj = params.row
@@ -523,6 +598,7 @@ export default {
     },
     saveQuoteSelectData: function () { // 保存输出字段
       this.quoteSelectTableData[this.quoteSelectObj._index] = this.quoteSelectObj
+      console.log(this.quoteSelectTableData)
     },
     checkTableName: function () { // 判断表名重复
       this.$api.post('/pages/crminterface/IsExistenceForTableName.do', {tableName: this.formObj.title}, r => {
@@ -557,13 +633,15 @@ export default {
         group: {
           name: 'controlTo',
           pull: 'clone'
-        }
+        },
+        sort: false
       }
     },
     dragToOptions () {
       return {
-        group: 'control',
-        containment: 'parent'
+        group: {
+          put: ['controlTo']
+        }
       }
     },
     swiper () {

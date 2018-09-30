@@ -11,6 +11,14 @@
       <Select v-model="urlObj.type">
         <Option value="easyui-combobox">easyui-combobox</Option>
         <Option value="easyui-datagrid">easyui-datagrid</Option>
+        <Option value="Object">Object</Option>
+        <Option value="List-Object">List-Object</Option>
+      </Select>
+    </FormItem>
+    <FormItem label="数据来源">
+      <Select v-model="urlObj.source">
+        <Option value="本地">本地</Option>
+        <Option value="ERP">ERP</Option>
       </Select>
     </FormItem>
     <FormItem label="SQL语句">
@@ -27,6 +35,9 @@
         <Button type="primary" @click="addOut">新增</Button>
       </div>
       <Table border :loading="outLoading" :columns="outColumns" :data="outData" stripe></Table>
+    </FormItem>
+    <FormItem label="输出排序(SQL order by desc or inc)">
+      <Input type="textarea" v-model="urlObj.arrange_str" rows="3"></Input>
     </FormItem>
   </Form>
   <div class="text-center">
@@ -54,8 +65,19 @@
           <FormItem label="名称" class="whole-line-703">
             <Input v-model="inObj.name"></Input>
           </FormItem>
-          <FormItem label="类型" class="whole-line-703">
-            <Input v-model="inObj.type"></Input>
+          <FormItem label="数据库字段" class="whole-line-703">
+            <Input v-model="inObj.sql_para_name"></Input>
+          </FormItem>
+          <FormItem label="条件">
+            <Select v-model="inObj.type">
+              <Option v-for="(item, index) in urlInParaCondition" :value="item.value" :key="index">{{item.text}}</Option>
+            </Select>
+          </FormItem>
+          <FormItem label="是否必须">
+            <Select v-model="inObj.is_necessary">
+              <Option value="false">否</Option>
+              <Option value="true">是</Option>
+            </Select>
           </FormItem>
         </Form>
       </div>
@@ -71,6 +93,7 @@ export default {
   },
   data () {
     return {
+      urlInParaCondition: this.$store.state.urlInParaCondition, // 链接输入参数条件列表
       modalOut: false,
       modalOutTitle: '新增输出参数',
       outMethod: '',
@@ -145,8 +168,22 @@ export default {
           key: 'name'
         },
         {
-          title: '类型',
-          key: 'type'
+          title: '数据库字段',
+          key: 'sql_para_name'
+        },
+        {
+          title: '条件',
+          key: 'type',
+          render: (h, params) => {
+            return h('div', Util.urlInParaTypeFormat(params.row.type))
+          }
+        },
+        {
+          title: '是否必须',
+          key: 'is_necessary',
+          render: (h, params) => {
+            return h('div', Util.trueFalseFormat(params.row.is_necessary))
+          }
         },
         {
           title: '操作',

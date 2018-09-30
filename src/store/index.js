@@ -7,6 +7,7 @@ import mutations from './mutations'
 Vue.use(Vuex)
 
 const state = {
+  user: {id: '1035'}, // 用户
   menuList: [], // 左侧菜单列表
   cachePage: [], // 缓存页面
   leftMenuTheme: 'dark', // 左侧菜单主题
@@ -100,6 +101,20 @@ const state = {
   selectData: {}, // 下拉数据
   normalSelect: [], // 普通下拉
   quoteSelect: [], // 引用下拉
+  columnAlign: [ // 表头对齐方式
+    {
+      text: '左对齐',
+      value: 'left'
+    },
+    {
+      text: '居中',
+      value: 'center'
+    },
+    {
+      text: '右对齐',
+      value: 'right'
+    }
+  ],
   searchManner: [ // 搜索方式
     {
       text: '并且',
@@ -167,7 +182,39 @@ const state = {
     }
   ],
   positionList: [], // 用户职位列表
-  userStatusList: [] // 用户状态列表
+  userStatusList: [], // 用户状态列表
+  urlInParaCondition: [ // 链接输入参数条件列表
+    {
+      text: '包含',
+      value: 'like'
+    },
+    {
+      text: '等于',
+      value: '='
+    },
+    {
+      text: '大于',
+      value: '>'
+    },
+    {
+      text: '小于',
+      value: '<'
+    },
+    {
+      text: '日期大于等于',
+      value: 'date>='
+    },
+    {
+      text: '日期小于等于',
+      value: 'date<='
+    }
+  ],
+  urlInParaValue: [ // 引用下拉输入参数值列表
+    {
+      text: '用户ID',
+      value: 'userId'
+    }
+  ]
 }
 
 export default new Vuex.Store({

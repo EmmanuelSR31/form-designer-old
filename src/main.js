@@ -19,7 +19,6 @@ import VueCodemirror from 'vue-codemirror'
 import 'codemirror/lib/codemirror.css'
 // import ECharts from 'vue-echarts/components/ECharts.vue'
 // import VueCharts from 'vue-chartjs'
-import jsPlumb from 'jsplumb'
 
 Vue.use(iView)
 Vue.use(VueAwesomeSwiper)
@@ -38,8 +37,6 @@ Vue.component(VPagination.name, VPagination)
 Vue.component('multiselect', Multiselect) */
 
 Vue.use(VueCodemirror)
-
-Vue.prototype.$jsPlumb = jsPlumb.jsPlumb
 
 // Vue.component('chart', ECharts)
 

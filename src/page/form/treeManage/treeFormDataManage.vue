@@ -48,11 +48,15 @@ export default {
   },
   methods: {
     addFormData: function () { // 新增数据
-      this.$store.dispatch('setCurrentEditForm', this.formObj)
-      this.$router.push({
-        name: 'addTreeFormData',
-        params: {tableName: this.tableName, pid: this.pid}
-      })
+      if (this.tableName === '') {
+        this.$Message.error('请先选择表单')
+      } else {
+        this.$store.dispatch('setCurrentEditForm', this.formObj)
+        this.$router.push({
+          name: 'addTreeFormData',
+          params: {tableName: this.tableName, pid: this.pid}
+        })
+      }
     },
     viewFormData: function (data) { // 查看数据
       this.$store.dispatch('setCurrentEditForm', this.formObj)

@@ -73,7 +73,7 @@ export const otherRouter = {
 export const appRouter = [
   {
     path: '/form',
-    icon: 'key',
+    icon: 'md-alert',
     name: 'form',
     title: '表单',
     component: Main,
@@ -94,7 +94,7 @@ export const appRouter = [
   },
   {
     path: '/chart',
-    icon: 'social-buffer',
+    icon: 'md-alert',
     name: 'chart',
     title: '图表',
     component: Main,
@@ -117,7 +117,7 @@ export const appRouter = [
   },
   {
     path: '/selectManage',
-    icon: 'social-buffer',
+    icon: 'md-cog',
     name: 'selectManage',
     title: '系统管理',
     component: Main,
@@ -186,11 +186,11 @@ export const appRouter = [
         component: resolve => { require(['@/page/position/positionManage.vue'], resolve) }
       },
       {
-        path: '/designer',
+        path: '/workbenchConfig',
         icon: 'compose',
-        name: 'designer',
-        title: '流程',
-        component: resolve => { require(['@/page/flow/designer.vue'], resolve) }
+        name: 'workbenchConfig',
+        title: '工作台设置',
+        component: resolve => { require(['@/page/system/workbenchConfig.vue'], resolve) }
       },
       {
         path: '/processInstanceList',
@@ -210,7 +210,7 @@ export const appRouter = [
   },
   {
     path: '/flowManager',
-    icon: 'key',
+    icon: 'md-folder',
     name: 'flowManager',
     title: '任务',
     component: Main,

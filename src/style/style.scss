@@ -1,5 +1,11 @@
+*{
+  list-style: none;
+}
 html{
   font-size: 625%;
+}
+body{
+  font-size: 0.12rem;
 }
 .text-center{
   text-align: center!important;
@@ -27,6 +33,12 @@ html{
 .padding10{
   padding: 0.1rem!important;
 }
+.pr10{
+  padding-right: 0.1rem!important;
+}
+.mt20{
+  margin-top: 0.2rem!important;
+}
 .mr2{
   margin-right: 0.02rem!important;
 }
@@ -51,9 +63,22 @@ html{
 }
 .table-search-con{
   margin: 5px 10px;
+  zoom:1;
+  _line-height:0;
+}
+.table-search-con::after{
+  clear:both;
+  display:block;
+	content:"\20";
+	height:0;
+	visibility:hidden;
 }
 .table-search-con button{
   margin-right: 5px;
+}
+.table-search-title{
+  font-weight: bold;
+  line-height: 32px;
 }
 .page-con{
   margin: 10px;
@@ -113,6 +138,12 @@ html{
   height: 40px;
   vertical-align: middle;
 }
+.header-menu-icon{
+  padding: 5px;
+}
+.ivu-tag-blue{
+  line-height: 32px;
+}
 .user-dropdown-menu-con{
   position: absolute;
   top: 0;
@@ -134,9 +165,15 @@ html{
   border-radius: 5px;
   margin-left: 20px;
   overflow-y: auto;
+  .ivu-form-item label, .ivu-form-item input, .ivu-form-item .ivu-select-placeholder, .ivu-form-item textarea, .ivu-form-item .ivu-switch, .ivu-form-item .ivu-table-tip{
+    cursor: move;
+  }
 }
 .controls-con{
   margin-right: 20%;
+  .ivu-form-item, .ivu-form-item label, .ivu-form-item input, .ivu-form-item .ivu-select-placeholder, .ivu-form-item textarea, .ivu-form-item .ivu-switch{
+    cursor: move;
+  }
 }
 .modal-field-con{
   padding-right: 30px;
@@ -151,6 +188,7 @@ html{
   overflow: auto;
 }
 .modal-field-2{
+  min-height: 300px;
   .ivu-form-item{
     float: left;
     width: 50%;
@@ -184,7 +222,7 @@ html{
     width: 25%;
   }
 }
-.whole-line-703, .whole-line-tablebox{
+.whole-line-703, .whole-line-tablebox, .whole-line-filebox{
   width: 100%!important;
 }
 // 表单数据
@@ -245,4 +283,28 @@ body .ivu-modal .ivu-select-dropdown, body .notify-iframe .ivu-select-dropdown{
     right: 0;
     margin: auto;
   }
+}
+// 工作台设置
+.config-con{
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  padding-top: 17%;
+  border-radius: 5px;
+  text-align: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  a{
+    color: #ffffff;
+    i{
+      font-size: 0.3rem;
+    }
+  }
+}
+.config-con-chart{
+  padding-top: 20px;
+  padding-right: 20px;
+  text-align: right;
 }

@@ -39,7 +39,7 @@
   <div class="right-top-con" :style="{paddingLeft:leftMenuWidth + 'px'}">
     <div class="header">
       <Button class="header-menu-icon" :style="{transform: 'rotateZ(' + (this.shrink ? '-90' : '0') + 'deg)'}" type="text" @click="changeMenuWidth">
-        <Icon type="navicon" size="32"></Icon>
+        <Icon type="md-reorder" size="32"></Icon>
       </Button>
       <span class="header-title">
         <img v-if="systemObj.system_icon !== '' && systemObj.system_icon !== undefined" :src="iconPath" class="header-icon">
@@ -48,8 +48,8 @@
       <div class="user-dropdown-menu-con">
         <Dropdown transfer placement="bottom-end" @on-click="handleClickUserDropdown">
           <a href="javascript:void(0)">
-            <Avatar icon="person" size="small" /> {{userName}}
-            <Icon type="arrow-down-b"></Icon>
+            <Avatar icon="md-person" size="small" /> {{userName}}
+            <Icon type="md-arrow-dropdown" />
           </a>
           <DropdownMenu slot="list">
             <DropdownItem name="ownSpace">个人中心</DropdownItem>

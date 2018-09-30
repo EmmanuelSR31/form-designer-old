@@ -158,6 +158,7 @@ export default {
       this.$api.post('/flow/canWithDraw', {taskId: params.row.id}, r => {
         console.log(r)
       })
+      return url + title + uuid + tableName
     },
     showPic: function (params) { // 查看任务进度
 

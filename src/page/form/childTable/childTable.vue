@@ -59,7 +59,7 @@ export default {
         shade: false,
         maxmin: true,
         btn: '保存',
-        area: ['800px', document.body.clientHeight - 20 + 'px'],
+        area: [document.body.clientWidth - 100 + 'px', document.body.clientHeight - 20 + 'px'],
         title: '新增数据',
         yes: function (index) {
           var ifname = 'layui-layer-iframe' + index
@@ -85,7 +85,7 @@ export default {
         shadeClose: false,
         shade: false,
         maxmin: true,
-        area: ['800px', document.body.clientHeight - 20 + 'px'],
+        area: [document.body.clientWidth - 100 + 'px', document.body.clientHeight - 20 + 'px'],
         title: '修改数据'
       })
     },
@@ -106,7 +106,7 @@ export default {
         shadeClose: false,
         shade: false,
         maxmin: true,
-        area: ['800px', document.body.clientHeight - 20 + 'px'],
+        area: [document.body.clientWidth - 100 + 'px', document.body.clientHeight - 20 + 'px'],
         title: '查看数据'
       })
     },
@@ -131,6 +131,7 @@ export default {
     init: function () {
       this.$api.post('/pages/crminterface/getDatagridForJson.do', {tableName: this.childTableName}, r => {
         this.formObj = r.data
+        Util.initFormQuoteSelectData(this.formObj.field)
         this.initColumns(r.data.field)
       })
       this.changePage(this.currentPage)

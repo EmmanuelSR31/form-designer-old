@@ -2,8 +2,6 @@
 <div>
   <div class="table-search-con">
     <Button type="primary" @click="addFormData">新增</Button>
-    <Button type="primary" @click="setCharts">生成图表</Button>
-    <Button type="primary" onclick="aaaa()">开启</Button>
     <Button v-for="(item, index) in buttons" type="primary" :onclick="item.buttonFunction.replace(/&acute;/g, '\'')" :key="index">{{item.buttonName}}</Button>
     <span class="pull-right">
       <template v-for="(item, index) in searchs">
@@ -31,27 +29,17 @@
       <Button v-for="(item, index) in searchButtons" type="primary" :onclick="item.buttonFunction.replace(/&acute;/g, '\'')" :key="index">{{item.buttonName}}</Button>
     </span>
   </div>
-  <Row>
-    <Col v-if="formObj.needTree === 'true'" :span="formObj.needTree === 'true' ? 8 : 0">
-      <!-- <Tree :data="treeData" @on-select-change="setPid" ref="treeTable"></Tree> -->
-      <tree-grid :items="treeData" :columns="treeColumns" @on-row-click="rowClick"></tree-grid>
-    </Col>
-    <Col :span="formObj.needTree === 'true' ? 16 : 24">
-      <Table :height="tableHeight" border :loading="loading" :columns="columns" :data="data" stripe highlight-row @on-current-change="setCurrentData"></Table>
-      <div class="page-con">
-        <Page :total="totalRows" :current="currentPage" :page-size="pageSize" placement="top" @on-change="changePage" @on-page-size-change="changePageSize" show-elevator show-sizer></Page>
-      </div>
-    </Col>
-  </Row>
+  <Table :height="tableHeight" border :loading="loading" :columns="columns" :data="data" stripe highlight-row @on-current-change="setCurrentData"></Table>
+  <div class="page-con">
+    <Page :total="totalRows" :current="currentPage" :page-size="pageSize" placement="top" @on-change="changePage" @on-page-size-change="changePageSize" show-elevator show-sizer></Page>
+  </div>
 </div>
 </template>
 <script>
 import Util from '@/utils/index'
-import TreeGrid from '../components/treeGrid2.0.vue'
 import processDetail from '../components/processDetail.vue'
 export default {
   components: {
-    TreeGrid,
     processDetail
   },
   data () {
@@ -66,9 +54,6 @@ export default {
       data: [],
       currentData: {}, // 选中数据
       selectData: this.$store.state.selectData, // 下拉数据
-      treeColumns: [], // 树形表表头
-      treeData: [], // 树形表数据
-      pid: '', // 父ID
       isAct: 1, // 是否有流程
       formAttrObj: {}, // 表单配置对象
       buttons: [], // 表单配置按钮
@@ -86,20 +71,12 @@ export default {
     changePage: function (current) { // 改变页码
       this.loading = true
       this.currentPage = current
-      if (this.formObj.needTree === 'true' && this.formObj.treeForm !== '') {
-        this.$api.post('/crm/ActionFormUtil/getByTableNameAndPid.do', {rows: this.pageSize, page: this.currentPage, tableName: this.tableName, pid: this.pid}, r => {
-          this.totalRows = r.data.total
-          this.data = r.data.rows
-          this.loading = false
-        })
-      } else {
-        this.$api.post('/crm/ActionFormUtil/getByTableName.do', {rows: this.pageSize, page: this.currentPage, tableName: this.tableName}, r => {
-          this.totalRows = r.data.total
-          this.data = r.data.rows
-          console.log(this.columns)
-          this.loading = false
-        })
-      }
+      this.$api.post('/develop/url/getUrl.do', {rows: this.pageSize, page: this.currentPage, name: this.formAttrObj.data_url}, r => {
+        this.totalRows = r.data.total
+        this.data = r.data.rows
+        console.log(this.columns)
+        this.loading = false
+      })
     },
     changePageSize: function (size) { // 改变每页显示数
       this.pageSize = size
@@ -110,15 +87,6 @@ export default {
     },
     addFormData: function () { // 新增数据
       this.$store.dispatch('setCurrentEditForm', this.formObj)
-      let pid = ''
-      if (this.formObj.needTree === 'true' && this.formObj.treeForm !== '') {
-        if (this.pid === '') {
-          this.$Message.error('请先选择左侧一条数据')
-          return false
-        } else {
-          pid = this.pid
-        }
-      }
       this.$router.push({
         name: 'addFormData',
         params: {tableName: this.tableName, pid: pid}
@@ -158,21 +126,10 @@ export default {
         }
       })
     },
-    rowClick: function (data, index, event) { // 点击一行
-      this.pid = data.id
-      this.currentPage = 1
-      this.changePage(this.currentPage)
-    },
-    /* setPid: function (row) { // 点击数据设置父ID
-      this.pid = row[0].id
-      this.currentPage = 1
-      this.changePage(this.currentPage)
-    }, */
     init: function () {
       this.data = []
       this.$api.post('/pages/crminterface/getDatagridForJson.do', {tableName: this.tableName}, r => {
         this.formObj = r.data
-        Util.initFormQuoteSelectData(this.formObj.field)
         this.$api.post('/profFormRel/isAct', {tableName: this.tableName}, r => {
           this.isAct = r.data
           this.$api.post('/pages/button/framework/get.do', {title: this.tableName}, r => {
@@ -191,17 +148,7 @@ export default {
             if (this.isAct === 0) {
               this.columns = this.columnsAddProcess(this.columns)
             }
-            if (this.formObj.needTree === 'true' && this.formObj.treeForm !== '') {
-              this.$api.post('/pages/crminterface/getDatagridForJson.do', {tableName: this.formObj.treeForm}, r => {
-                let treeField = r.data.treeField
-                this.treeColumns = this.initColumns(r.data.field, false)
-                this.$api.post('/crm/ActionFormUtil/getByTableName.do', {rows: this.pageSize, page: this.currentPage, tableName: this.formObj.treeForm}, r => {
-                  this.treeData = Util.dataConvertForTree(r.data, treeField)
-                })
-              })
-            } else {
-              this.changePage(this.currentPage)
-            }
+            this.changePage(this.currentPage)
           })
         })
       })
@@ -353,12 +300,6 @@ export default {
         maxmin: true,
         area: ['600px', document.body.clientHeight - 20 + 'px'],
         title: '查看流程详情'
-      })
-    },
-    setCharts: function () { // 生成图表
-      this.$router.push({
-        name: 'formChart',
-        params: {tableName: this.tableName}
       })
     },
     search1: function () {

@@ -75,7 +75,7 @@
               <childTable :childTableName="item.tableTitle" :recordID="formDataObj.uuid"></childTable>
             </template>
             <template v-else-if="item.fieldType === 'filebox'">
-              <Input v-model="formDataObj[item.text]" :key="item.text"><Button slot="append" icon="ios-upload-outline" @click="openUpload(item)"></Button></Input>
+              <Input v-model="formDataObj[item.text]" :key="item.text"><Button slot="append" icon="md-cloud-upload" @click="openUpload(item)"></Button></Input>
             </template>
           </FormItem>
         </Form>
@@ -212,6 +212,18 @@ export default {
   },
   mounted () {
     this.init()
+  },
+  beforeRouteLeave (to, from, next) {
+    // 离开页面时确认
+    this.$Modal.confirm({
+      title: '',
+      content: '数据未保存，确认离开此页？',
+      onOk: () => {
+        next()
+      },
+      onCancel: () => {
+      }
+    })
   }
 }
 </script>

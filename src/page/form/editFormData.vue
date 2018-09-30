@@ -60,7 +60,15 @@
               <childTable :childTableName="item.tableTitle" :recordID="formDataObj.uuid"></childTable>
             </template>
             <template v-else-if="item.fieldType === 'filebox'">
-              <Input v-model="formDataObj[item.text]" :key="item.text"><Button slot="append" icon="ios-upload-outline" @click="openUpload(item)"></Button></Input>
+              <Upload multiple action="/apis/upload/file?fileType=file" :show-upload-list="false" :before-upload="handleBeforeUpload(item.text)" :on-success="uploadSuccess">
+                <Button type="primary" icon="ios-cloud-upload-outline">上传</Button>
+              </Upload>
+              <ul class="form-file-list">
+                <li v-for="(file, index) in fileList[item.text]" :key="index">
+                  <Button @click="deleteFile(item.text, file)">删除</Button><a href="file">{{file}}</a>
+                </li>
+              </ul>
+              <Input v-model="formDataObj[item.text]" :key="item.text"><Button slot="append" icon="md-cloud-upload" @click="openUpload(item)"></Button></Input>
             </template>
           </FormItem>
         </Form>
@@ -88,7 +96,9 @@ export default {
       formControls: [], // 表单字段
       formObj: this.$store.state.currentEditForm, // 表单对象
       formDataObj: this.$store.state.currentEditFormData, // 表单数据对象
-      selectData: this.$store.state.selectData // 下拉数据
+      selectData: this.$store.state.selectData, // 下拉数据
+      fileList: {}, // 附件列表
+      currentUploadField: '' // 正在上传附件的字段
     }
   },
   methods: {
@@ -114,6 +124,7 @@ export default {
     init: function () {
       this.formControls = Util.removeFieldTable(this.formObj.field)
       this.formDataObj = Util.formatFormData(this.formControls, this.formDataObj)
+      this.fileList = Util.formatFieldFile(this.formControls, this.formDataObj)
     },
     changeQuoteSelectData: function (field) { // 引用下拉写入其他字段
       if (field.selectType === '1' & field.selectFields !== '') {
@@ -152,6 +163,25 @@ export default {
         title: '附件上传'
       })
     },
+    deleteFile: function (field, file) { // 删除文件
+      this.$Modal.confirm({
+        title: '',
+        content: '确认删除此文件？',
+        onOk: () => {
+          this.fileList[field].splice(this.fileList[field].indexOf(file), 1)
+        },
+        onCancel: () => {
+        }
+      })
+    },
+    handleBeforeUpload: function (field) { // 点击上传设置字段名
+      this.currentUploadField = field
+    },
+    uploadSuccess: function (response, file, fileList) { // 上传成功
+      console.log(response)
+      console.log(this.currentUploadField)
+      this.fileList[this.currentUploadField].push(response.obj.filePath)
+    },
     strToBool: function (str) { // string转为Boolean
       return Util.strToBool(str)
     },
@@ -189,6 +219,18 @@ export default {
   },
   mounted () {
     this.init()
+  },
+  beforeRouteLeave (to, from, next) {
+    // 离开页面时确认
+    this.$Modal.confirm({
+      title: '',
+      content: '数据未保存，确认离开此页？',
+      onOk: () => {
+        next()
+      },
+      onCancel: () => {
+      }
+    })
   }
 }
 </script>
