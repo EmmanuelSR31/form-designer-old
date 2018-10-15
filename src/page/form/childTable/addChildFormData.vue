@@ -71,6 +71,14 @@
                 <DatePicker type="month" :value="formDataObj[item.text]" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" :disabled="strToBool(item.disabled)" :readonly="strToBool(item.readonly)" :key="item.text"></DatePicker>
               </template>
             </template>
+            <template v-else-if="item.fieldType === 'yearbox'">
+              <template v-if="item.currentDate === 'true'">
+                <DatePicker type="year" :value="currentDate" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" :disabled="strToBool(item.disabled)" :readonly="strToBool(item.readonly)" :key="item.text"></DatePicker>
+              </template>
+              <template v-else>
+                <DatePicker type="year" :value="formDataObj[item.text]" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" :disabled="strToBool(item.disabled)" :readonly="strToBool(item.readonly)" :key="item.text"></DatePicker>
+              </template>
+            </template>
             <template v-else-if="item.fieldType === 'filebox'">
               <Input v-model="formDataObj[item.text]" :key="item.text"><Button slot="append" icon="md-cloud-upload" @click="openUpload(item)"></Button></Input>
             </template>

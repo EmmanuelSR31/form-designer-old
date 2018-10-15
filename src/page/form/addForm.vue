@@ -100,6 +100,9 @@
                     <template v-else-if="item.fieldType === 'monthbox'">
                       <DatePicker type="month" :placeholder="item.prompt"></DatePicker>
                     </template>
+                    <template v-else-if="item.fieldType === 'yearbox'">
+                      <DatePicker type="year" :placeholder="item.prompt"></DatePicker>
+                    </template>
                     <template v-else-if="item.fieldType === 'tablebox'">
                       <Table></Table>
                     </template>
@@ -264,7 +267,7 @@
                       一行一个选项
                     </FormItem>
                   </template>
-                  <template v-if="field.fieldType === 'datebox' || field.fieldType === 'datetimebox' || field.fieldType === 'monthbox'">
+                  <template v-if="field.fieldType === 'datebox' || field.fieldType === 'datetimebox' || field.fieldType === 'monthbox' || field.fieldType === 'yearbox'">
                     <FormItem label="是否取当前时间">
                       <Select v-model="field.currentDate">
                         <Option value="false">否</Option>
@@ -322,6 +325,9 @@
                     </template>
                     <template v-else-if="item.fieldType === 'monthbox'">
                       <DatePicker type="month"></DatePicker>
+                    </template>
+                    <template v-else-if="item.fieldType === 'yearbox'">
+                      <DatePicker type="year"></DatePicker>
                     </template>
                     <template v-else-if="item.fieldType === 'tablebox'">
                       <Table></Table>

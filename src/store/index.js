@@ -86,6 +86,10 @@ const state = {
       fieldType: 'monthbox'
     },
     {
+      title: '年份选择器',
+      fieldType: 'yearbox'
+    },
+    {
       title: '子表',
       fieldType: 'tablebox'
     },
@@ -214,6 +218,175 @@ const state = {
       text: '用户ID',
       value: 'userId'
     }
+  ],
+  chartFieldCalculateType: [ // 图表字段计算方式
+    {
+      text: '求和',
+      value: 'sum'
+    },
+    {
+      text: '计数',
+      value: 'count'
+    }
+  ],
+  chartType: [ // 图表类型
+    {
+      type: 'line',
+      title: '折线图',
+      icon: 'chart-icon-line'
+    },
+    {
+      type: 'bar',
+      title: '柱状图',
+      icon: 'chart-icon-bar'
+    },
+    {
+      type: 'pie',
+      title: '饼图',
+      icon: 'chart-icon-pie'
+    },
+    {
+      type: 'gauge',
+      title: '仪表盘',
+      icon: 'chart-icon-gauge'
+    }
+  ],
+  chartCondition: [ // 图表搜索条件
+    {
+      text: '包含',
+      value: 'like'
+    },
+    {
+      text: '不包含',
+      value: 'not like'
+    },
+    {
+      text: '等于',
+      value: '='
+    },
+    {
+      text: '不等于',
+      value: '<>'
+    },
+    {
+      text: '大于',
+      value: '>'
+    },
+    {
+      text: '大于等于',
+      value: '>='
+    },
+    {
+      text: '小于',
+      value: '<'
+    },
+    {
+      text: '小于等于',
+      value: '<='
+    },
+    {
+      text: '为空',
+      value: 'isEmpty'
+    },
+    {
+      text: '不为空',
+      value: 'notEmpty'
+    }
+  ],
+  chartDateCondition: [ // 图表日期筛选项
+    {
+      name: '今天',
+      type: 'fixed',
+      disabled: true,
+      fixed: {
+        start: '1',
+        granularity: 'day',
+        end: '1'
+      },
+      accurate: {}
+    },
+    {
+      name: '昨天',
+      type: 'fixed',
+      disabled: true,
+      fixed: {
+        start: '1',
+        granularity: 'day',
+        end: '1'
+      },
+      accurate: {}
+    },
+    {
+      name: '最近7天',
+      type: 'fixed',
+      disabled: true,
+      fixed: {
+        start: '7',
+        granularity: 'day',
+        end: '1'
+      }
+    },
+    {
+      name: '最近30天',
+      type: 'fixed',
+      disabled: true,
+      fixed: {
+        start: '30',
+        granularity: 'day',
+        end: '1'
+      },
+      accurate: {}
+    },
+    {
+      name: '最近90天',
+      type: 'fixed',
+      disabled: true,
+      fixed: {
+        start: '90',
+        granularity: 'day',
+        end: '1'
+      },
+      accurate: {}
+    },
+    {
+      name: '最近365天',
+      type: 'fixed',
+      disabled: true,
+      fixed: {
+        start: '365',
+        granularity: 'day',
+        end: '1'
+      },
+      accurate: {}
+    }
+  ],
+  chartColorTheme: [ // 图表配色
+    {
+      name: '默认12',
+      colors: ['rgb(81, 130, 228)', 'rgb(155, 204, 102)', 'rgb(63, 178, 126)', 'rgb(247, 203, 74)', 'rgb(248, 141, 72)', 'rgb(243, 83, 82)', 'rgb(206, 98, 214)',
+        'rgb(137, 84, 212)', 'rgb(81, 86, 184)', 'rgb(81, 180, 241)', 'rgb(105, 212, 219)', 'rgb(212, 45, 107)']
+    }
+  ],
+  gaugeConditions: [ // 图表配色
+    {
+      min: '0',
+      max: '0.2',
+      color: 'rgb(145, 199, 174)'
+    },
+    {
+      min: '0.2',
+      max: '0.8',
+      color: 'rgb(99, 134, 158)'
+    },
+    {
+      min: '0.8',
+      max: '1',
+      color: 'rgb(194, 53, 49)'
+    }
+  ],
+  gaugeConditionsColors: [ // 仪表盘配置颜色
+    'rgb(81, 130, 228)', 'rgb(155, 204, 102)', 'rgb(63, 178, 126)', 'rgb(247, 203, 74)', 'rgb(248, 141, 72)', 'rgb(243, 83, 82)', 'rgb(206, 98, 214)',
+    'rgb(137, 84, 212)', 'rgb(81, 86, 184)', 'rgb(81, 180, 241)', 'rgb(105, 212, 219)', 'rgb(212, 45, 107)'
   ]
 }
 

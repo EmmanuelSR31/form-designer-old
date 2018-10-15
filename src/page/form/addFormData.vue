@@ -71,6 +71,14 @@
                 <DatePicker type="month" :value="formDataObj[item.text]" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" :disabled="strToBool(item.disabled)" :readonly="strToBool(item.readonly)" :key="item.text"></DatePicker>
               </template>
             </template>
+            <template v-else-if="item.fieldType === 'yearbox'">
+              <template v-if="item.currentDate === 'true'">
+                <DatePicker type="year" :value="currentDate" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" :disabled="strToBool(item.disabled)" :readonly="strToBool(item.readonly)" :key="item.text"></DatePicker>
+              </template>
+              <template v-else>
+                <DatePicker type="year" :value="formDataObj[item.text]" @on-change="formDataObj[item.text]=$event" :placeholder="item.prompt" :disabled="strToBool(item.disabled)" :readonly="strToBool(item.readonly)" :key="item.text"></DatePicker>
+              </template>
+            </template>
             <template v-else-if="item.fieldType === 'tablebox'">
               <childTable :childTableName="item.tableTitle" :recordID="formDataObj.uuid"></childTable>
             </template>
