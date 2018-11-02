@@ -20,27 +20,31 @@ export default {
   name: 'openedPageTags',
   data () {
     return {
-      tagContextmenuShow: false,
-      axios: {
+      tagContextmenuShow: false, // 是否显示右键菜单
+      axios: { // 右键菜单位置
         x: null,
         y: null
       },
-      tagConLeft: 0,
-      refsTag: []
+      tagConLeft: 0, // 滚动区域左侧距离
+      refsTag: [] // 标签DOM
     }
   },
   props: {
-    pageTagsList: Array
+    pageTagsList: Array // 标签数据列表
   },
   computed: {
-    currentPageName: function () {
+    currentPageName: function () { // 当前页面名
       return this.$store.state.currentPageName
     },
-    contextMenuList: function () {
+    contextMenuList: function () { // 标签右键菜单
       return this.$store.state.contextMenuList
     }
   },
   methods: {
+    /**
+    * @desc 关闭标签
+    * @param {String} name 要关闭的标签名
+    */
     closeTag: function (name) { // 关闭标签
       let pageOpenedList = this.$store.state.pageOpenedList
       let lastPageObj = pageOpenedList[0]
@@ -65,13 +69,22 @@ export default {
         this.linkTo(lastPageObj)
       }
     },
+    /**
+    * @desc 跳转页面
+    * @param {Object} item 跳转的页面对象
+    */
     linkTo: function (item) { // 跳转页面
       this.$router.push({
         path: '/' + item.name
       })
       this.$store.dispatch('setCurrentPageName', item.name)
     },
-    showTagMenu: function (item, event) { // 打开右键菜单
+    /**
+    * @desc 打开右键菜单
+    * @param {Object} item 要打开右键菜单的标签
+    * @param {Object} event 事件
+    */
+    showTagMenu: function (item, event) {
       event.preventDefault()
       var x = event.clientX - 5
       var y = event.clientY - 5
@@ -80,6 +93,10 @@ export default {
       this.axios.x = x
       this.axios.y = y
     },
+    /**
+    * @desc 点击右键菜单
+    * @param {String} name 点击的右键菜单名
+    */
     contextMenuClick: function (name) { // 点击右键菜单
       if (name === 'close' && this.$store.state.contextMenuOpenedTag !== 'home') {
         let pageOpenedList = this.$store.state.pageOpenedList
@@ -110,10 +127,17 @@ export default {
       }
       this.contextMenuClose()
     },
-    contextMenuClose: function () { // 关闭右键菜单
+    /**
+    * @desc 关闭右键菜单
+    */
+    contextMenuClose: function () {
       this.tagContextmenuShow = false
     },
-    handlescroll: function (e) { // 鼠标中键滚动
+    /**
+    * @desc 鼠标中键滚动
+    * @param {Object} e 事件
+    */
+    handlescroll: function (e) {
       var type = e.type
       let delta = 0
       if (type === 'DOMMouseScroll' || type === 'mousewheel') {
@@ -135,6 +159,10 @@ export default {
       }
       this.tagConLeft = left
     },
+    /**
+    * @desc 标签移动到可视区域
+    * @param {Object} tag 标签对象
+    */
     moveToView (tag) {
       if (tag.offsetLeft < -this.tagConLeft) { // 标签在可视区域左侧
         this.tagConLeft = -tag.offsetLeft - 10

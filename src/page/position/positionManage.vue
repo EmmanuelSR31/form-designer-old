@@ -22,7 +22,7 @@ export default {
   data () {
     return {
       loading: false, // 加载中
-      columns: [
+      columns: [ // 表格表头
         {
           type: 'index',
           title: '序列',
@@ -55,9 +55,9 @@ export default {
           }
         }
       ],
-      data: [],
-      modalFlag: false,
-      modalTitle: '新增职位',
+      data: [], // 职位数据
+      modalFlag: false, // 职位对话框是否显示
+      modalTitle: '新增职位', // 职位对话框标题
       positionObj: {} // 职位对象
     }
   },
@@ -67,22 +67,35 @@ export default {
     }
   },
   methods: {
+    /**
+    * @desc 初始化
+    */
     init: function () {
       this.getData()
     },
-    getData: function () { // 取数据
+    /**
+    * @desc 取职位数据
+    */
+    getData: function () {
       this.loading = true
       this.$api.post('/system/user/position/getAll.do', {}, r => {
         this.data = r.data
         this.loading = false
       })
     },
+    /**
+    * @desc 新增职位
+    */
     add: function () { // 新增
       this.positionObj = {}
       this.modalFlag = true
       this.modalTitle = '新增职位'
     },
-    edit: function (params) { // 修改
+    /**
+    * @desc 修改职位
+    * @param {Object} params 当前要修改的职位
+    */
+    edit: function (params) {
       let temp = params.row
       delete temp._index
       delete temp.rowKey
@@ -90,7 +103,10 @@ export default {
       this.modalFlag = true
       this.modalTitle = '修改职位'
     },
-    save: function () { // 保存
+    /**
+    * @desc 保存
+    */
+    save: function () {
       if (this.positionObj.id === undefined) {
         this.positionObj.id = 0
         this.positionObj.activiti_uuid = ''

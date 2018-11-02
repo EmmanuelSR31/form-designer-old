@@ -17,19 +17,22 @@ require('es6-promise').polyfill()
 export default {
   name: 'workbenchChart',
   props: {
-    chartObj: Object,
-    index: String
+    chartObj: Object, // 图表对象
+    index: String // 图表顺序
   },
   data () {
     return {
-      option: {},
-      data: [],
-      xData: [],
-      yData: [],
-      charts: ''
+      option: {}, // 图表配置对象
+      data: [], // 图表数据
+      xData: [], // 图表X轴数据
+      yData: [], // 图表Y轴数据
+      charts: ''  // echarts对象
     }
   },
   methods: {
+    /**
+    * @desc 初始化
+    */
     init: function () {
       this.$api.post('/develop/url/getUrl.do', {name: this.chartObj.url, user_id: '1010'}, r => {
         console.log(r)
@@ -41,6 +44,9 @@ export default {
         this.createChart()
       })
     },
+    /**
+    * @desc 绘制echarts
+    */
     createChart: function () {
       this.charts = echarts.init(document.getElementById(this.index))
       if (this.chartObj.chart_style === 'bar' || this.chartObj.chart_style === 'line') {

@@ -17,17 +17,26 @@
 export default {
   name: 'infoCard',
   props: {
-    cardObj: Object
+    cardObj: Object // 信息卡片对象
   },
   methods: {
+    /**
+    * @desc 取信息卡片数据
+    */
     init: function () {
       this.$api.post('/develop/url/getUrl.do', {postation_id: '9', msg: this.cardObj.msg, user_id: '1010'}, r => {
         console.log(r)
       })
     },
+    /**
+    * @desc 触发修改信息卡片
+    */
     edit: function () {
       this.$emit('edit-card')
     },
+    /**
+    * @desc 触发删除信息卡片
+    */
     del: function () {
       this.$emit('del-card')
     }

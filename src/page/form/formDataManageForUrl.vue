@@ -190,10 +190,7 @@ export default {
           } else if (variable.fieldType === 'filebox') {
             columnsTemp.push(Util.fileColumns(variable))
           } else {
-            columnsTemp.push({
-              title: variable.title,
-              key: variable.text
-            })
+            columnsTemp.push(Util.textColumns(variable))
           }
         }
       }

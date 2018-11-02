@@ -47,7 +47,10 @@ export default {
     }
   },
   methods: {
-    init: function () { // 取菜单数据
+    /**
+    * @desc 取菜单数据
+    */
+    init: function () {
       this.$api.post('/topJUI/index/getMenuList.do', {}, r => {
         if (r.data) {
           this.data = Util.formatterTreeData(r.data)
@@ -58,12 +61,19 @@ export default {
       this.pid = ''
       this.methodFlag = ''
     },
-    initMenu: function (row) { // 选中菜单
+    /**
+    * @desc 选中菜单
+    * @param {Array} row 选中菜单数组
+    */
+    initMenu: function (row) {
       this.menuObj = row[0]
       this.pid = this.menuObj.id
       this.methodFlag = 'edit'
     },
-    addMenu: function () { // 新增菜单
+    /**
+    * @desc 新增菜单
+    */
+    addMenu: function () {
       if (this.pid === '') {
         this.$Message.warning('请先选择一条目录')
       } else {
@@ -71,7 +81,10 @@ export default {
         this.menuObj = {}
       }
     },
-    saveMenu: function () { // 保存菜单
+    /**
+    * @desc 保存菜单
+    */
+    saveMenu: function () {
       if (this.methodFlag === 'add') {
         this.menuObj.pid = this.pid
         this.menuObj.name = ''
@@ -92,7 +105,10 @@ export default {
         })
       }
     },
-    deleteMenu: function () { // 删除菜单
+    /**
+    * @desc 删除菜单
+    */
+    deleteMenu: function () {
       if (this.menuObj.id === undefined) {
         this.$Message.warning('请先选择一条菜单')
       } else {

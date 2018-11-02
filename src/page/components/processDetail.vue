@@ -23,6 +23,9 @@ export default {
     }
   },
   methods: {
+    /**
+    * @desc 取流程明细
+    */
     init: function () {
       this.$api.post('/flow/getOpinionsByUuid', {uuid: this.uuid}, r => {
         if (r.data.status === '0') {

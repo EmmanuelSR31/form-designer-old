@@ -78,7 +78,7 @@ import Util from '@/utils/index'
 export default {
   data () {
     return {
-      loading: false,
+      loading: false, // 载入中
       departmentData: [], // 部门数据
       selectDepartmentObj: {}, // 当前部门
       departmentObj: {}, // 部门对象
@@ -86,13 +86,13 @@ export default {
       userObj: {}, // 用户对象
       pid: '', // 所属部门
       parentDepartment: '', // 所属部门名称
-      modalDepartment: false,
-      modalUser: false,
-      modalDepartmentTitle: '新增部门',
-      modalUserTitle: '新增用户',
+      modalDepartment: false, // 部门对话框是否显示
+      modalUser: false, // 用户对话框是否显示
+      modalDepartmentTitle: '新增部门', // 部门对话框标题
+      modalUserTitle: '新增用户', // 用户对话框标题
       positionList: this.$store.state.positionList, // 用户职位列表
       userStatusList: this.$store.state.userStatusList, // 用户状态列表
-      columns: [
+      columns: [ // 表格表头
         {
           type: 'index',
           title: '序列',
@@ -170,7 +170,10 @@ export default {
     }
   },
   methods: {
-    init: function () { // 取左侧部门列表
+    /**
+    * @desc 取左侧部门列表
+    */
+    init: function () {
       this.$api.post('/system/user/department/getAll.do', {}, r => {
         if (r.data) {
           this.departmentData = Util.formatterTreeData(r.data)
@@ -178,12 +181,19 @@ export default {
       })
       this.data = []
     },
-    initUsers: function (row) { // 选择部门
+    /**
+    * @desc 选择部门
+    * @param {Array} row 选中的部门数组
+    */
+    initUsers: function (row) {
       this.selectDepartmentObj = row[0]
       this.pid = this.selectDepartmentObj.id
       this.initUsersData()
     },
-    initUsersData: function () { // 取部门用户数据
+    /**
+    * @desc 取部门用户数据
+    */
+    initUsersData: function () {
       this.loading = true
       this.$api.post('/system/user/getUserByDepartment.do', {department: this.pid}, r => {
         if (r.data) {
@@ -192,7 +202,10 @@ export default {
         this.loading = false
       })
     },
-    addDepartment: function () { // 新增部门
+    /**
+    * @desc 新增部门
+    */
+    addDepartment: function () {
       if (this.pid === '') {
         this.$Message.warning('请先选择一条数据')
       } else {
@@ -202,7 +215,10 @@ export default {
         this.parentDepartment = this.selectDepartmentObj.text
       }
     },
-    editDepartment: function () { // 修改部门
+    /**
+    * @desc 修改部门
+    */
+    editDepartment: function () {
       if (this.pid === '') {
         this.$Message.warning('请先选择一条数据')
       } else {
@@ -216,7 +232,10 @@ export default {
         })
       }
     },
-    saveDepartment: function () { // 保存部门
+    /**
+    * @desc 保存部门
+    */
+    saveDepartment: function () {
       if (this.departmentObj.id === undefined) {
         this.departmentObj.parent_id = this.pid
         let jsonStr = JSON.stringify(this.departmentObj)
@@ -243,10 +262,15 @@ export default {
         })
       }
     },
-    deleteDepartment: function () { // 删除部门
-
+    /**
+    * @desc 删除部门
+    */
+    deleteDepartment: function () {
     },
-    addUser: function () { // 新增用户
+    /**
+    * @desc 新增用户
+    */
+    addUser: function () {
       if (this.pid === '') {
         this.$Message.warning('请先选择部门')
       } else {
@@ -255,14 +279,21 @@ export default {
         this.modalUser = true
       }
     },
-    editUser: function (row) { // 修改用户
+    /**
+    * @desc 修改用户
+    * @param {Object} row 要修改的用户对象
+    */
+    editUser: function (row) {
       this.userObj = row.row
       delete this.userObj._index
       delete this.userObj.orwKey
       this.modalUserTitle = '修改用户'
       this.modalUser = true
     },
-    saveUser: function () { // 保存用户
+    /**
+    * @desc 保存用户
+    */
+    saveUser: function () {
       if (this.userObj.id === undefined) {
         this.userObj.department_id = this.selectDepartmentObj.id
         this.userObj.registration_date = Util.getCurrentDate()
@@ -292,8 +323,11 @@ export default {
         })
       }
     },
-    deleteUser: function (row) { // 删除用户
-
+    /**
+    * @desc 删除用户
+    * @param {Object} row 要删除的用户对象
+    */
+    deleteUser: function (row) {
     }
   },
   mounted () {

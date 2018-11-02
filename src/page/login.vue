@@ -37,11 +37,11 @@ import Util from '@/utils/index'
 export default {
   data () {
     return {
-      loginObj: {
+      loginObj: { // 登录用户对象
         userName: 'admin',
         password: 'pass'
       },
-      rules: {
+      rules: { // 验证规则
         userName: [
           { required: true, message: '账号不能为空', trigger: 'blur' }
         ],
@@ -52,6 +52,9 @@ export default {
     }
   },
   methods: {
+    /**
+    * @desc 登录
+    */
     login: function () {
       this.$refs.loginForm.validate((valid) => {
         if (valid) {

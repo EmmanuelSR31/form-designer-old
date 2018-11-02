@@ -98,9 +98,9 @@ export default {
       leftMenuTheme: this.$store.state.leftMenuTheme, // 左侧菜单样式
       leftMenuWidth: 200, // 左侧菜单宽度
       shrink: false, // 左侧菜单切换
-      userName: '',
+      userName: '', // 用户名
       systemObj: {system_name: '克莱特商务云平台'}, // 系统名称对象
-      modalPassword: false,
+      modalPassword: false, // 修改密码对话框是否显示
       passwordObj: {} // 密码对象
     }
   },
@@ -119,6 +119,9 @@ export default {
     }
   },
   methods: {
+    /**
+    * @desc 初始化
+    */
     init: function () {
       this.$store.dispatch('updateMenuList')
       this.userName = localStorage.userName
@@ -129,7 +132,10 @@ export default {
         }
       })
     },
-    changeMenuWidth: function () { // 切换菜单显示
+    /**
+    * @desc 切换菜单显示
+    */
+    changeMenuWidth: function () {
       this.shrink = !this.shrink
       if (this.shrink) {
         this.leftMenuWidth = 0
@@ -137,6 +143,10 @@ export default {
         this.leftMenuWidth = 200
       }
     },
+    /**
+    * @desc 用户菜单点击
+    * @param {String} name 菜单名
+    */
     handleClickUserDropdown (name) { // 用户菜单点击
       if (name === 'ownSpace') {
         this.$store.dispatch('increateTag', {title: '个人中心', path: '', name: 'ownspace'})
@@ -152,8 +162,15 @@ export default {
         })
       }
     },
+    /**
+    * @desc 保存密码
+    */
     savePassword: function () { // 保存密码
     },
+    /**
+    * @desc 路由跳转
+    * @param {Object} e 链接对象
+    */
     routeTo: function (e) {
       this.$store.dispatch('increateTag', e)
       this.$router.push({

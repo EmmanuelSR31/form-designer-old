@@ -90,7 +90,7 @@ import childTable from './childTable/childTable.vue'
 import filesManage from './fileManage/filesManage.vue'
 export default {
   components: {
-    childTable
+    childTable // 子表组件
   },
   data () {
     return {
@@ -105,9 +105,15 @@ export default {
     }
   },
   methods: {
+    /**
+    * @desc 返回
+    */
     cancel: function () {
       this.$router.go(-1)
     },
+    /**
+    * @desc 保存
+    */
     save: function () {
       let obj = {}
       obj.title = this.tableName
@@ -124,12 +130,19 @@ export default {
         }
       })
     },
+    /**
+    * @desc 初始化
+    */
     init: function () {
       this.formControls = Util.removeFieldTable(this.formObj.field)
       this.formDataObj = Util.formatFormData(this.formControls, this.formDataObj)
       this.fileList = Util.formatFieldFile(this.formControls, this.formDataObj)
     },
-    changeQuoteSelectData: function (field) { // 引用下拉写入其他字段
+    /**
+    * @desc 引用下拉写入其他字段
+    * @param {Object} field 引用下拉字段
+    */
+    changeQuoteSelectData: function (field) {
       if (field.selectType === '1' & field.selectFields !== '') {
         if (field.selectFields.length > 0) {
           let temp = {}
@@ -146,7 +159,11 @@ export default {
         }
       }
     },
-    openUpload: function (field) { // 打开附件上传
+    /**
+    * @desc 打开附件上传
+    * @param {Object} field 附件字段
+    */
+    openUpload: function (field) {
       let paths = this.formDataObj[field.text].replace(/\//g, '&quot;')
       console.log(paths)
       this.$layer.open({
@@ -166,7 +183,12 @@ export default {
         title: '附件上传'
       })
     },
-    deleteFile: function (field, file) { // 删除文件
+    /**
+    * @desc 删除附件
+    * @param {Object} field 附件字段
+    * @param {Object} file 附件
+    */
+    deleteFile: function (field, file) {
       this.$Modal.confirm({
         title: '',
         content: '确认删除此文件？',
@@ -177,18 +199,35 @@ export default {
         }
       })
     },
-    handleBeforeUpload: function (field) { // 点击上传设置字段名
+    /**
+    * @desc 点击上传设置附件字段
+    * @param {Object} field 附件字段
+    */
+    handleBeforeUpload: function (field) {
       this.currentUploadField = field
     },
-    uploadSuccess: function (response, file, fileList) { // 上传成功
+    /**
+    * @desc 上传成功
+    * @param {Object} response 返回对象
+    */
+    uploadSuccess: function (response, file, fileList) {
       console.log(response)
       console.log(this.currentUploadField)
       this.fileList[this.currentUploadField].push(response.obj.filePath)
     },
+    /**
+    * @desc string转为Boolean
+    * @param {String} str 字符串
+    * @return {Boolean} 布尔值
+    */
     strToBool: function (str) { // string转为Boolean
       return Util.strToBool(str)
     },
-    numberCalculate: function (field) { // number字段值计算
+    /**
+    * @desc 数字字段值计算
+    * @param {Object} field 数字字段
+    */
+    numberCalculate: function (field) {
       let count = 0
       if (field.calculateType === 'multiply' || field.calculateType === 'plus') {
         for (let i = 0; i < field.calculateFields.length; i++) {
@@ -213,7 +252,7 @@ export default {
     }
   },
   computed: {
-    formClass () {
+    formClass () { // 表单排列样式
       if (Util.isEmpty(this.formObj.columnNumber)) {
         this.formObj.columnNumber = '1'
       }

@@ -225,30 +225,128 @@ const state = {
       value: 'sum'
     },
     {
+      text: '平均值',
+      value: 'average'
+    },
+    {
       text: '计数',
       value: 'count'
+    },
+    {
+      text: '去重计数',
+      value: 'distinct-count'
+    },
+    {
+      text: '最大值',
+      value: 'max'
+    },
+    {
+      text: '最小值',
+      value: 'min'
     }
   ],
   chartType: [ // 图表类型
     {
       type: 'line',
       title: '折线图',
-      icon: 'chart-icon-line'
+      icon: 'chart-icon-line',
+      tips: ['1个或2个维度', '1个或多个数值']
     },
     {
       type: 'bar',
       title: '柱状图',
-      icon: 'chart-icon-bar'
+      icon: 'chart-icon-bar',
+      tips: ['2个以内维度', '1个或多个数值']
     },
     {
       type: 'pie',
       title: '饼图',
-      icon: 'chart-icon-pie'
+      icon: 'chart-icon-pie',
+      tips: ['1个维度 1个数值', '0个维度 多个数值']
     },
     {
       type: 'gauge',
       title: '仪表盘',
-      icon: 'chart-icon-gauge'
+      icon: 'chart-icon-gauge',
+      tips: ['0个维度', '1个数值']
+    },
+    {
+      type: 'stack-bar',
+      title: '堆叠柱状图',
+      icon: 'chart-icon-stack-bar',
+      tips: ['1个或2个维度', '2个或多个数值']
+    },
+    {
+      type: 'waterfall',
+      title: '瀑布图',
+      icon: 'chart-icon-waterfall',
+      tips: ['1个或2个维度 1个数值', '0个维度多个数值']
+    },
+    {
+      type: 'transverse-bar',
+      title: '条形图',
+      icon: 'chart-icon-transverse-bar',
+      tips: ['2个以内维度', '1个或多个数值']
+    },
+    {
+      type: 'stack-transverse-bar',
+      title: '堆叠条形图',
+      icon: 'chart-icon-stack-transverse-bar',
+      tips: ['1个或2个维度', '2个或多个数值']
+    },
+    {
+      type: 'area-line',
+      title: '面积图',
+      icon: 'chart-icon-area-line',
+      tips: ['0个或1个维度', '1个或多个数值']
+    },
+    {
+      type: 'stack-area-line',
+      title: '堆叠面积图',
+      icon: 'chart-icon-stack-area-line',
+      tips: ['1个维度', '2个或多个数值']
+    },
+    {
+      type: 'scatter',
+      title: '散点图',
+      icon: 'chart-icon-scatter',
+      tips: ['0个或多个维度', '2个数值']
+    },
+    {
+      type: 'sunburst',
+      title: '旭日图',
+      icon: 'chart-icon-sunburst',
+      tips: ['2个或多个维度', '1个数值']
+    },
+    {
+      type: 'treemap',
+      title: '矩形树图',
+      icon: 'chart-icon-treemap',
+      tips: ['1个或多个维度', '0个或1个数值']
+    },
+    {
+      type: 'funnel',
+      title: '漏斗图',
+      icon: 'chart-icon-funnel',
+      tips: ['1个维度 1个数值', '0个维度 多个数值']
+    },
+    {
+      type: 'line-and-bar',
+      title: '双轴图',
+      icon: 'chart-icon-line-and-bar',
+      tips: ['1个维度 1个数值', '0个维度 多个数值']
+    },
+    {
+      type: 'sankey',
+      title: '桑基图',
+      icon: 'chart-icon-sankey',
+      tips: ['2个~20个维度', '1个数值']
+    },
+    {
+      type: 'radar',
+      title: '雷达图',
+      icon: 'chart-icon-radar',
+      tips: ['1个维度', '多个数值']
     }
   ],
   chartCondition: [ // 图表搜索条件
@@ -365,6 +463,10 @@ const state = {
       name: '默认12',
       colors: ['rgb(81, 130, 228)', 'rgb(155, 204, 102)', 'rgb(63, 178, 126)', 'rgb(247, 203, 74)', 'rgb(248, 141, 72)', 'rgb(243, 83, 82)', 'rgb(206, 98, 214)',
         'rgb(137, 84, 212)', 'rgb(81, 86, 184)', 'rgb(81, 180, 241)', 'rgb(105, 212, 219)', 'rgb(212, 45, 107)']
+    },
+    {
+      name: '灰色5',
+      colors: ['rgb(90, 106, 123)', 'rgb(159, 178, 190)', 'rgb(92, 107, 134)', 'rgb(137, 142, 148)', 'rgb(203, 211, 218)']
     }
   ],
   gaugeConditions: [ // 图表配色
@@ -387,7 +489,10 @@ const state = {
   gaugeConditionsColors: [ // 仪表盘配置颜色
     'rgb(81, 130, 228)', 'rgb(155, 204, 102)', 'rgb(63, 178, 126)', 'rgb(247, 203, 74)', 'rgb(248, 141, 72)', 'rgb(243, 83, 82)', 'rgb(206, 98, 214)',
     'rgb(137, 84, 212)', 'rgb(81, 86, 184)', 'rgb(81, 180, 241)', 'rgb(105, 212, 219)', 'rgb(212, 45, 107)'
-  ]
+  ],
+  fontSize: ['10', '11', '12', '13', '14', '15', '16', '18', '20', '24', '28', '32', '36', '48', '64'], // 字体大小
+  lineWidth: ['1', '2', '3', '4', '5', '6', '7', '8', '9'], // 图表线条宽度
+  lineType: [{text: '实线', value: 'solid'}, {text: '虚线', value: 'dashed'}, {text: '点状', value: 'dotted'}] // 图表线条类型
 }
 
 export default new Vuex.Store({

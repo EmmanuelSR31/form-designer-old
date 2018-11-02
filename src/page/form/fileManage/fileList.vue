@@ -18,7 +18,7 @@
 import pdf from 'vue-pdf'
 export default {
   components: {
-    pdf
+    pdf // pdf插件
   },
   data () {
     return {
@@ -26,7 +26,7 @@ export default {
       currentPage: 1, // 当前页码
       pageSize: 30, // 每页显示数
       totalRows: 0, // 数据总数
-      columns: [
+      columns: [ // 表格表头
         {
           type: 'index',
           title: '序列',
@@ -98,7 +98,7 @@ export default {
           }
         }
       ],
-      data: [],
+      data: [], // 附件数据
       viewFlag: false, // 打开预览
       imgSrc: '', // 预览图片地址
       pdfSrc: '' // 预览pdf地址
@@ -110,10 +110,17 @@ export default {
     }
   },
   methods: {
+    /**
+    * @desc 初始化
+    */
     init: function () {
       this.changePage(this.currentPage)
     },
-    changePage: function (current) { // 改变页码
+    /**
+    * @desc 改变页码
+    * @param {Num} current 页码
+    */
+    changePage: function (current) {
       this.loading = true
       this.currentPage = current
       this.$api.post('/upload/getFilelist', {rows: this.pageSize, page: this.currentPage}, r => {
@@ -123,11 +130,19 @@ export default {
         this.loading = false
       })
     },
-    changePageSize: function (size) { // 改变每页显示数
+    /**
+    * @desc 改变每页显示数
+    * @param {Num} size 每页显示数
+    */
+    changePageSize: function (size) {
       this.pageSize = size
       this.changePage(this.currentPage)
     },
-    viewFile: function (params) { // 预览图片
+    /**
+    * @desc 预览图片
+    * @param {Object} params 附件对象
+    */
+    viewFile: function (params) {
       this.viewFlag = true
       if (params.row.fileType === '.pdf') {
         this.pdfSrc = 'http://27.221.114.82:9003' + params.row.filePath
@@ -135,10 +150,17 @@ export default {
         this.imgSrc = 'http://27.221.114.82:9003' + params.row.filePath
       }
     },
-    closeView: function () { // 关闭预览
+    /**
+    * @desc 关闭预览
+    */
+    closeView: function () {
       this.viewFlag = false
     },
-    delFile: function (params) { // 删除附件
+    /**
+    * @desc 删除附件
+    * @param {Object} params 要删除的附件对象
+    */
+    delFile: function (params) {
       this.$Modal.confirm({
         title: '',
         content: '确认删除此附件？',

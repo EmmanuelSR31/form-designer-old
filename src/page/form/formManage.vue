@@ -18,7 +18,7 @@ export default {
       currentPage: 1, // 当前页码
       pageSize: 10, // 每页显示数
       totalRows: 0, // 数据总数
-      columns: [
+      columns: [ // 表格表头
         {
           type: 'index',
           title: '序列',
@@ -123,7 +123,11 @@ export default {
     }
   },
   methods: {
-    changePage: function (current) { // 改变页码
+    /**
+    * @desc 改变页码
+    * @param {Num} current 页码
+    */
+    changePage: function (current) {
       this.currentPage = current
       this.$api.post('/crm/ActionFormUtil/getAllTable.do', {rows: this.pageSize, page: this.currentPage}, r => {
         this.totalRows = r.data.total
@@ -131,30 +135,51 @@ export default {
         this.loading = false
       })
     },
-    changePageSize: function (size) { // 改变每页显示数
+    /**
+    * @desc 改变每页显示数
+    * @param {Num} size 每页显示数
+    */
+    changePageSize: function (size) {
       this.pageSize = size
       this.changePage(this.currentPage)
     },
-    addForm: function () { // 新增表单
+    /**
+    * @desc 新增表单
+    */
+    addForm: function () {
       this.$router.push({
-        name: 'addForm'
+        name: 'editForm',
+        params: {method: 'add'}
       })
     },
-    editForm: function (params) { // 修改表单
+    /**
+    * @desc 修改表单
+    * @param {Object} params 表单对象
+    */
+    editForm: function (params) {
       let strJson = params.row.str_json
       this.$store.dispatch('setCurrentEditForm', JSON.parse(strJson))
       this.$router.push({
-        name: 'editForm'
+        name: 'editForm',
+        params: {method: 'edit'}
       })
     },
-    editFormAttr: function (params) { // 配置表单
+    /**
+    * @desc 配置表单
+    * @param {Object} params 表单对象
+    */
+    editFormAttr: function (params) {
       let strJson = params.row.str_json
       this.$store.dispatch('setCurrentEditForm', JSON.parse(strJson))
       this.$router.push({
         name: 'editFormAttr'
       })
     },
-    deleteForm: function (params) { // 删除表单
+    /**
+    * @desc 删除表单
+    * @param {Object} params 表单对象
+    */
+    deleteForm: function (params) {
       this.$Modal.confirm({
         title: '',
         content: '确认删除此表单？',

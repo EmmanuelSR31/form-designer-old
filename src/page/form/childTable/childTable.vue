@@ -24,8 +24,8 @@ export default {
       loading: true, // 加载中
       currentPage: 1, // 当前页码
       totalRows: 0, // 数据总数
-      columns: [],
-      data: [],
+      columns: [], // 表格表头
+      data: [], // 数据
       selectData: this.$store.state.selectData // 下拉数据
     }
   },
@@ -35,7 +35,11 @@ export default {
     }
   },
   methods: {
-    changePage: function (current) { // 改变页码
+    /**
+    * @desc 改变页码
+    * @param {Num} current 页码
+    */
+    changePage: function (current) {
       this.currentPage = current
       this.$api.post('/crm/ActionFormUtil/getDataByUuid.do', {tableName: this.childTableName, uuid: this.recordID}, r => {
         this.totalRows = r.data.total
@@ -43,7 +47,10 @@ export default {
         this.loading = false
       })
     },
-    addFormData: function () { // 新增数据
+    /**
+    * @desc 新增数据
+    */
+    addFormData: function () {
       this.$store.dispatch('setCurrentEditChildForm', this.formObj)
       this.$layer.open({
         type: 2,
@@ -68,7 +75,11 @@ export default {
         }
       })
     },
-    editFormData: function (params) { // 修改数据
+    /**
+    * @desc 修改数据
+    * @param {Object} params 要修改的数据
+    */
+    editFormData: function (params) {
       this.$store.dispatch('setCurrentEditChildForm', this.formObj)
       this.$store.dispatch('setCurrentEditChildFormData', params.row)
       this.$layer.open({
@@ -89,7 +100,11 @@ export default {
         title: '修改数据'
       })
     },
-    viewFormData: function (params) { // 查看数据
+    /**
+    * @desc 查看数据
+    * @param {Object} params 要查看的数据
+    */
+    viewFormData: function (params) {
       this.$store.dispatch('setCurrentEditChildForm', this.formObj)
       this.$store.dispatch('setCurrentEditChildFormData', params.row)
       this.$layer.open({
@@ -110,7 +125,11 @@ export default {
         title: '查看数据'
       })
     },
-    deleteFormData: function (params) { // 删除数据
+    /**
+    * @desc 删除数据
+    * @param {Object} params 要删除的数据
+    */
+    deleteFormData: function (params) {
       this.$Modal.confirm({
         title: '',
         content: '确认删除此数据？',
@@ -128,6 +147,9 @@ export default {
         }
       })
     },
+    /**
+    * @desc 初始化
+    */
     init: function () {
       this.$api.post('/pages/crminterface/getDatagridForJson.do', {tableName: this.childTableName}, r => {
         this.formObj = r.data
@@ -136,7 +158,11 @@ export default {
       })
       this.changePage(this.currentPage)
     },
-    initColumns: function (fields) { // 生成表格列
+    /**
+    * @desc 生成表格表头
+    * @param {Array} fields 表单字段
+    */
+    initColumns: function (fields) {
       this.columns = []
       this.columns.push({
         type: 'index',
@@ -151,10 +177,7 @@ export default {
           } else if (variable.fieldType === 'filebox') {
             this.columns.push(Util.fileColumns(variable))
           } else {
-            this.columns.push({
-              title: variable.title,
-              key: variable.text
-            })
+            this.columns.push(Util.textColumns(variable))
           }
         }
       }

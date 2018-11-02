@@ -16,7 +16,7 @@
     <table class="table table-bordered" id='hl-tree-table'>
       <thead>
         <tr>
-          <th v-for="(column,index) in cloneColumns">
+          <th v-for="(column, index) in cloneColumns" :key="index">
             <label v-if="column.type === 'selection'">
               <!-- <input type="checkbox" v-model="checks" @click="handleCheckAll"> -->
             </label>

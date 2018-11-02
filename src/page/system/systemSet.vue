@@ -28,10 +28,13 @@
 export default {
   data () {
     return {
-      systemObj: {} // 设置对象
+      systemObj: {} // 系统设置对象
     }
   },
   methods: {
+    /**
+    * @desc 初始化
+    */
     init: function () {
       this.$api.post('/crm/ActionFormUtil/getByTableName.do', {tableName: 'system_set'}, r => {
         if (r.data.rows.length > 0) {
@@ -48,6 +51,9 @@ export default {
         }
       })
     },
+    /**
+    * @desc 保存
+    */
     save: function () {
       let obj = {}
       obj.title = 'system_set'
@@ -64,7 +70,11 @@ export default {
         }
       })
     },
-    uploadSuccess: function (response, file, fileList) { // 上传成功
+    /**
+    * @desc 上传成功
+    * @param {Object} response 返回对象
+    */
+    uploadSuccess: function (response, file, fileList) {
       this.systemObj.system_icon = response.obj.filePath
     }
   },

@@ -94,16 +94,16 @@ export default {
   data () {
     return {
       urlInParaCondition: this.$store.state.urlInParaCondition, // 链接输入参数条件列表
-      modalOut: false,
-      modalOutTitle: '新增输出参数',
-      outMethod: '',
-      outLoading: false,
-      modalIn: false,
-      modalInTitle: '新增输入参数',
-      inMethod: '',
-      inLoading: false,
+      modalOut: false, // 输出参数对话框是否显示
+      modalOutTitle: '新增输出参数', // 输出参数对话框标题
+      outMethod: '', // 输出参数方法名
+      outLoading: false, // 输出参数载入中
+      modalIn: false, // 输入参数对话框是否显示
+      modalInTitle: '新增输入参数', // 输入参数对话框标题
+      inMethod: '', // 输入参数方法名
+      inLoading: false, // 输入参数载入中
       urlObj: {}, // url对象
-      outColumns: [
+      outColumns: [ // 输出参数表格表头
         {
           type: 'index',
           title: '序列',
@@ -156,7 +156,7 @@ export default {
       ],
       outData: [], // 输出参数数据
       outObj: {}, // 输出参数对象
-      inColumns: [
+      inColumns: [ // 输入参数表格表头
         {
           type: 'index',
           title: '序列',

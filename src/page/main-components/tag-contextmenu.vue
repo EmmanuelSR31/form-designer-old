@@ -11,7 +11,7 @@
 export default {
   name: 'tagContextMenu',
   props: {
-    contextMenuData: {
+    contextMenuData: { // 右键菜单位置对象
       axios: {
         x: null,
         y: null
@@ -19,7 +19,7 @@ export default {
     }
   },
   computed: {
-    contextMenuList: function () {
+    contextMenuList: function () { // 右键菜单列表
       return this.$store.state.contextMenuList
     }
   },

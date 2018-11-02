@@ -167,6 +167,16 @@
                         <Option value="false">否</Option>
                       </Select>
                     </FormItem>
+                    <FormItem label="列表字段宽度">
+                      <InputNumber min="0" v-model="field.trWidth"></InputNumber><span class="modal-field-tips">0为自适应</span>
+                    </FormItem>
+                    <FormItem label="列表对齐方式">
+                      <Select v-model="field.trAlign">
+                        <Option value="left">左对齐</Option>
+                        <Option value="center">居中对齐</Option>
+                        <Option value="right">右对齐</Option>
+                      </Select>
+                    </FormItem>
                     <template v-if="field.fieldType !== 'radio' && field.fieldType !== 'checkbox' && field.fieldType !== 'switch'">
                       <FormItem label="提示信息">
                         <Input v-model="field.prompt"></Input>
@@ -401,7 +411,7 @@ export default {
   },
   data () {
     return {
-      modalField: false,
+      modalField: false, // 设置字段属性对话框是否显示
       currentStep: 0, // 步骤
       field: {}, // 当前字段
       formObj: {}, // 表单对象
@@ -411,14 +421,14 @@ export default {
       quoteSelect: this.$store.state.quoteSelect, // 引用下拉选项
       urlInParaValue: this.$store.state.urlInParaValue, // 引用下拉输入参数值列表
       radiosText: '', // 单选框文本
-      radioTemp: '',
+      radioTemp: '', // 单选框临时数据
       checkboxsText: '', // 多选框文本
-      checkboxTemp: '',
-      swiperOption: {
+      checkboxTemp: '', // 多选框临时数据
+      swiperOption: { // 滑动配置
         allowTouchMove: false
       },
       childTables: [], // 子表数组
-      quoteSelectColumns: [ // 引用输出字段表格表头
+      quoteSelectColumns: [ // 引用下拉输出字段表格表头
         {key: 'name', title: '字段名'},
         {key: 'type', title: '类型'},
         {key: 'inputName', title: '组件名'},
@@ -447,10 +457,10 @@ export default {
           }
         }
       ],
-      quoteSelectTableData: [], // 引用输出字段表格数据
-      modalQuoteSelect: false,
-      quoteSelectObj: {}, // 引用输出字段对象
-      quoteSelectInColumns: [ // 引用输入字段表格表头
+      quoteSelectTableData: [], // 引用下拉输出字段表格数据
+      modalQuoteSelect: false, // 修改输出字段对话框是否显示
+      quoteSelectObj: {}, // 引用下拉输出字段对象
+      quoteSelectInColumns: [ // 引用下拉输入字段表格表头
         {key: 'name', title: '名称'},
         {key: 'sql_para_name', title: '数据库字段'},
         {
@@ -499,13 +509,16 @@ export default {
           }
         }
       ],
-      quoteSelectInTableData: [], // 引用输入字段表格数据
-      modalQuoteSelectIn: false,
-      quoteSelectInObj: {}, // 引用输入字段对象
+      quoteSelectInTableData: [], // 引用下拉输入字段表格数据
+      modalQuoteSelectIn: false, // 修改输入字段对话框是否显示
+      quoteSelectInObj: {}, // 引用下拉输入字段对象
       treeForms: [] // 树结构表单数据
     }
   },
   methods: {
+    /* 初始化
+    *@method init
+    */
     init: function () {
       this.$api.post('/crm/ActionFormUtil/getChildTableByType.do', {}, r => { // 取所有子表
         if (r.data) {
@@ -518,16 +531,28 @@ export default {
         }
       })
     },
+    /* 前一步
+    *@method prevStep
+    */
     prevStep: function () {
       this.currentStep = 0
       this.swiper.slidePrev()
     },
+    /* 下一步
+    *@method nextStep
+    */
     nextStep: function () {
       this.currentStep = 1
       this.swiper.slideNext()
     },
-    showSet: function (item) { // 开始设置字段属性
+    /* 开始设置字段属性
+    *@method showSet
+    *@param {Object} item 当前要设置的字段
+    */
+    showSet: function (item) {
       this.field = item
+      this.field.trWidth = this.field.trWidth === undefined ? 0 : this.field.trWidth
+      this.field.trAlign = this.field.trAlign === undefined ? 'left' : this.field.trAlign
       if (item.radios) {
         this.radiosText = item.radios.join('\n')
       } else {
@@ -554,7 +579,11 @@ export default {
       }
       this.modalField = true
     },
-    deleteField: function (item) { // 删除字段
+    /* 删除字段
+    *@method deleteField
+    *@param {Object} item 当前要删除的字段
+    */
+    deleteField: function (item) {
       this.$Modal.confirm({
         title: '',
         content: '确认删除此字段？',
@@ -565,7 +594,10 @@ export default {
         }
       })
     },
-    saveField: function () { // 保存字段属性
+    /* 保存字段属性
+    *@method saveField
+    */
+    saveField: function () {
       this.field.radios = this.radiosText.split('\n')
       this.field.checkboxs = this.checkboxsText.split('\n')
       if (this.field.fieldType === 'combobox' && this.field.selectType === '1') {
@@ -573,6 +605,10 @@ export default {
         this.field.inParas = this.quoteSelectInTableData
       }
     },
+    /* 选择引用
+    *@method changeQuoteSelect
+    *@param {String} value 选中的引用下拉名
+    */
     changeQuoteSelect: function (value) { // 选择引用
       for (let variable of this.quoteSelect) {
         if (variable.name === value) {
@@ -584,39 +620,70 @@ export default {
         }
       }
     },
-    urlInParaTypeFormat: function (value) { // 链接输入参数条件
+    /* 链接输入参数条件格式化
+    *@method urlInParaTypeFormat
+    *@param {String} value 条件值
+    */
+    urlInParaTypeFormat: function (value) {
       return Util.urlInParaTypeFormat(value)
     },
-    trueFalseFormat: function (value) { // 是否
+    /* 是否条件格式化
+    *@method trueFalseFormat
+    *@param {String} value 是否值
+    */
+    trueFalseFormat: function (value) {
       return Util.trueFalseFormat(value)
     },
-    editQuoteSelectInData: function (params) { // 修改输入字段
+    /* 修改引用下拉的输入字段
+    *@method editQuoteSelectInData
+    *@param {Object} params 输入字段对象
+    */
+    editQuoteSelectInData: function (params) {
       this.quoteSelectInObj = params.row
       this.modalQuoteSelectIn = true
     },
-    saveQuoteSelectInData: function () { // 保存输入字段
+    /* 保存引用下拉的输入字段
+    *@method saveQuoteSelectInData
+    */
+    saveQuoteSelectInData: function () {
       this.quoteSelectInTableData[this.quoteSelectInObj._index] = this.quoteSelectInObj
       console.log(this.quoteSelectInTableData)
     },
-    editQuoteSelectData: function (params) { // 修改输出字段
+    /* 修改引用下拉的输出字段
+    *@method editQuoteSelectData
+    *@param {Object} params 输出字段对象
+    */
+    editQuoteSelectData: function (params) {
       this.quoteSelectObj = params.row
       this.modalQuoteSelect = true
     },
-    saveQuoteSelectData: function () { // 保存输出字段
+    /* 保存引用下拉的输出字段
+    *@method saveQuoteSelectData
+    */
+    saveQuoteSelectData: function () {
       this.quoteSelectTableData[this.quoteSelectObj._index] = this.quoteSelectObj
       console.log(this.quoteSelectTableData)
     },
-    checkTableName: function () { // 判断表名重复
+    /* 判断表名重复
+    *@method checkTableName
+    */
+    checkTableName: function () {
       this.$api.post('/pages/crminterface/IsExistenceForTableName.do', {tableName: this.formObj.title}, r => {
         if (r.data) {
           this.$Message.warning('数据库表单名已存在，请更改')
         }
       })
     },
+    /* 返回
+    *@method cancel
+    */
     cancel: function () {
       this.$router.go(-1)
     },
-    saveForm: function () { // 保存表单
+    /* 保存表单
+    *@method saveForm
+    */
+    saveForm: function () {
       if (this.formObj.type === '2' || this.formObj.needTree === 'true') {
         this.formControls.push({fieldType: 'textbox', text: 'pid', title: '父ID', listDisplay: false, type: 'int'})
       }
@@ -634,7 +701,7 @@ export default {
     }
   },
   computed: {
-    dragOptions () {
+    dragOptions () { // 拖拽源配置
       return {
         group: {
           name: 'controlTo',
@@ -643,17 +710,17 @@ export default {
         sort: false
       }
     },
-    dragToOptions () {
+    dragToOptions () { // 拖拽目标配置
       return {
         group: {
           put: ['controlTo']
         }
       }
     },
-    swiper () {
+    swiper () { // 滑动插件
       return this.$refs.mySwiper.swiper
     },
-    fieldsForSelect () {
+    fieldsForSelect () { // 表单字段转为下拉选项
       return Util.fieldsForSelect(this.formControls)
     }
   },

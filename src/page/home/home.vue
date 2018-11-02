@@ -17,16 +17,19 @@ import infoCard from '../main-components/info-card.vue'
 import workbenchChart from '../main-components/workbench-chart.vue'
 export default {
   components: {
-    infoCard,
-    workbenchChart
+    infoCard, // 信息卡片组件
+    workbenchChart // 图表组件
   },
   data () {
     return {
-      infoCards: [], // 信息卡片
-      charts: [] // 图表
+      infoCards: [], // 信息卡片数据
+      charts: [] // 图表数据
     }
   },
   methods: {
+    /**
+    * @desc 初始化
+    */
     init: function () {
       this.$api.post('/develop/workbench/findByPostationId.do', {postation_id: '9'}, r => {
         if (r.data) {

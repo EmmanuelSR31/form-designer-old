@@ -12,18 +12,18 @@
         <template v-for="(item, index) in configList">
           <template v-if="item.type === 'card'">
             <Col :xs="12" :sm="8" :md="6" :lg="4" :key="index">
-              <info-card-config :cardObj="item" @edit-card="editCard(item)" @del-card="delCard(item, index)" :key="index"></info-card-config>
+              <info-card-config :cardObj="item" @edit-card="editCard(item)" @del-card="delCard(index)" :key="index"></info-card-config>
             </Col>
           </template>
           <template v-else-if="item.type === 'chart'">
             <template v-if="item.width === '' || item.width === null || item.width === undefined">
               <Col :lg="12" :key="index">
-                <workbench-chart-config :chartObj="item" :index="index" @edit-chart="editChart(item)" @del-chart="delChart(item, index)" :key="index"></workbench-chart-config>
+                <workbench-chart-config :chartObj="item" :index="index" @edit-chart="editChart(item)" @del-chart="delChart(index)" :key="index"></workbench-chart-config>
               </Col>
             </template>
             <template v-else>
               <Col :lg="strToInt(item.width)" :key="index">
-                <workbench-chart-config :chartObj="item" :index="index" @edit-chart="editChart(item)" @del-chart="delChart(item, index)" :key="index"></workbench-chart-config>
+                <workbench-chart-config :chartObj="item" :index="index" @edit-chart="editChart(item)" @del-chart="delChart(index)" :key="index"></workbench-chart-config>
               </Col>
             </template>
           </template>
@@ -106,15 +106,15 @@ import workbenchChart from '../main-components/workbench-chart.vue'
 import workbenchChartConfig from '../main-components/workbench-chart-config.vue'
 export default {
   components: {
-    draggable,
-    infoCard,
-    infoCardConfig,
-    workbenchChart,
-    workbenchChartConfig
+    draggable, // 拖拽插件
+    infoCard, // 信息卡片组件
+    infoCardConfig, // 带设置的信息卡片组件
+    workbenchChart, // 图表组件
+    workbenchChartConfig // 带设置的图表组件
   },
   data () {
     return {
-      loading: false,
+      loading: false, // 载入中
       treeData: [ // 职位列表
         {
           title: '职位列表',
@@ -128,11 +128,11 @@ export default {
         {type: 'card', icon: 'ios-checkmark', backgroud_colour: '#1890ff', msg: '', msg_context: '信息卡片'},
         {type: 'chart', title: '图表', width: '', chart_style: 'line', url: 'getDepartmentUserNumber'}
       ],
-      modalCard: false,
-      modalCardTitle: '新增信息卡片',
+      modalCard: false, // 信息卡片对话框是否显示
+      modalCardTitle: '新增信息卡片', // 信息卡片对话框标题
       cardObj: {}, // 信息卡片对象
-      modalChart: false,
-      modalChartTitle: '新增图表',
+      modalChart: false, // 图表对话框是否显示
+      modalChartTitle: '新增图表', // 图表对话框标题
       chartObj: {}, // 图表对象
       currentPid: '', // 选中职位
       chartStyle: [ // 图表类型
@@ -164,6 +164,9 @@ export default {
     }
   },
   methods: {
+    /**
+    * @desc 取职位数据
+    */
     init: function () {
       this.$api.post('/system/user/position/getAll.do', {}, r => {
         if (r.data) {
@@ -175,7 +178,11 @@ export default {
         }
       })
     },
-    initConfig: function (row) { // 获取职位的设置
+    /**
+    * @desc 获取选中职位的设置
+    * @param {Object} row 选中的职位对象
+    */
+    initConfig: function (row) {
       this.configList = []
       this.currentPid = row[0].id
       this.$api.post('/develop/workbench/findByPostationId.do', {postation_id: this.currentPid}, r => {
@@ -191,18 +198,33 @@ export default {
         }
       })
     },
-    editCard: function (item) { // 修改信息卡片
+    /**
+    * @desc 修改信息卡片
+    * @param {Object} item 要修改的信息卡片对象
+    */
+    editCard: function (item) {
       this.cardObj = item
       this.modalCard = true
     },
-    saveCard: function () { // 保存信息卡片
+    /**
+    * @desc 保存信息卡片
+    */
+    saveCard: function () {
       this.cardObj = {}
       this.modalCard = false
     },
-    delCard: function (item, index) { // 删除信息卡片
+    /**
+    * @desc 删除信息卡片
+    * @param {Num} index 要删除的信息卡片位置
+    */
+    delCard: function (index) {
       this.configList.splice(index, 1)
     },
-    dragEnd: function (evt) { // 拖拽结束复制
+    /**
+    * @desc 拖拽结束复制
+    * @param {Object} evt 事件对象
+    */
+    dragEnd: function (evt) {
       if (evt.item.className === 'info-card') {
         this.configList.push(JSON.parse(JSON.stringify(this.configTemp[0])))
       } else {
@@ -210,18 +232,32 @@ export default {
       }
       return false
     },
-    editChart: function (item) { // 修改图表
+    /**
+    * @desc 修改图表
+    * @param {Object} item 要修改的图表对象
+    */
+    editChart: function (item) {
       this.chartObj = item
       this.modalChart = true
     },
+    /**
+    * @desc 保存图表
+    */
     saveChart: function () { // 保存图表
       this.chartObj = {}
       this.modalChart = false
     },
-    delChart: function (item, index) { // 删除图表
+    /**
+    * @desc 删除图表
+    * @param {Num} index 要删除的图表位置
+    */
+    delChart: function (index) {
       this.configList.splice(index, 1)
     },
-    save: function () { // 保存
+    /**
+    * @desc 保存
+    */
+    save: function () {
       let config = {}
       for (let i = 0; i < this.configList.length; i++) {
         if (this.configList[i].type === 'card') {
@@ -240,12 +276,17 @@ export default {
         }
       })
     },
-    strToInt: function (str) { // 字符串转为整数
+    /**
+    * @desc 字符串转为整数
+    * @param {String} str 字符串
+    * @return {Num} 返回的整数
+    */
+    strToInt: function (str) {
       return Util.strToInt(str)
     }
   },
   computed: {
-    dragOptions () {
+    dragOptions () { // 拖拽源配置
       return {
         group: {
           name: 'configTo'
@@ -253,7 +294,7 @@ export default {
         sort: false
       }
     },
-    dragToOptions () {
+    dragToOptions () { // 拖拽目标配置
       return {
         group: {
           // put: ['configTo']

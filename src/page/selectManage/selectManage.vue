@@ -47,11 +47,11 @@
 export default {
   data () {
     return {
-      modalSelect: false,
-      modalOption: false,
-      modalSelectTitle: '新增下拉',
-      modalOptionTitle: '新增选项',
-      loading: false,
+      modalSelect: false, // 下拉对话框是否显示
+      modalOption: false, // 选项对话框是否显示
+      modalSelectTitle: '新增下拉', // 下拉对话框标题
+      modalOptionTitle: '新增选项', // 选项对话框标题
+      loading: false, // 载入中
       treeData: [ // 下拉表数据
         {
           title: '下拉列表',
@@ -59,7 +59,7 @@ export default {
           children: []
         }
       ],
-      columns: [
+      columns: [ // 表格表头
         {
           type: 'index',
           title: '序列',
@@ -113,14 +113,21 @@ export default {
     }
   },
   methods: {
-    init: function () { // 取左侧下拉列表
+    /**
+    * @desc 取左侧下拉列表
+    */
+    init: function () {
       this.$api.post('/crm/ActionFormUtil/getByTableName.do', {tableName: 'table_manage_select'}, r => {
         if (r.data) {
           this.treeData[0].children = r.data.rows
         }
       })
     },
-    initOptions: function (row) { // 取选项数据
+    /**
+    * @desc 取选中下拉的选项数据
+    * @param {Object} row 选中的下拉
+    */
+    initOptions: function (row) {
       this.loading = true
       let tableName = row[0].table_name
       this.currentSelect = tableName
@@ -132,11 +139,17 @@ export default {
         }
       })
     },
-    addSelect: function () { // 新增下拉表
+    /**
+    * @desc 新增下拉
+    */
+    addSelect: function () {
       this.selectObj = {}
       this.modalSelect = true
     },
-    saveSelect: function () { // 保存下拉表
+    /**
+    * @desc 保存下拉
+    */
+    saveSelect: function () {
       this.selectObj.tableName = 'select_' + this.selectObj.tableName
       this.selectObj.valueField = 'id'
       this.selectObj.textField = 'text'
@@ -154,7 +167,10 @@ export default {
         }
       })
     },
-    addOption: function () { // 新增选项
+    /**
+    * @desc 新增选项
+    */
+    addOption: function () {
       if (this.currentSelect === '') {
         this.$Message.warning('请先选择一条下拉表')
       } else {
@@ -163,7 +179,11 @@ export default {
         this.modalOptionTitle = '新增选项'
       }
     },
-    editOption: function (row) { // 修改选项
+    /**
+    * @desc 修改选项
+    * @param {Object} row 要修改的选项
+    */
+    editOption: function (row) {
       let temp = row.row
       delete temp._index
       delete temp.rowKey
@@ -171,7 +191,10 @@ export default {
       this.modalOption = true
       this.modalOptionTitle = '修改选项'
     },
-    saveOption: function () { // 保存选项
+    /**
+    * @desc 保存选项
+    */
+    saveOption: function () {
       this.optionObj.title = this.currentSelect
       this.optionObj.text = '\'' + this.optionObj.text + '\''
       let infoStr = JSON.stringify(this.optionObj)
@@ -209,7 +232,11 @@ export default {
         })
       }
     },
-    deleteOption: function (row) { // 删除选项
+    /**
+    * @desc 删除选项
+    * @param {Object} row 要删除的选项
+    */
+    deleteOption: function (row) {
       this.$Modal.confirm({
         title: '',
         content: '确认删除此选项？',

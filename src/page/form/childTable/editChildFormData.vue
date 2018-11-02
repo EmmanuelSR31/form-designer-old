@@ -91,9 +91,15 @@ export default {
     }
   },
   methods: {
+    /**
+    * @desc 返回
+    */
     cancel: function () {
       this.$parent.$layer.closeAll()
     },
+    /**
+    * @desc 保存
+    */
     save: function () {
       let obj = {}
       obj.title = this.tableName
@@ -110,12 +116,19 @@ export default {
         }
       })
     },
+    /**
+    * @desc 初始化
+    */
     init: function () {
       this.formControls = Util.removeFieldTable(this.formObj.field)
       this.formDataObj = Util.formatFormData(this.formControls, this.formDataObj)
       console.log(this.formControls)
     },
-    changeQuoteSelectData: function (field) { // 引用下拉写入其他字段
+    /**
+    * @desc 引用下拉写入其他字段
+    * @param {Object} field 引用下拉字段
+    */
+    changeQuoteSelectData: function (field) {
       if (field.selectType === '1' & field.selectFields !== '') {
         if (field.selectFields.length > 0) {
           let temp = {}
@@ -132,7 +145,11 @@ export default {
         }
       }
     },
-    openUpload: function (field) { // 打开附件上传
+    /**
+    * @desc 打开附件上传
+    * @param {Object} field 附件字段
+    */
+    openUpload: function (field) {
       this.$layer.open({
         type: 2,
         content: {
@@ -150,10 +167,19 @@ export default {
         title: '附件上传'
       })
     },
-    strToBool: function (str) { // string转为Boolean
+    /**
+    * @desc string转为Boolean
+    * @param {String} str 字符串
+    * @return {Boolean} 布尔值
+    */
+    strToBool: function (str) {
       return Util.strToBool(str)
     },
-    numberCalculate: function (field) { // number字段值计算
+    /**
+    * @desc 数字字段值计算
+    * @param {Object} field 数字字段
+    */
+    numberCalculate: function (field) {
       let count = 0
       if (field.calculateType === 'multiply' || field.calculateType === 'plus') {
         for (let i = 0; i < field.calculateFields.length; i++) {
@@ -178,7 +204,7 @@ export default {
     }
   },
   computed: {
-    formClass () {
+    formClass () { // 表单排列样式
       if (Util.isEmpty(this.formObj.columnNumber)) {
         this.formObj.columnNumber = '1'
       }

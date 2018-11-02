@@ -17,14 +17,13 @@
 </template>
 <script>
 import Util from '@/utils/index'
-import addUrl from './addUrl.vue'
 import editUrl from './editUrl.vue'
 export default {
   data () {
     return {
-      loading: false,
+      loading: false, // 载入中
       treeData: [], // 栏目数据
-      columns: [
+      columns: [ // 表格表头
         {
           type: 'index',
           title: '序列',
@@ -97,19 +96,29 @@ export default {
     }
   },
   methods: {
-    init: function () { // 取左侧栏目列表
+    /**
+    * @desc 取左侧栏目列表
+    */
+    init: function () {
       this.$api.post('/topJUI/index/getMenuList.do', {}, r => {
         if (r.data) {
           this.treeData = Util.formatterTreeData(r.data)
         }
       })
     },
-    initUrls: function (row) { // 选择栏目
+    /**
+    * @desc 选择栏目
+    * @param {Array} row 选中的栏目数组
+    */
+    initUrls: function (row) {
       this.currentForm = row[0].id
       this.data = []
       this.initUrlsData()
     },
-    initUrlsData: function () { // 取链接数据
+    /**
+    * @desc 取链接数据
+    */
+    initUrlsData: function () {
       this.loading = true
       this.$api.post('/develop/url/getByPid.do', {pid: this.currentForm}, r => {
         console.log(r.data)
@@ -117,17 +126,21 @@ export default {
         this.loading = false
       })
     },
-    addUrl: function () { // 新增URL
+    /**
+    * @desc 新增URL
+    */
+    addUrl: function () {
       if (this.currentForm === '') {
         this.$Message.warning('请先选择一条目录')
       } else {
         this.$layer.iframe({
           type: 2,
           content: {
-            content: addUrl, // 传递的组件对象
+            content: editUrl, // 传递的组件对象
             parent: this, // 当前的vue对象
             data: {
-              pid: this.currentForm
+              pid: this.currentForm,
+              urlObj: {}
             }
           },
           shadeClose: false,
@@ -138,7 +151,11 @@ export default {
         })
       }
     },
-    editUrl: function (row) { // 修改URL
+    /**
+    * @desc 修改URL
+    * @param {Object} row 要修改的URL
+    */
+    editUrl: function (row) {
       let temp = row.row
       delete temp._index
       delete temp.orwKey
@@ -148,6 +165,7 @@ export default {
           content: editUrl, // 传递的组件对象
           parent: this, // 当前的vue对象
           data: {
+            pid: '',
             urlObj: temp
           }
         },
@@ -158,16 +176,20 @@ export default {
         title: '修改URL'
       })
     },
-    deleteUrl: function (row) { // 删除选项
+    /**
+    * @desc 删除URL
+    * @param {Object} row 要删除的URL
+    */
+    deleteUrl: function (row) {
       this.$Modal.confirm({
         title: '',
-        content: '确认删除此选项？',
+        content: '确认删除此URL？',
         onOk: () => {
-          this.$api.post('/crm/ActionFormSelectUtil/Select/delete.do', {tableName: this.currentForm, id: row.row.id}, r => {
+          this.$api.post('', {id: row.row.id}, r => {
             if (r.data === '0') {
-              this.$Message.error('删除选项失败')
+              this.$Message.error('删除URL失败')
             } else {
-              this.$Message.success('删除选项成功')
+              this.$Message.success('删除URL成功')
               this.initUrlsData()
             }
           })

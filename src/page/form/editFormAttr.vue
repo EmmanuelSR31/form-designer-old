@@ -2,15 +2,22 @@
   <div class="form-con">
     <Row>
       <Col span="22" offset="1">
-        <Form :model="formObj" :label-width="120">
+        <Form :model="formAttrObj" :label-width="120">
           <FormItem label="数据库表名">
             <Input v-model="formObj.title" readonly></Input>
           </FormItem>
-          <FormItem label="数据来源">
-            <Select v-model="formObj.data_url">
-              <Option v-for="item in dataUrls" :value="item.name" :key="item.name">{{item.disc}}</Option>
-            </Select>
-          </FormItem>
+          <div class="form-column-2">
+            <FormItem label="数据来源">
+              <Select v-model="formAttrObj.data_url">
+                <Option v-for="item in dataUrls" :value="item.name" :key="item.name">{{item.disc}}</Option>
+              </Select>
+            </FormItem>
+            <FormItem label="列表页地址">
+              <Select v-model="formAttrObj.listUrl">
+                <Option v-for="item in listUrls" :value="item.name" :key="item.name">{{item.disc}}</Option>
+              </Select>
+            </FormItem>
+          </div>
           <FormItem label="表格表头">
             <div class="table-search-con">
               <Button type="primary" @click="columnsAdd">新增</Button>
@@ -247,12 +254,12 @@ export default {
     return {
       formObj: this.$store.state.currentEditForm, // 表单对象
       formFields: [], // 表单字段
-      formAttrObj: {}, // 表单配置对象
+      formAttrObj: {listUrl: ''}, // 表单配置对象
       dataUrls: [], // 数据来源url
       columnAlign: this.$store.state.columnAlign, // 表头对齐方式
       searchInputType: this.$store.state.searchInputType, // 搜索输入框类型
       searchCondition: this.$store.state.searchCondition, // 搜索条件
-      columnsColumns: [ // 表格表头表头
+      columnsColumns: [ // 表单表头的表格表头
         {title: '表头名称', key: 'title', align: 'center'},
         {title: '表头id', key: 'field', align: 'center'},
         {
@@ -339,11 +346,11 @@ export default {
           }
         }
       ],
-      formColumns: [], // 表格表头数据
-      modalColumnsAdd: false,
-      modalColumnsEdit: false,
-      columnsObj: {}, // 正在编辑的表格表头
-      buttonsColumns: [ // 表格按钮表头
+      formColumns: [], // 表单表头数据
+      modalColumnsAdd: false, // 新增表单表头对话框是否显示
+      modalColumnsEdit: false, // 修改表单表头对话框是否显示
+      columnsObj: {}, // 正在编辑的表单表头
+      buttonsColumns: [ // 表单按钮的表格表头
         {title: '按钮名称', key: 'buttonName', align: 'center'},
         {title: '按钮id', key: 'buttonId', align: 'center'},
         {title: '图标属性', key: 'buttonAttr', align: 'center'},
@@ -416,11 +423,11 @@ export default {
           }
         }
       ],
-      formButtons: [], // 表格按钮数据
-      modalButtonsAdd: false,
-      modalButtonsEdit: false,
-      buttonsObj: {}, // 正在编辑的表格按钮
-      searchsColumns: [ // 表格搜索表头
+      formButtons: [], // 表单按钮数据
+      modalButtonsAdd: false, // 新增表单按钮对话框是否显示
+      modalButtonsEdit: false, // 修改表单按钮对话框是否显示
+      buttonsObj: {}, // 正在编辑的表单按钮
+      searchsColumns: [ // 表单搜索的表格表头
         {title: '输入名', key: 'searchName', align: 'center'},
         {title: '输入id', key: 'searchId', align: 'center'},
         {title: '关联字段', key: 'searchField', align: 'center'},
@@ -495,11 +502,11 @@ export default {
           }
         }
       ],
-      modalSearchsAdd: false,
-      modalSearchsEdit: false,
-      searchsObj: {}, // 正在编辑的表格搜索
-      formSearchs: [], // 表格搜索数据
-      searchButtonsColumns: [ // 表格搜索按钮表头
+      modalSearchsAdd: false, // 新增表单搜索对话框是否显示
+      modalSearchsEdit: false, // 修改表单搜索对话框是否显示
+      searchsObj: {}, // 正在编辑的表单搜索
+      formSearchs: [], // 表单搜索数据
+      searchButtonsColumns: [ // 表单搜索按钮的表格表头
         {title: '按钮名称', key: 'buttonName', align: 'center'},
         {title: '按钮id', key: 'buttonId', align: 'center'},
         {title: '图标属性', key: 'buttonAttr', align: 'center'},
@@ -572,12 +579,12 @@ export default {
           }
         }
       ],
-      formSearchButtons: [], // 表格搜索按钮数据
-      modalSearchButtonsAdd: false,
-      modalSearchButtonsEdit: false,
-      searchButtonsObj: {}, // 正在编辑的表格搜索按钮
-      jsCode: '',
-      cmOptions: {
+      formSearchButtons: [], // 表单搜索按钮数据
+      modalSearchButtonsAdd: false, // 新增表单搜索按钮对话框是否显示
+      modalSearchButtonsEdit: false, // 修改表单搜索按钮对话框是否显示
+      searchButtonsObj: {}, // 正在编辑的表单搜索按钮
+      jsCode: '', // JS代码
+      cmOptions: { // codemirror配置
         tabSize: 2,
         mode: 'text/javascript',
         theme: 'ambiance',
@@ -586,159 +593,263 @@ export default {
     }
   },
   methods: {
-    columnsEditDone: function (newValue, oldValue, rowIndex, rowData, field) { // 表格表头编辑完
+    /* columnsEditDone: function (newValue, oldValue, rowIndex, rowData, field) { // 表格表头编辑完
       this.formColumns[rowIndex][field] = newValue
-    },
-    columnsAdd: function () { // 新增表格表头
+    }, */
+    /**
+    * @desc 新增表单表头
+    */
+    columnsAdd: function () {
       this.columnsObj = {}
       this.modalColumnsAdd = true
     },
-    saveColumnsAdd: function () { // 新增保存表格表头
+    /**
+    * @desc 保存新增表单表头
+    */
+    saveColumnsAdd: function () {
       this.formColumns.push(this.columnsObj)
       this.modalColumnsAdd = false
     },
-    columnsEdit: function (params) { // 修改表格表头
+    /**
+    * @desc 修改表单表头
+    * @param {Object} params 当前要修改的表单表头对象
+    */
+    columnsEdit: function (params) {
       this.columnsObj = params.row
       this.modalColumnsEdit = true
     },
-    saveColumnsEdit: function () { // 修改保存表格表头
+    /**
+    * @desc 保存修改表单表头
+    */
+    saveColumnsEdit: function () {
       this.modalColumnsEdit = false
       let i = this.columnsObj._index
       delete this.columnsObj._index
       delete this.columnsObj._rowKey
       this.formColumns[i] = this.columnsObj
     },
-    columnsDelete: function (params) { // 删除表格表头
+    /**
+    * @desc 删除表单表头
+    * @param {Object} params 当前要删除的表单表头对象
+    */
+    columnsDelete: function (params) {
       this.formColumns.splice(params.index, 1)
     },
-    columnsUp: function (params) { // 表格表头上移
+    /**
+    * @desc 表单表头上移
+    * @param {Object} params 当前要上移的表单表头对象
+    */
+    columnsUp: function (params) {
       if (params.index > 0) {
         let temp = this.formColumns[params.index]
         this.formColumns.splice(params.index, 1)
         this.formColumns.splice(params.index - 1, 0, temp)
       }
     },
-    columnsDown: function (params) { // 表格表头下移
+    /**
+    * @desc 表单表头下移
+    * @param {Object} params 当前要下移的表单表头对象
+    */
+    columnsDown: function (params) {
       if (params.index < this.formColumns.length - 1) {
         let temp = this.formColumns[params.index]
         this.formColumns.splice(params.index, 1)
         this.formColumns.splice(params.index + 1, 0, temp)
       }
     },
-    buttonsAdd: function () { // 新增表格按钮
+    /**
+    * @desc 新增表单按钮
+    */
+    buttonsAdd: function () {
       this.buttonsObj = {}
       this.modalButtonsAdd = true
     },
-    saveButtonsAdd: function () { // 新增保存表格按钮
+    /**
+    * @desc 保存新增表单按钮
+    */
+    saveButtonsAdd: function () {
       this.formButtons.push(this.buttonsObj)
       this.modalButtonsAdd = false
     },
-    buttonsEdit: function (params) { // 修改表格按钮
+    /**
+    * @desc 修改表单按钮
+    * @param {Object} params 当前要修改的表单按钮对象
+    */
+    buttonsEdit: function (params) {
       this.buttonsObj = params.row
       this.modalButtonsEdit = true
     },
-    saveButtonsEdit: function () { // 修改保存表格按钮
+    /**
+    * @desc 保存修改表单按钮
+    */
+    saveButtonsEdit: function () {
       this.modalButtonsEdit = false
       let i = this.buttonsObj._index
       delete this.buttonsObj._index
       delete this.buttonsObj._rowKey
       this.formButtons[i] = this.buttonsObj
     },
-    buttonsDelete: function (params) { // 删除表格按钮
+    /**
+    * @desc 删除表单按钮
+    * @param {Object} params 当前要删除的表单按钮对象
+    */
+    buttonsDelete: function (params) {
       this.formButtons.splice(params.index, 1)
     },
-    buttonsUp: function (params) { // 表格按钮上移
+    /**
+    * @desc 表单按钮上移
+    * @param {Object} params 当前要上移的表单按钮对象
+    */
+    buttonsUp: function (params) {
       if (params.index > 0) {
         let temp = this.formButtons[params.index]
         this.formButtons.splice(params.index, 1)
         this.formButtons.splice(params.index - 1, 0, temp)
       }
     },
-    buttonsDown: function (params) { // 表格按钮下移
+    /**
+    * @desc 表单按钮下移
+    * @param {Object} params 当前要下移的表单按钮对象
+    */
+    buttonsDown: function (params) {
       if (params.index < this.formButtons.length - 1) {
         let temp = this.formButtons[params.index]
         this.formButtons.splice(params.index, 1)
         this.formButtons.splice(params.index + 1, 0, temp)
       }
     },
-    searchsAdd: function () { // 新增表格搜索
+    /**
+    * @desc 新增表单搜索
+    */
+    searchsAdd: function () {
       this.searchsObj = {}
       this.modalSearchsAdd = true
     },
-    saveSearchsAdd: function () { // 新增保存表格搜索
+    /**
+    * @desc 保存新增表单搜索
+    */
+    saveSearchsAdd: function () {
       this.formSearchs.push(this.searchsObj)
       this.modalSearchsAdd = false
     },
-    searchsEdit: function (params) { // 修改表格搜索
+    /**
+    * @desc 修改表单搜索
+    * @param {Object} params 当前要修改的表单搜索对象
+    */
+    searchsEdit: function (params) {
       this.searchsObj = params.row
       this.modalSearchsEdit = true
     },
-    saveSearchsEdit: function () { // 修改保存表格搜索
+    /**
+    * @desc 保存修改表单搜索
+    */
+    saveSearchsEdit: function () {
       this.modalSearchsEdit = false
       let i = this.searchsObj._index
       delete this.searchsObj._index
       delete this.searchsObj._rowKey
       this.formSearchs[i] = this.searchsObj
     },
-    searchsDelete: function (params) { // 删除表格搜索
+    /**
+    * @desc 删除表单搜索
+    * @param {Object} params 当前要删除的表单搜索对象
+    */
+    searchsDelete: function (params) {
       this.formSearchs.splice(params.index, 1)
     },
-    searchsUp: function (params) { // 表格搜索上移
+    /**
+    * @desc 表单搜索上移
+    * @param {Object} params 当前要上移的表单搜索对象
+    */
+    searchsUp: function (params) {
       if (params.index > 0) {
         let temp = this.formSearchs[params.index]
         this.formSearchs.splice(params.index, 1)
         this.formSearchs.splice(params.index - 1, 0, temp)
       }
     },
-    searchsDown: function (params) { // 表格搜索下移
+    /**
+    * @desc 表单搜索下移
+    * @param {Object} params 当前要下移的表单搜索对象
+    */
+    searchsDown: function (params) {
       if (params.index < this.formSearchs.length - 1) {
         let temp = this.formSearchs[params.index]
         this.formSearchs.splice(params.index, 1)
         this.formSearchs.splice(params.index + 1, 0, temp)
       }
     },
-    searchButtonsAdd: function () { // 新增表格搜索按钮
+    /**
+    * @desc 新增表单搜索按钮
+    */
+    searchButtonsAdd: function () {
       this.searchButtonsObj = {}
       this.modalSearchButtonsAdd = true
     },
-    saveSearchButtonsAdd: function () { // 新增保存表格搜索按钮
+    /**
+    * @desc 保存新增表单搜索按钮
+    */
+    saveSearchButtonsAdd: function () {
       this.formSearchButtons.push(this.searchButtonsObj)
       this.modalSearchButtonsAdd = false
     },
-    searchButtonsEdit: function (params) { // 修改表格搜索按钮
+    /**
+    * @desc 修改表单搜索按钮
+    * @param {Object} params 当前要修改的表单搜索按钮对象
+    */
+    searchButtonsEdit: function (params) {
       this.searchButtonsObj = params.row
       this.modalSearchButtonsEdit = true
     },
-    saveSearchButtonsEdit: function () { // 修改保存表格搜索按钮
+    /**
+    * @desc 保存修改表单搜索按钮
+    */
+    saveSearchButtonsEdit: function () {
       this.modalSearchButtonsEdit = false
       let i = this.searchButtonsObj._index
       delete this.searchButtonsObj._index
       delete this.searchButtonsObj._rowKey
       this.formSearchButtons[i] = this.searchButtonsObj
     },
-    searchButtonsDelete: function (params) { // 删除表格搜索按钮
+    /**
+    * @desc 删除表单搜索按钮
+    * @param {Object} params 当前要删除的表单搜索按钮对象
+    */
+    searchButtonsDelete: function (params) {
       this.formSearchButtons.splice(params.index, 1)
     },
-    searchButtonsUp: function (params) { // 表格搜索按钮上移
+    /**
+    * @desc 表单搜索按钮上移
+    * @param {Object} params 当前要上移的表单搜索按钮对象
+    */
+    searchButtonsUp: function (params) {
       if (params.index > 0) {
         let temp = this.formSearchButtons[params.index]
         this.formSearchButtons.splice(params.index, 1)
         this.formSearchButtons.splice(params.index - 1, 0, temp)
       }
     },
-    searchButtonsDown: function (params) { // 表格搜索按钮下移
+    /**
+    * @desc 表单搜索按钮下移
+    * @param {Object} params 当前要下移的表单搜索按钮对象
+    */
+    searchButtonsDown: function (params) {
       if (params.index < this.formSearchButtons.length - 1) {
         let temp = this.formSearchButtons[params.index]
         this.formSearchButtons.splice(params.index, 1)
         this.formSearchButtons.splice(params.index + 1, 0, temp)
       }
     },
+    /**
+    * @desc 返回
+    */
     cancel: function () {
       this.$router.go(-1)
     },
-    save: function () { // 保存
-      this.formAttrObj.title = this.formObj.title
-      this.formAttrObj.data_url = this.formObj.data_url
+    /**
+    * @desc 保存
+    */
+    save: function () {
       this.formAttrObj.columns = this.formColumns
       this.formAttrObj.buttons = this.formButtons
       this.formAttrObj.searchs = this.formSearchs
@@ -761,6 +872,9 @@ export default {
         }
       })
     },
+    /**
+    * @desc 初始化
+    */
     init: function () {
       this.formFields = this.formObj.field
       this.$api.post('/develop/url/getAllUrl.do', {}, r => {
@@ -777,6 +891,10 @@ export default {
         }
       })
     },
+    /**
+    * @desc 初始化数据
+    * @param {Boolean} flag 表单是否有配置数据
+    */
     initAttr: function (flag) { // 初始化数据
       if (flag) { // 有数据时
         this.formColumns = JSON.parse(this.formAttrObj.columns)
