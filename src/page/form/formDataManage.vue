@@ -51,8 +51,8 @@ import TreeGrid from '../components/treeGrid2.0.vue'
 import processDetail from '../components/processDetail.vue'
 export default {
   components: {
-    TreeGrid,
-    processDetail
+    TreeGrid, // 树插件
+    processDetail // 流程详情组件
   },
   data () {
     return {
@@ -62,14 +62,14 @@ export default {
       currentPage: 1, // 当前页码
       pageSize: 10, // 每页显示数
       totalRows: 0, // 数据总数
-      columns: [],
-      data: [],
+      columns: [], // 表格表头
+      data: [], // 数据
       currentData: {}, // 选中数据
       selectData: this.$store.state.selectData, // 下拉数据
       treeColumns: [], // 树形表表头
       treeData: [], // 树形表数据
       pid: '', // 父ID
-      isAct: 1, // 是否有流程
+      isAct: 1, // 是否有流程，0为有，1为无
       formAttrObj: {}, // 表单配置对象
       buttons: [], // 表单配置按钮
       searchs: [], // 表单配置搜索栏
@@ -83,7 +83,11 @@ export default {
     }
   },
   methods: {
-    changePage: function (current) { // 改变页码
+    /**
+    * @desc 改变页码
+    * @param {Num} current 页码
+    */
+    changePage: function (current) {
       this.loading = true
       this.currentPage = current
       if (this.formObj.needTree === 'true' && this.formObj.treeForm !== '') {
@@ -101,14 +105,25 @@ export default {
         })
       }
     },
-    changePageSize: function (size) { // 改变每页显示数
+    /**
+    * @desc 改变每页显示数
+    * @param {Num} size 每页显示数
+    */
+    changePageSize: function (size) {
       this.pageSize = size
       this.changePage(this.currentPage)
     },
-    setCurrentData: function (currentRow, oldCurrentRow) { // 选中数据
+    /**
+    * @desc 选中数据
+    * @param {Object} currentRow 选中的数据
+    */
+    setCurrentData: function (currentRow, oldCurrentRow) {
       this.currentData = currentRow
     },
-    addFormData: function () { // 新增数据
+    /**
+    * @desc 新增数据
+    */
+    addFormData: function () {
       this.$store.dispatch('setCurrentEditForm', this.formObj)
       let pid = ''
       if (this.formObj.needTree === 'true' && this.formObj.treeForm !== '') {
@@ -120,27 +135,39 @@ export default {
         }
       }
       this.$router.push({
-        name: 'addFormData',
-        params: {tableName: this.tableName, pid: pid}
+        name: 'editFormData',
+        params: {tableName: this.tableName, id: '', pid: pid, method: 'add'}
       })
     },
-    viewFormData: function (params) { // 查看数据
-      this.$store.dispatch('setCurrentEditForm', this.formObj)
-      this.$store.dispatch('setCurrentEditFormData', params.row)
-      this.$router.push({
-        name: 'viewFormData',
-        params: {tableName: this.tableName, id: params.row.id}
-      })
-    },
-    editFormData: function (params) { // 修改数据
+    /**
+    * @desc 查看数据
+    * @param {Object} params 要查看的数据
+    */
+    viewFormData: function (params) {
       this.$store.dispatch('setCurrentEditForm', this.formObj)
       this.$store.dispatch('setCurrentEditFormData', params.row)
       this.$router.push({
         name: 'editFormData',
-        params: {tableName: this.tableName, id: params.row.id}
+        params: {tableName: this.tableName, id: params.row.id, pid: '', method: 'view'}
       })
     },
-    deleteFormData: function (params) { // 删除数据
+    /**
+    * @desc 修改数据
+    * @param {Object} params 要修改的数据
+    */
+    editFormData: function (params) {
+      this.$store.dispatch('setCurrentEditForm', this.formObj)
+      this.$store.dispatch('setCurrentEditFormData', params.row)
+      this.$router.push({
+        name: 'editFormData',
+        params: {tableName: this.tableName, id: params.row.id, pid: '', method: 'edit'}
+      })
+    },
+    /**
+    * @desc 删除数据
+    * @param {Object} params 要删除的数据
+    */
+    deleteFormData: function (params) {
       this.$Modal.confirm({
         title: '',
         content: '确认删除此数据？',
@@ -158,7 +185,11 @@ export default {
         }
       })
     },
-    rowClick: function (data, index, event) { // 点击一行
+    /**
+    * @desc 树点击一行
+    * @param {Object} data 点击的数据
+    */
+    rowClick: function (data, index, event) {
       this.pid = data.id
       this.currentPage = 1
       this.changePage(this.currentPage)
@@ -168,8 +199,12 @@ export default {
       this.currentPage = 1
       this.changePage(this.currentPage)
     }, */
+    /**
+    * @desc 初始化
+    */
     init: function () {
       this.data = []
+      // this.initApi()
       this.$api.post('/pages/crminterface/getDatagridForJson.do', {tableName: this.tableName}, r => {
         this.formObj = r.data
         Util.initFormQuoteSelectData(this.formObj.field)
@@ -179,7 +214,7 @@ export default {
             if (r.data.obj !== null) {
               this.formAttrObj = r.data.obj
               console.log(this.formAttrObj)
-              this.columns = this.columns.concat(Util.columnsFormatter(JSON.parse(this.formAttrObj.columns)))
+              this.columns = this.columns.concat([{type: 'index', title: '序列', width: 50, align: 'center'}], Util.columnsFormatter(JSON.parse(this.formAttrObj.columns)))
               this.buttons = JSON.parse(this.formAttrObj.buttons)
               this.searchs = JSON.parse(this.formAttrObj.searchs)
               this.searchButtons = JSON.parse(this.formAttrObj.search_buttons)
@@ -206,7 +241,31 @@ export default {
         })
       })
     },
-    initColumns: function (fields, flag) { // 生成表格列
+    initApi: async function () {
+      try {
+        alert(111)
+        let temp = await this.getFormJson()
+        temp.then()
+        alert(222)
+        console.log(temp)
+      } catch (err) {
+        console.log(err)
+      }
+    },
+    getFormJson: function () {
+      return new Promise((resolve) => {
+        this.$api.post('/pages/crminterface/getDatagridForJson.do', {tableName: this.tableName}, r => {
+          this.formObj = r.data
+          console.log(this.formObj)
+        })
+      })
+    },
+    /**
+    * @desc 生成表格表头
+    * @param {Array} fields 表单字段
+    * @param {Boolean} flag 是否需要序列表头
+    */
+    initColumns: function (fields, flag) {
       let columnsTemp = []
       if (flag) {
         columnsTemp.push({
@@ -243,16 +302,18 @@ export default {
           } else if (variable.fieldType === 'filebox') {
             columnsTemp.push(Util.fileColumns(variable))
           } else {
-            columnsTemp.push({
-              title: variable.title,
-              key: variable.text
-            })
+            columnsTemp.push(Util.textColumns(variable))
           }
         }
       }
+      console.log(columnsTemp)
       return columnsTemp
     },
-    columnsAddAction: function (columnsTemp) { // 表头加操作列
+    /**
+    * @desc 表头加操作列
+    * @param {Array} columnsTemp 表头数组
+    */
+    columnsAddAction: function (columnsTemp) {
       columnsTemp.push({
         title: '操作',
         key: 'action',
@@ -304,7 +365,11 @@ export default {
       })
       return columnsTemp
     },
-    columnsAddProcess: function (columnsTemp) { // 表头加流程列
+    /**
+    * @desc 表头加流程列
+    * @param {Array} columnsTemp 表头数组
+    */
+    columnsAddProcess: function (columnsTemp) {
       columnsTemp.push({
         title: '流程进度',
         key: 'msg',
@@ -332,13 +397,22 @@ export default {
       })
       return columnsTemp
     },
-    childTableManage: function (params, tableTitle) { // 管理子表数据
+    /**
+    * @desc 管理子表数据
+    * @param {Object} params 数据对象
+    * @param {String} tableTitle 子表名
+    */
+    childTableManage: function (params, tableTitle) {
       this.$router.push({
         name: 'childTableManage',
         params: {tableName: tableTitle, recordID: params.row.uuid}
       })
     },
-    viewProcessDetail: function (params) { // 查看流程详情
+    /**
+    * @desc 查看流程详情
+    * @param {Object} params 数据对象
+    */
+    viewProcessDetail: function (params) {
       this.$layer.open({
         type: 2,
         content: {
@@ -390,7 +464,7 @@ export default {
     this.init()
   },
   watch: {
-    '$route' (to, from) {
+    '$route' (to, from) { // 强制初始化
       this.tableName = to.params.tableName
       this.init()
     }

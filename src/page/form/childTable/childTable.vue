@@ -8,9 +8,7 @@
 </template>
 <script>
 import Util from '@/utils/index'
-import addChildFormData from './addChildFormData.vue'
 import editChildFormData from './editChildFormData.vue'
-import viewChildFormData from './viewChildFormData.vue'
 export default {
   name: 'childTable',
   props: {
@@ -55,11 +53,13 @@ export default {
       this.$layer.open({
         type: 2,
         content: {
-          content: addChildFormData, // 传递的组件对象
+          content: editChildFormData, // 传递的组件对象
           parent: this, // 当前的vue对象
           data: {
             tableName: this.childTableName,
-            recordID: this.recordID
+            recordID: this.recordID,
+            id: '',
+            method: 'add'
           }
         },
         shadeClose: false,
@@ -90,7 +90,8 @@ export default {
           data: {
             tableName: this.childTableName,
             recordID: this.recordID,
-            id: params.row.id
+            id: params.row.id,
+            method: 'edit'
           }
         },
         shadeClose: false,
@@ -110,12 +111,13 @@ export default {
       this.$layer.open({
         type: 2,
         content: {
-          content: viewChildFormData, // 传递的组件对象
+          content: editChildFormData, // 传递的组件对象
           parent: this, // 当前的vue对象
           data: {
             tableName: this.childTableName,
             recordID: this.recordID,
-            id: params.row.id
+            id: params.row.id,
+            method: 'view'
           }
         },
         shadeClose: false,

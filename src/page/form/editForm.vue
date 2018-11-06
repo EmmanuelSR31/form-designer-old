@@ -37,6 +37,11 @@
                 <Option value="4">每行4列</Option>
               </Select>
             </FormItem>
+            <FormItem label="表单数据列表地址" v-if="formObj.type === '0'">
+              <Select v-model="formObj.formListUrl">
+                <Option v-for="item in formListUrl" :value="item.value" :key="item.value">{{item.text}}</Option>
+              </Select>
+            </FormItem>
             <FormItem label="树节点字段" v-if="formObj.type === '2'">
               <Select v-model="formObj.treeField">
                 <Option v-for="item in formControls" :value="item.text" :key="item.text">{{item.title}}</Option>
@@ -519,7 +524,8 @@ export default {
       quoteSelectInTableData: [], // 引用下拉输入字段表格数据
       modalQuoteSelectIn: false, // 修改输入字段对话框是否显示
       quoteSelectInObj: {}, // 引用下拉输入字段对象
-      treeForms: [] // 树结构表单数据
+      treeForms: [], // 树结构表单数据
+      formListUrl: this.$store.state.formListUrl // 表单数据列表地址
     }
   },
   methods: {

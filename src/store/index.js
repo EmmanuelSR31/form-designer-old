@@ -492,7 +492,17 @@ const state = {
   ],
   fontSize: ['10', '11', '12', '13', '14', '15', '16', '18', '20', '24', '28', '32', '36', '48', '64'], // 字体大小
   lineWidth: ['1', '2', '3', '4', '5', '6', '7', '8', '9'], // 图表线条宽度
-  lineType: [{text: '实线', value: 'solid'}, {text: '虚线', value: 'dashed'}, {text: '点状', value: 'dotted'}] // 图表线条类型
+  lineType: [{text: '实线', value: 'solid'}, {text: '虚线', value: 'dashed'}, {text: '点状', value: 'dotted'}], // 图表线条类型
+  formListUrl: [ // 表单数据列表地址
+    {
+      text: '普通',
+      value: 'formDataManage'
+    },
+    {
+      text: '自定义数据来源',
+      value: 'formDataManageForUrl'
+    }
+  ]
 }
 
 export default new Vuex.Store({
