@@ -1,5 +1,7 @@
 import store from '@/store'
 import api from '@/api/index.js'
+import {router} from '@/router/index'
+import iView from 'iview'
 
 let util = {}
 
@@ -74,10 +76,7 @@ util.copyArr = function (arr) {
 * @return {String} 字符串
 */
 util.removeLastComma = function (str) {
-  if (str.lastIndexOf(',') === (str.length - 1)) {
-    str = str.substring(0, str.length - 1)
-  }
-  return str
+  return str.lastIndexOf(',') === (str.length - 1) ? str.substring(0, str.length - 1) : str
 }
 
 /**
@@ -106,11 +105,7 @@ util.strToInt = function (str) {
 util.fieldsAddType = function (fields) {
   for (var field of fields) {
     if (field.fieldType === 'numberbox') {
-      if (field.precision === '0') {
-        field.type = 'int'
-      } else {
-        field.type = 'float'
-      }
+      field.type = field.precision === '0' ? 'int' : 'float'
     } else if (field.fieldType === 'datebox') {
       field.type = 'date'
     } else if (field.fieldType === 'datetimebox') {
@@ -164,13 +159,7 @@ util.removeFieldTable = function (fields) {
 util.fieldArrToObj = function (fields) {
   let obj = {}
   for (let field of fields) {
-    if (field.fieldType === 'numberbox') {
-      obj[field.text] = 0
-    } else if (field.fieldType === 'checkbox') {
-      obj[field.text] = []
-    } else {
-      obj[field.text] = ''
-    }
+    obj[field.text] = field.fieldType === 'numberbox' ? 0 : field.fieldType === 'checkbox' ? [] : ''
   }
   return obj
 }
@@ -189,11 +178,7 @@ util.formatFormData = function (fields, dataObj) {
   delete dataObj._rowKey
   for (let field of fields) {
     if (field.fieldType === 'checkbox') {
-      if (this.isEmpty(dataObj[field.text])) {
-        dataObj[field.text] = []
-      } else {
-        dataObj[field.text] = dataObj[field.text].split(',')
-      }
+      dataObj[field.text] = this.isEmpty(dataObj[field.text]) ? [] : dataObj[field.text].split(',')
     } else if (field.fieldType === 'numberbox') {
       dataObj[field.text] = Number(dataObj[field.text])
     } else if (field.fieldType === 'switch') {
@@ -218,11 +203,7 @@ util.formatFieldFile = function (fields, dataObj) {
   for (let i = 0; i < fields.length; i++) {
     if (fields[i].fieldType === 'filebox') {
       let paths = dataObj[fields[i].text]
-      if (this.isEmpty(paths)) {
-        obj[fields[i].text] = []
-      } else {
-        obj[fields[i].text] = paths.split(',')
-      }
+      obj[fields[i].text] = this.isEmpty(paths) ? [] : paths.split(',')
     }
   }
   return obj
@@ -412,12 +393,160 @@ util.strToBool = function (str) { // string转为Boolean
 }
 
 /**
-* @desc 生成下拉表头
-* @param {Object} variable 字段
-* @param {Object} selectData 下拉数据
+* @desc 新增数据
+* @param {String} tableName 表单名
+* @param {Object} formObj 表单对象
+* @param {String} pid 父ID
+*/
+util.addFormData = function (tableName, formObj, pid) {
+  store.dispatch('setCurrentEditForm', formObj)
+  if (formObj.needTree === 'true' && formObj.treeForm !== '') {
+    if (pid === '') {
+      iView.Message.error('请先选择左侧一条数据')
+      return false
+    }
+  }
+  router.push({
+    name: 'editFormData',
+    params: {tableName: tableName, id: '', pid: pid, method: 'add'}
+  })
+}
+
+/**
+* @desc 修改数据
+* @param {String} tableName 表单名
+* @param {Object} formObj 表单对象
+* @param {Object} params 修改的数据对象
+*/
+util.editFormData = function (tableName, formObj, params) {
+  store.dispatch('setCurrentEditForm', formObj)
+  store.dispatch('setCurrentEditFormData', params.row)
+  router.push({
+    name: 'editFormData',
+    params: {tableName: tableName, id: params.row.id, pid: '', method: 'edit'}
+  })
+}
+
+/**
+* @desc 查看数据
+* @param {String} tableName 表单名
+* @param {Object} formObj 表单对象
+* @param {Object} params 修改的数据对象
+*/
+util.viewFormData = function (tableName, formObj, params) {
+  store.dispatch('setCurrentEditForm', formObj)
+  store.dispatch('setCurrentEditFormData', params.row)
+  router.push({
+    name: 'editFormData',
+    params: {tableName: tableName, id: params.row.id, pid: '', method: 'view'}
+  })
+}
+
+/**
+* @desc 删除数据
+* @param {String} tableName 表单名
+* @param {Object} params 修改的数据对象
+* @param {Function} changePage 翻页方法
+* @param {Int} currentPage 当前页
+*/
+util.deleteFormData = function (tableName, params, changePage, currentPage) {
+  iView.Modal.confirm({
+    title: '',
+    content: '确认删除此数据？',
+    onOk: () => {
+      api.post('/crm/ActionFormUtil/delete.do', {tableName: tableName, id: params.row.id}, r => {
+        if (r.data === '0') {
+          iView.Message.error('删除数据失败')
+        } else {
+          iView.Message.success('删除数据成功')
+          changePage(currentPage)
+        }
+      })
+    },
+    onCancel: () => {
+    }
+  })
+}
+
+/**
+* @desc 生成表格表头
+* @param {Array} fields 表单字段
+* @param {Boolean} flag 是否需要序列表头
 * @return {Object} column 表头
 */
-util.comboboxColumns = function (variable, selectData) {
+util.initColumns = function (fields, flag) {
+  let columnsTemp = []
+  if (flag) {
+    columnsTemp.push({
+      type: 'index',
+      title: '序列',
+      width: 50,
+      align: 'center'
+    })
+  }
+  for (let variable of fields) {
+    if (variable.listDisplay === 'true' || variable.listDisplay === true) {
+      if (variable.fieldType === 'tablebox') {
+        columnsTemp.push(this.tableboxColumns(variable))
+      } else if (variable.fieldType === 'combobox') {
+        columnsTemp.push(this.comboboxColumns(variable))
+      } else if (variable.fieldType === 'filebox') {
+        columnsTemp.push(this.fileColumns(variable))
+      } else {
+        columnsTemp.push(this.textColumns(variable))
+      }
+    }
+  }
+  console.log(columnsTemp)
+  return columnsTemp
+}
+
+/**
+* @desc 生成子表表头
+* @param {Object} variable 字段
+* @return {Object} column 表头
+*/
+util.tableboxColumns = function (variable) {
+  let column = {
+    title: variable.title,
+    key: variable.text,
+    width: 80,
+    align: 'center',
+    render: (h, params) => {
+      return h('Button', {
+        props: {
+          type: 'primary',
+          size: 'small'
+        },
+        on: {
+          click: () => {
+            this.childTableManage(params, variable.tableTitle)
+          }
+        }
+      }, '查看详情')
+    }
+  }
+  return column
+}
+
+/**
+* @desc 管理子表数据
+* @param {Object} params 数据对象
+* @param {String} tableTitle 子表表名
+*/
+util.childTableManage = function (params, tableTitle) {
+  router.push({
+    name: 'childTableManage',
+    params: {tableName: tableTitle, recordID: params.row.uuid}
+  })
+}
+
+/**
+* @desc 生成下拉表头
+* @param {Object} variable 字段
+* @return {Object} column 表头
+*/
+util.comboboxColumns = function (variable) {
   let column = {
     title: variable.title,
     key: variable.text,
@@ -425,12 +554,8 @@ util.comboboxColumns = function (variable, selectData) {
       let fieldText = params.column.key
       let selectId = variable.selectID
       let valueTemp = ''
-      if (!this.isEmpty(params.row[fieldText]) && !this.isEmpty(selectData[selectId])) {
-        let valueTemp1 = selectData[selectId].find(function (value, index, arr) {
-          if (value.id.toString() === params.row[fieldText]) {
-            return value
-          }
-        })
+      if (!this.isEmpty(params.row[fieldText]) && !this.isEmpty(store.state.selectData[selectId])) {
+        let valueTemp1 = store.state.selectData[selectId].find((element) => (element.id.toString() === params.row[fieldText]))
         if (!this.isEmpty(valueTemp1)) {
           valueTemp = valueTemp1.text
         }
@@ -502,6 +627,101 @@ util.columnProps = function (column, variable) {
 }
 
 /**
+* @desc 表头加操作列
+* @param {Array} columnsTemp 表头
+* @param {String} tableName 表单名
+* @param {Object} formObj 表单对象
+* @param {Function} changePage 翻页方法
+* @param {Int} currentPage 当前页
+*/
+util.columnsAddAction = function (columnsTemp, tableName, formObj, changePage, currentPage) {
+  columnsTemp.push({
+    title: '操作',
+    key: 'action',
+    width: 150,
+    align: 'center',
+    render: (h, params) => {
+      return h('div', [
+        h('Button', {
+          props: {
+            type: 'success',
+            size: 'small'
+          },
+          style: {
+            marginRight: '5px'
+          },
+          on: {
+            click: () => {
+              this.viewFormData(tableName, formObj, params)
+            }
+          }
+        }, '查看'),
+        h('Button', {
+          props: {
+            type: 'primary',
+            size: 'small'
+          },
+          style: {
+            marginRight: '5px'
+          },
+          on: {
+            click: () => {
+              this.editFormData(tableName, formObj, params)
+            }
+          }
+        }, '修改'),
+        h('Button', {
+          props: {
+            type: 'error',
+            size: 'small'
+          },
+          on: {
+            click: () => {
+              this.deleteFormData(tableName, params, changePage, currentPage)
+            }
+          }
+        }, '删除')
+      ])
+    }
+  })
+  return columnsTemp
+}
+
+/**
+* @desc 表头加流程列
+* @param {Array} columnsTemp 表头数组
+* @param {Function} viewProcessDetail 查看流程详情方法
+*/
+util.columnsAddProcess = function (columnsTemp, viewProcessDetail) {
+  columnsTemp.push({
+    title: '流程进度',
+    key: 'msg',
+    width: 80,
+    align: 'center'
+  })
+  columnsTemp.push({
+    title: '流程详情',
+    key: 'process',
+    width: 80,
+    align: 'center',
+    render: (h, params) => {
+      return h('Button', {
+        props: {
+          type: 'success',
+          size: 'small'
+        },
+        on: {
+          click: () => {
+            viewProcessDetail(params)
+          }
+        }
+      }, '流程详情')
+    }
+  })
+  return columnsTemp
+}
+
+/**
 * @desc 设置Cookie
 * @param {String} name 名字
 * @param {String} value 值
@@ -547,19 +767,8 @@ util.delCookie = function (name) {
 * @return {String} 状态文本
 */
 util.flowStateFormat = function (value) {
-  if (value === 'Ready') {
-    return '可领取'
-  } else if (value === 'Completed') {
-    return '已完成'
-  } else if (value === 'Forwarded') {
-    return '已跳转'
-  } else if (value === 'Created') {
-    return '已创建'
-  } else if (value === 'Reserved') {
-    return '预分配'
-  } else if (value === 'Withdraw') {
-    return '退回'
-  }
+  let temp = {Ready: '可领取', Completed: '已完成', Forwarded: '已跳转', Created: '已创建', Reserved: '预分配', Withdraw: '退回'}
+  return temp[value]
 }
 
 /**
@@ -568,13 +777,7 @@ util.flowStateFormat = function (value) {
 * @return {String} 条件文本
 */
 util.urlInParaTypeFormat = function (value) {
-  for (let i = 0; i < store.state.urlInParaCondition.length; i++) {
-    if (value === store.state.urlInParaCondition[i].value) {
-      value = store.state.urlInParaCondition[i].text
-      break
-    }
-  }
-  return value
+  return store.state.urlInParaCondition.find((element) => (element.value === value)).text
 }
 
 /**
@@ -583,12 +786,7 @@ util.urlInParaTypeFormat = function (value) {
 * @return {String} 文本
 */
 util.trueFalseFormat = function (value) {
-  if (value || value === 'true') {
-    value = '是'
-  } else {
-    value = '否'
-  }
-  return value
+  return value || value === 'true' ? '是' : '否'
 }
 
 /**
@@ -597,13 +795,7 @@ util.trueFalseFormat = function (value) {
 * @return {String} 参数名
 */
 util.urlInParaValueFormat = function (value) {
-  for (let i = 0; i < store.state.urlInParaValue.length; i++) {
-    if (value === store.state.urlInParaValue[i].value) {
-      value = store.state.urlInParaValue[i].text
-      break
-    }
-  }
-  return value
+  return store.state.urlInParaValue.find((element) => (element.value === value)).text
 }
 
 /**
@@ -920,16 +1112,8 @@ util.initChartOption = function (chartObj, xField, yField, yFieldType, scatterYF
         })
       }
     }
-    if (chartObj.x.showTitle) {
-      obj.xAxis[0].name = xName
-    } else {
-      obj.xAxis[0].name = ''
-    }
-    if (chartObj.y.showTitle) {
-      obj.yAxis[0].name = yName
-    } else {
-      obj.yAxis[0].name = ''
-    }
+    obj.xAxis[0].name = chartObj.x.showTitle ? xName : ''
+    obj.yAxis[0].name = chartObj.y.showTitle ? yName : ''
     if (yField.length > 1) {
       obj.legend = {data: legend}
     }
@@ -986,11 +1170,7 @@ util.initChartOption = function (chartObj, xField, yField, yFieldType, scatterYF
         delete obj.legend
       } else {
         obj.legend[chartObj.legend.position] = 5
-        if (['left', 'right'].indexOf(chartObj.legend.position) !== -1) {
-          obj.legend.orient = 'vertical'
-        } else {
-          obj.legend.orient = 'horizontal'
-        }
+        obj.legend.orient = ['left', 'right'].indexOf(chartObj.legend.position) !== -1 ? 'vertical' : 'horizontal'
       }
     }
   }

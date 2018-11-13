@@ -50,16 +50,8 @@ export default {
       let lastPageObj = pageOpenedList[0]
       if (this.currentPageName === name) {
         let len = pageOpenedList.length
-        for (let i = 0; i < len; i++) {
-          if (pageOpenedList[i].name === name) {
-            if (i < (len - 1)) {
-              lastPageObj = pageOpenedList[i + 1]
-            } else {
-              lastPageObj = pageOpenedList[i - 1]
-            }
-            break
-          }
-        }
+        let i = pageOpenedList.findIndex((element) => (element.name === name))
+        lastPageObj = i < (len - 1) ? pageOpenedList[i + 1] : pageOpenedList[i - 1]
       }
       this.$store.dispatch('removeTag', name)
       this.$store.dispatch('closePage', name)
@@ -103,16 +95,8 @@ export default {
         let lastPageObj = pageOpenedList[0]
         if (this.currentPageName === this.$store.state.contextMenuOpenedTag) {
           let len = pageOpenedList.length
-          for (let i = 0; i < len; i++) {
-            if (pageOpenedList[i].name === this.$store.state.contextMenuOpenedTag) {
-              if (i < (len - 1)) {
-                lastPageObj = pageOpenedList[i + 1]
-              } else {
-                lastPageObj = pageOpenedList[i - 1]
-              }
-              break
-            }
-          }
+          let i = pageOpenedList.findIndex((element) => (element.name === this.$store.state.contextMenuOpenedTag))
+          lastPageObj = i < (len - 1) ? pageOpenedList[i + 1] : pageOpenedList[i - 1]
         }
         this.$store.dispatch('closeCurrentTag')
         if (this.currentPageName === this.$store.state.contextMenuOpenedTag) {
@@ -148,11 +132,7 @@ export default {
         left = Math.min(0, this.tagConLeft + delta)
       } else {
         if (this.$refs.tagCon.offsetWidth < this.$refs.scrollCon.offsetWidth) {
-          if (this.tagConLeft < -(this.$refs.scrollCon.offsetWidth - this.$refs.tagCon.offsetWidth)) {
-            left = this.tagConLeft
-          } else {
-            left = Math.max(this.tagConLeft + delta, this.$refs.tagCon.offsetWidth - this.$refs.scrollCon.offsetWidth)
-          }
+          left = this.tagConLeft < -(this.$refs.scrollCon.offsetWidth - this.$refs.tagCon.offsetWidth) ? this.tagConLeft : Math.max(this.tagConLeft + delta, this.$refs.tagCon.offsetWidth - this.$refs.scrollCon.offsetWidth)
         } else {
           this.tagConLeft = 0
         }

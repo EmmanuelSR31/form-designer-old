@@ -40,7 +40,7 @@
     "vue-easytable": "^1.7.0",
     "vue-echarts": "^3.0.3",
     "vue-echarts-v3": "^1.0.19",
-    "vue-layer": "^0.8.5",
+    "vue-layer": "^0.9.10",
     "vue-multiselect": "^2.0.8",
     "vue-pdf": "^3.3.1",
     "vue-router": "^3.0.1",

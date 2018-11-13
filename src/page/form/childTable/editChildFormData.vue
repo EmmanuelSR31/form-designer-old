@@ -80,19 +80,20 @@
               </template>
             </template>
             <template v-else-if="item.fieldType === 'filebox'">
-              <template v-if="method === 'view'">
+              <form-file :is-view="method === 'view'" :field="item.text" :paths="formDataObj[item.text]" @change-field-files="changeFieldFiles"></form-file>
+              <!-- <template v-if="method === 'view'">
                 <Button type="ghost" @click="openUpload(item)">查看</Button>
               </template>
               <template v-else>
                 <Input v-model="formDataObj[item.text]" :key="item.text"><Button slot="append" icon="md-cloud-upload" @click="openUpload(item)"></Button></Input>
-              </template>
+              </template> -->
             </template>
           </FormItem>
         </Form>
       </div>
       <div class="text-center">
         <Button class="mr100" @click="cancel">取消</Button>
-        <Button type="primary" @click="save">保存</Button>
+        <Button type="primary" v-if="method !== 'view'" @click="save">保存</Button>
       </div>
     </Col>
   </Row>
@@ -100,8 +101,12 @@
 </template>
 <script>
 import Util from '@/utils/index'
-import filesManage from '../fileManage/filesManage.vue'
+import formFile from '../fileManage/formFile.vue'
+/* import filesManage from '../fileManage/filesManage.vue' */
 export default {
+  components: {
+    formFile // 附件展示
+  },
   props: {
     tableName: String, // 表单名
     recordID: String, // 主表数据ID
@@ -129,6 +134,8 @@ export default {
     save: function () {
       let obj = {}
       obj.title = this.tableName
+      console.log(obj.title)
+      console.log(this.tableName)
       obj.field = Util.getFormValues(this.formDataObj)
       if (this.method === 'add') {
         obj.field.push({text: 'uuid', value: '\'' + this.recordID + '\''})
@@ -177,13 +184,7 @@ export default {
     changeQuoteSelectData: function (field) {
       if (field.selectType === '1' & field.selectFields !== '') {
         if (field.selectFields.length > 0) {
-          let temp = {}
-          for (let variable of this.selectData[field.selectID]) {
-            if (variable.id === this.formDataObj[field.text]) {
-              temp = variable
-              break
-            }
-          }
+          let temp = this.selectData[field.selectID].find((element) => (element.id === this.formDataObj[field.text]))
           for (let variable of field.selectFields) {
             let tmp = variable.name
             this.formDataObj[variable.inputName] = temp[tmp]
@@ -192,10 +193,18 @@ export default {
       }
     },
     /**
+    * @desc 更改附件值
+    * @param {String} field 附件字段
+    * @param {String} paths 附件值
+    */
+    changeFieldFiles: function (field, paths) {
+      this.formDataObj[field] = paths
+    },
+    /**
     * @desc 打开附件上传
     * @param {Object} field 附件字段
     */
-    openUpload: function (field) {
+    /* openUpload: function (field) {
       this.$layer.open({
         type: 2,
         content: {
@@ -212,7 +221,7 @@ export default {
         area: ['800px', document.body.clientHeight - 20 + 'px'],
         title: '附件上传'
       })
-    },
+    }, */
     /**
     * @desc string转为Boolean
     * @param {String} str 字符串
@@ -265,7 +274,9 @@ export default {
   },
   beforeRouteLeave (to, from, next) {
     // 离开页面时确认
-    if (this.method !== 'view') {
+    if (this.method === 'view') {
+      next()
+    } else {
       this.$Modal.confirm({
         title: '',
         content: '数据未保存，确认离开此页？',

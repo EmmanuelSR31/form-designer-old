@@ -90,7 +90,8 @@ import Util from '@/utils/index'
 export default {
   props: {
     pid: String, // 表单id
-    urlObj: Object // url对象
+    urlObj: Object, // url对象
+    method: String // 方法
   },
   data () {
     return {
@@ -230,7 +231,7 @@ export default {
     * @desc 保存
     */
     save: function () {
-      if (this.pid !== '') {
+      if (this.method === 'add') {
         this.urlObj.pid = this.pid
         this.urlObj.creater = ''
         this.urlObj.create_date = Util.getCurrentDate()
@@ -364,7 +365,7 @@ export default {
     * @desc 取输入输出参数
     */
     init: function () {
-      if (this.pid === '') {
+      if (this.method === 'edit') {
         this.$api.post('/develop/url/findUrlIutputParaByPid.do', {pid: this.urlObj.id}, r => {
           this.inData = r.data
         })

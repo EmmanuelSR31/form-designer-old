@@ -63,11 +63,7 @@ export default {
       obj.field.push({'text': 'workspace_name', 'value': '\'' + this.systemObj.workspace_name + '\''})
       let infoStr = JSON.stringify(obj)
       this.$api.post('/crm/ActionFormUtil/update.do', {jsonStr: infoStr, id: 1}, r => {
-        if (r.data === 1) {
-          this.$Message.success('修改设置成功')
-        } else {
-          this.$Message.error('修改设置失败')
-        }
+        r.data === 1 ? this.$Message.success('修改设置成功') : this.$Message.error('修改设置失败')
       })
     },
     /**

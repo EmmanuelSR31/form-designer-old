@@ -1100,10 +1100,8 @@ export default {
     setChartType: function (type) {
       if (this.enableChartType.indexOf(type) !== -1) {
         this.chartObj.type = type
-        if (type === 'gauge') {
-          if (this.chartObj.gauge.conditions.length === 0) {
-            this.chartObj.gauge.conditions = this.$store.state.gaugeConditions
-          }
+        if (type === 'gauge' && this.chartObj.gauge.conditions.length === 0) {
+          this.chartObj.gauge.conditions = this.$store.state.gaugeConditions
         }
         if (type === 'line-and-bar') {
           this.showSecondaryY = true
@@ -1143,13 +1141,10 @@ export default {
     /**
     * @desc 字段计算方式格式化
     * @param {Object} item 字段对象
+    * @return {String} 计算方式文本
     */
     fieldCalculateTypeFormat: function (item) {
-      for (let i = 0; i < this.chartFieldCalculateType.length; i++) {
-        if (item.calculateType === this.chartFieldCalculateType[i].value) {
-          return '(' + this.chartFieldCalculateType[i].text + ')'
-        }
-      }
+      return '(' + this.chartFieldCalculateType.find((element) => (element.value === item.calculateType)).text + ')'
     },
     /**
     * @desc 拖拽增加筛选条件
@@ -1171,16 +1166,11 @@ export default {
     /**
     * @desc 格式化筛选条件
     * @param {String} value 筛选条件值
+    * @return {String} 筛选条件文本
     */
     chartConditionFormat: function (value) {
-      let temp = ''
-      for (let i = 0; i < this.chartCondition.length; i++) {
-        if (this.chartCondition[i].value === value) {
-          temp = this.chartCondition[i].text
-          break
-        }
-      }
-      return temp
+      let temp = this.chartCondition.find((element) => (element.value === value))
+      return temp === undefined ? '' : temp.text
     },
     /**
     * @desc 设置筛选条件
@@ -1322,12 +1312,10 @@ export default {
       let temp = this.currentColorThemeField
       let i = 0
       let flag = true
-      if (this.y_field.indexOf(this.currentColorThemeField) !== -1) {
-        i = this.y_field.indexOf(this.currentColorThemeField)
-      } else {
+      this.y_field.indexOf(this.currentColorThemeField) !== -1 ? i = this.y_field.indexOf(this.currentColorThemeField) : (_ => {
         i = this.secondary_y_field.indexOf(this.currentColorThemeField)
         flag = false
-      }
+      })()
       this.currentColorThemeField = {}
       this.currentColorThemeField = temp
       if (flag) {
@@ -1664,7 +1652,7 @@ export default {
     text-align: center;
     display: none;
     &:hover{
-      opacity: 0.7;
+      opacity: .7;
     }
     i{
       font-size: 0.12rem;

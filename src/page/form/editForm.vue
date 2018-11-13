@@ -571,16 +571,8 @@ export default {
       this.field = item
       this.field.trWidth = this.field.trWidth === undefined ? 0 : this.field.trWidth
       this.field.trAlign = this.field.trAlign === undefined ? 'left' : this.field.trAlign
-      if (item.radios) {
-        this.radiosText = item.radios.join('\n')
-      } else {
-        this.radiosText = ''
-      }
-      if (item.checkboxs) {
-        this.checkboxsText = item.checkboxs.join('\n')
-      } else {
-        this.checkboxsText = ''
-      }
+      this.radiosText = item.radios ? item.radios.join('\n') : ''
+      this.checkboxsText = item.checkboxs ? item.checkboxs.join('\n') : ''
       if (this.field.fieldType === 'numberbox' && this.field.precision === undefined) {
         this.field.precision = 0
       }
@@ -628,14 +620,11 @@ export default {
     * @param {String} value 选中的引用下拉名
     */
     changeQuoteSelect: function (value) {
-      for (let variable of this.quoteSelect) {
-        if (variable.name === value) {
-          this.$api.post('/develop/url/getUrlById.do', {id: variable.id}, r => {
-            this.quoteSelectTableData = r.data.urlOutputPara
-            this.quoteSelectInTableData = r.data.urlIutputPara
-          })
-        }
-      }
+      let temp = this.quoteSelect.find((element) => (element.name === value))
+      this.$api.post('/develop/url/getUrlById.do', {id: temp.id}, r => {
+        this.quoteSelectTableData = r.data.urlOutputPara
+        this.quoteSelectInTableData = r.data.urlIutputPara
+      })
     },
     /**
     * @desc 链接输入参数条件格式化

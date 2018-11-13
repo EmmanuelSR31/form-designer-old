@@ -28,11 +28,7 @@ export default {
     */
     init: function () {
       this.$api.post('/flow/getOpinionsByUuid', {uuid: this.uuid}, r => {
-        if (r.data.status === '0') {
-          this.list = r.data.list
-        } else {
-          this.$Message.error('该流程未开启!')
-        }
+        r.data.status === '0' ? this.list = r.data.list : this.$Message.error('该流程未开启!')
       })
     }
   },

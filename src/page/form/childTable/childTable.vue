@@ -50,8 +50,7 @@ export default {
     */
     addFormData: function () {
       this.$store.dispatch('setCurrentEditChildForm', this.formObj)
-      this.$layer.open({
-        type: 2,
+      this.$layer.iframe({
         content: {
           content: editChildFormData, // 传递的组件对象
           parent: this, // 当前的vue对象
@@ -62,17 +61,10 @@ export default {
             method: 'add'
           }
         },
-        shadeClose: false,
-        shade: false,
-        maxmin: true,
-        btn: '保存',
         area: [document.body.clientWidth - 100 + 'px', document.body.clientHeight - 20 + 'px'],
         title: '新增数据',
-        yes: function (index) {
-          var ifname = 'layui-layer-iframe' + index
-          var Ifame = window.frames[ifname]
-          Ifame.save()
-        }
+        shade: true,
+        shadeClose: false
       })
     },
     /**
@@ -82,8 +74,7 @@ export default {
     editFormData: function (params) {
       this.$store.dispatch('setCurrentEditChildForm', this.formObj)
       this.$store.dispatch('setCurrentEditChildFormData', params.row)
-      this.$layer.open({
-        type: 2,
+      this.$layer.iframe({
         content: {
           content: editChildFormData, // 传递的组件对象
           parent: this, // 当前的vue对象
@@ -94,11 +85,10 @@ export default {
             method: 'edit'
           }
         },
-        shadeClose: false,
-        shade: false,
-        maxmin: true,
         area: [document.body.clientWidth - 100 + 'px', document.body.clientHeight - 20 + 'px'],
-        title: '修改数据'
+        title: '修改数据',
+        shade: true,
+        shadeClose: false
       })
     },
     /**
@@ -108,8 +98,7 @@ export default {
     viewFormData: function (params) {
       this.$store.dispatch('setCurrentEditChildForm', this.formObj)
       this.$store.dispatch('setCurrentEditChildFormData', params.row)
-      this.$layer.open({
-        type: 2,
+      this.$layer.iframe({
         content: {
           content: editChildFormData, // 传递的组件对象
           parent: this, // 当前的vue对象
@@ -120,33 +109,10 @@ export default {
             method: 'view'
           }
         },
-        shadeClose: false,
-        shade: false,
-        maxmin: true,
         area: [document.body.clientWidth - 100 + 'px', document.body.clientHeight - 20 + 'px'],
-        title: '查看数据'
-      })
-    },
-    /**
-    * @desc 删除数据
-    * @param {Object} params 要删除的数据
-    */
-    deleteFormData: function (params) {
-      this.$Modal.confirm({
-        title: '',
-        content: '确认删除此数据？',
-        onOk: () => {
-          this.$api.post('/crm/ActionFormUtil/delete.do', {tableName: this.childTableName, id: params.row.id}, r => {
-            if (r.data === '0') {
-              this.$Message.error('删除数据失败')
-            } else {
-              this.$Message.success('删除数据成功')
-              this.changePage(this.currentPage)
-            }
-          })
-        },
-        onCancel: () => {
-        }
+        title: '查看数据',
+        shade: true,
+        shadeClose: false
       })
     },
     /**
@@ -156,33 +122,15 @@ export default {
       this.$api.post('/pages/crminterface/getDatagridForJson.do', {tableName: this.childTableName}, r => {
         this.formObj = r.data
         Util.initFormQuoteSelectData(this.formObj.field)
-        this.initColumns(r.data.field)
+        this.columns = Util.initColumns(this.formObj.field, true)
+        this.columnsAddAction()
       })
       this.changePage(this.currentPage)
     },
     /**
-    * @desc 生成表格表头
-    * @param {Array} fields 表单字段
+    * @desc 表头加操作列
     */
-    initColumns: function (fields) {
-      this.columns = []
-      this.columns.push({
-        type: 'index',
-        title: '序列',
-        width: 64,
-        align: 'center'
-      })
-      for (let variable of fields) {
-        if ((variable.listDisplay === 'true' || variable.listDisplay === true) && variable.text !== 'record_id') {
-          if (variable.fieldType === 'combobox') {
-            this.columns.push(Util.comboboxColumns(variable, this.selectData))
-          } else if (variable.fieldType === 'filebox') {
-            this.columns.push(Util.fileColumns(variable))
-          } else {
-            this.columns.push(Util.textColumns(variable))
-          }
-        }
-      }
+    columnsAddAction: function () {
       this.columns.push({
         title: '操作',
         key: 'action',
@@ -225,7 +173,7 @@ export default {
               },
               on: {
                 click: () => {
-                  this.deleteFormData(params)
+                  Util.deleteFormData(this.childTableName, params, this.changePage, this.currentPage)
                 }
               }
             }, '删除')

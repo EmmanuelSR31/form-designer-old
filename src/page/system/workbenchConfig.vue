@@ -225,11 +225,7 @@ export default {
     * @param {Object} evt 事件对象
     */
     dragEnd: function (evt) {
-      if (evt.item.className === 'info-card') {
-        this.configList.push(JSON.parse(JSON.stringify(this.configTemp[0])))
-      } else {
-        this.configList.push(JSON.parse(JSON.stringify(this.configTemp[1])))
-      }
+      evt.item.className === 'info-card' ? this.configList.push(JSON.parse(JSON.stringify(this.configTemp[0]))) : this.configList.push(JSON.parse(JSON.stringify(this.configTemp[1])))
       return false
     },
     /**
@@ -269,11 +265,7 @@ export default {
       config.config_str = JSON.stringify(this.configObj)
       config.postation_id = this.currentPid
       this.$api.post('/develop/workbench/save.do', {data: JSON.stringify(config)}, r => {
-        if (r.data.result) {
-          this.$Message.success('保存成功')
-        } else {
-          this.$Message.error(r.data.describe)
-        }
+        r.data.result ? this.$Message.success('保存成功') : this.$Message.error(r.data.describe)
       })
     },
     /**

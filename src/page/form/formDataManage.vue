@@ -3,7 +3,6 @@
   <div class="table-search-con">
     <Button type="primary" @click="addFormData">新增</Button>
     <Button type="primary" @click="setCharts">生成图表</Button>
-    <Button type="primary" onclick="aaaa()">开启</Button>
     <Button v-for="(item, index) in buttons" type="primary" :onclick="item.buttonFunction.replace(/&acute;/g, '\'')" :key="index">{{item.buttonName}}</Button>
     <span class="pull-right">
       <template v-for="(item, index) in searchs">
@@ -124,66 +123,7 @@ export default {
     * @desc 新增数据
     */
     addFormData: function () {
-      this.$store.dispatch('setCurrentEditForm', this.formObj)
-      let pid = ''
-      if (this.formObj.needTree === 'true' && this.formObj.treeForm !== '') {
-        if (this.pid === '') {
-          this.$Message.error('请先选择左侧一条数据')
-          return false
-        } else {
-          pid = this.pid
-        }
-      }
-      this.$router.push({
-        name: 'editFormData',
-        params: {tableName: this.tableName, id: '', pid: pid, method: 'add'}
-      })
-    },
-    /**
-    * @desc 查看数据
-    * @param {Object} params 要查看的数据
-    */
-    viewFormData: function (params) {
-      this.$store.dispatch('setCurrentEditForm', this.formObj)
-      this.$store.dispatch('setCurrentEditFormData', params.row)
-      this.$router.push({
-        name: 'editFormData',
-        params: {tableName: this.tableName, id: params.row.id, pid: '', method: 'view'}
-      })
-    },
-    /**
-    * @desc 修改数据
-    * @param {Object} params 要修改的数据
-    */
-    editFormData: function (params) {
-      this.$store.dispatch('setCurrentEditForm', this.formObj)
-      this.$store.dispatch('setCurrentEditFormData', params.row)
-      this.$router.push({
-        name: 'editFormData',
-        params: {tableName: this.tableName, id: params.row.id, pid: '', method: 'edit'}
-      })
-    },
-    /**
-    * @desc 删除数据
-    * @param {Object} params 要删除的数据
-    */
-    deleteFormData: function (params) {
-      this.$Modal.confirm({
-        title: '',
-        content: '确认删除此数据？',
-        onOk: () => {
-          this.$api.post('/crm/ActionFormUtil/delete.do', {tableName: this.tableName, id: params.row.id}, r => {
-            if (r.data === '0') {
-              this.$Message.error('删除数据失败')
-            } else {
-              this.$Message.success('删除数据成功')
-              this.changePage(this.currentPage)
-            }
-          })
-        },
-        onCancel: () => {
-        }
-      })
+      Util.addFormData(this.tableName, this.formObj, this.pid, this.aaa)
     },
     /**
     * @desc 树点击一行
@@ -204,6 +144,7 @@ export default {
     */
     init: function () {
       this.data = []
+      this.columns = []
       // this.initApi()
       this.$api.post('/pages/crminterface/getDatagridForJson.do', {tableName: this.tableName}, r => {
         this.formObj = r.data
@@ -220,16 +161,16 @@ export default {
               this.searchButtons = JSON.parse(this.formAttrObj.search_buttons)
               eval(this.formAttrObj.js_code.replace(/&quot;/g, '"').replace(/换行符/g, '\n').replace(/&acute;/g, '\''))
             } else {
-              this.columns = this.initColumns(this.formObj.field, true)
+              this.columns = Util.initColumns(this.formObj.field, true)
             }
-            this.columns = this.columnsAddAction(this.columns)
+            this.columns = Util.columnsAddAction(this.columns, this.tableName, this.formObj, this.changePage, this.currentPage)
             if (this.isAct === 0) {
-              this.columns = this.columnsAddProcess(this.columns)
+              this.columns = Util.columnsAddProcess(this.columns, this.viewProcessDetail)
             }
             if (this.formObj.needTree === 'true' && this.formObj.treeForm !== '') {
               this.$api.post('/pages/crminterface/getDatagridForJson.do', {tableName: this.formObj.treeForm}, r => {
                 let treeField = r.data.treeField
-                this.treeColumns = this.initColumns(r.data.field, false)
+                this.treeColumns = Util.initColumns(r.data.field, false)
                 this.$api.post('/crm/ActionFormUtil/getByTableName.do', {rows: this.pageSize, page: this.currentPage, tableName: this.formObj.treeForm}, r => {
                   this.treeData = Util.dataConvertForTree(r.data, treeField)
                 })
@@ -261,160 +202,11 @@ export default {
       })
     },
     /**
-    * @desc 生成表格表头
-    * @param {Array} fields 表单字段
-    * @param {Boolean} flag 是否需要序列表头
-    */
-    initColumns: function (fields, flag) {
-      let columnsTemp = []
-      if (flag) {
-        columnsTemp.push({
-          type: 'index',
-          title: '序列',
-          width: 50,
-          align: 'center'
-        })
-      }
-      for (let variable of fields) {
-        if (variable.listDisplay === 'true' || variable.listDisplay === true) {
-          if (variable.fieldType === 'tablebox') {
-            columnsTemp.push({
-              title: variable.title,
-              key: variable.text,
-              width: 80,
-              align: 'center',
-              render: (h, params) => {
-                return h('Button', {
-                  props: {
-                    type: 'primary',
-                    size: 'small'
-                  },
-                  on: {
-                    click: () => {
-                      this.childTableManage(params, variable.tableTitle)
-                    }
-                  }
-                }, '查看详情')
-              }
-            })
-          } else if (variable.fieldType === 'combobox') {
-            columnsTemp.push(Util.comboboxColumns(variable, this.selectData))
-          } else if (variable.fieldType === 'filebox') {
-            columnsTemp.push(Util.fileColumns(variable))
-          } else {
-            columnsTemp.push(Util.textColumns(variable))
-          }
-        }
-      }
-      console.log(columnsTemp)
-      return columnsTemp
-    },
-    /**
-    * @desc 表头加操作列
-    * @param {Array} columnsTemp 表头数组
-    */
-    columnsAddAction: function (columnsTemp) {
-      columnsTemp.push({
-        title: '操作',
-        key: 'action',
-        width: 150,
-        align: 'center',
-        render: (h, params) => {
-          return h('div', [
-            h('Button', {
-              props: {
-                type: 'success',
-                size: 'small'
-              },
-              style: {
-                marginRight: '5px'
-              },
-              on: {
-                click: () => {
-                  this.viewFormData(params)
-                }
-              }
-            }, '查看'),
-            h('Button', {
-              props: {
-                type: 'primary',
-                size: 'small'
-              },
-              style: {
-                marginRight: '5px'
-              },
-              on: {
-                click: () => {
-                  this.editFormData(params)
-                }
-              }
-            }, '修改'),
-            h('Button', {
-              props: {
-                type: 'error',
-                size: 'small'
-              },
-              on: {
-                click: () => {
-                  this.deleteFormData(params)
-                }
-              }
-            }, '删除')
-          ])
-        }
-      })
-      return columnsTemp
-    },
-    /**
-    * @desc 表头加流程列
-    * @param {Array} columnsTemp 表头数组
-    */
-    columnsAddProcess: function (columnsTemp) {
-      columnsTemp.push({
-        title: '流程进度',
-        key: 'msg',
-        width: 80,
-        align: 'center'
-      })
-      columnsTemp.push({
-        title: '流程详情',
-        key: 'process',
-        width: 80,
-        align: 'center',
-        render: (h, params) => {
-          return h('Button', {
-            props: {
-              type: 'success',
-              size: 'small'
-            },
-            on: {
-              click: () => {
-                this.viewProcessDetail(params)
-              }
-            }
-          }, '流程详情')
-        }
-      })
-      return columnsTemp
-    },
-    /**
-    * @desc 管理子表数据
-    * @param {Object} params 数据对象
-    * @param {String} tableTitle 子表名
-    */
-    childTableManage: function (params, tableTitle) {
-      this.$router.push({
-        name: 'childTableManage',
-        params: {tableName: tableTitle, recordID: params.row.uuid}
-      })
-    },
-    /**
     * @desc 查看流程详情
     * @param {Object} params 数据对象
     */
     viewProcessDetail: function (params) {
-      this.$layer.open({
-        type: 2,
+      this.$layer.iframe({
         content: {
           content: processDetail, // 传递的组件对象
           parent: this, // 当前的vue对象
@@ -422,11 +214,10 @@ export default {
             uuid: params.row.uuid
           }
         },
-        shadeClose: false,
-        shade: false,
-        maxmin: true,
         area: ['600px', document.body.clientHeight - 20 + 'px'],
-        title: '查看流程详情'
+        title: '查看流程详情',
+        shade: true,
+        shadeClose: false
       })
     },
     setCharts: function () { // 生成图表

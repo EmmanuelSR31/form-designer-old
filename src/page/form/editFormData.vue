@@ -83,7 +83,8 @@
               <childTable :childTableName="item.tableTitle" :recordID="formDataObj.uuid"></childTable>
             </template>
             <template v-else-if="item.fieldType === 'filebox'">
-              <template v-if="method === 'view'">
+              <form-file :is-view="method === 'view'" :field="item.text" :paths="formDataObj[item.text]" @change-field-files="changeFieldFiles"></form-file>
+              <!-- <template v-if="method === 'view'">
                 <Button type="ghost" @click="openUpload(item)">查看</Button>
               </template>
               <template v-else>
@@ -96,14 +97,14 @@
                   </li>
                 </ul>
                 <Input v-model="formDataObj[item.text]" :key="item.text"><Button slot="append" icon="md-cloud-upload" @click="openUpload(item)"></Button></Input>
-              </template>
+              </template> -->
             </template>
           </FormItem>
         </Form>
       </div>
       <div class="text-center">
         <Button class="mr100" @click="cancel">取消</Button>
-        <Button type="primary" @click="save">保存</Button>
+        <Button type="primary" v-if="method !== 'view'" @click="save">保存</Button>
       </div>
     </Col>
   </Row>
@@ -112,10 +113,12 @@
 <script>
 import Util from '@/utils/index'
 import childTable from './childTable/childTable.vue'
-import filesManage from './fileManage/filesManage.vue'
+import formFile from './fileManage/formFile.vue'
+// import filesManage from './fileManage/filesManage.vue'
 export default {
   components: {
-    childTable // 子表组件
+    childTable, // 子表组件
+    formFile // 附件展示
   },
   data () {
     return {
@@ -128,7 +131,8 @@ export default {
       formDataObj: this.$store.state.currentEditFormData, // 表单数据对象
       selectData: this.$store.state.selectData, // 下拉数据
       fileList: {}, // 附件列表
-      currentUploadField: '' // 正在上传附件的字段
+      currentUploadField: '', // 正在上传附件的字段
+      saveFlag: false // 保存成功标志
     }
   },
   methods: {
@@ -157,6 +161,7 @@ export default {
         this.$api.post('/crm/ActionFormUtil/insert.do', {jsonStr: jsonStr}, r => {
           if (r.data === 1) {
             this.$Message.success('新增数据成功')
+            this.saveFlag = true
             this.$router.go(-1)
           } else {
             this.$Message.error('新增数据失败')
@@ -168,6 +173,7 @@ export default {
         this.$api.post('/crm/ActionFormUtil/update.do', {jsonStr: jsonStr, id: this.id}, r => {
           if (r.data === 1) {
             this.$Message.success('修改数据成功')
+            this.saveFlag = true
             this.$router.go(-1)
           } else {
             this.$Message.error('修改数据失败')
@@ -195,13 +201,7 @@ export default {
     changeQuoteSelectData: function (field) {
       if (field.selectType === '1' & field.selectFields !== '') {
         if (field.selectFields.length > 0) {
-          let temp = {}
-          for (let variable of this.selectData[field.selectID]) {
-            if (variable.id === this.formDataObj[field.text]) {
-              temp = variable
-              break
-            }
-          }
+          let temp = this.selectData[field.selectID].find((element) => (element.id === this.formDataObj[field.text]))
           for (let variable of field.selectFields) {
             let tmp = variable.name
             this.formDataObj[variable.inputName] = temp[tmp]
@@ -210,10 +210,18 @@ export default {
       }
     },
     /**
+    * @desc 更改附件值
+    * @param {String} field 附件字段
+    * @param {String} paths 附件值
+    */
+    changeFieldFiles: function (field, paths) {
+      this.formDataObj[field] = paths
+    },
+    /**
     * @desc 打开附件上传
     * @param {Object} field 附件字段
     */
-    openUpload: function (field) {
+    /* openUpload: function (field) {
       let paths = this.formDataObj[field.text].replace(/\//g, '&quot;')
       console.log(paths)
       this.$layer.open({
@@ -232,13 +240,13 @@ export default {
         area: ['800px', document.body.clientHeight - 20 + 'px'],
         title: '附件上传'
       })
-    },
+    }, */
     /**
     * @desc 删除附件
     * @param {Object} field 附件字段
     * @param {Object} file 附件
     */
-    deleteFile: function (field, file) {
+    /* deleteFile: function (field, file) {
       this.$Modal.confirm({
         title: '',
         content: '确认删除此文件？',
@@ -248,23 +256,23 @@ export default {
         onCancel: () => {
         }
       })
-    },
+    }, */
     /**
     * @desc 点击上传设置附件字段
     * @param {Object} field 附件字段
     */
-    handleBeforeUpload: function (field) {
+    /* handleBeforeUpload: function (field) {
       this.currentUploadField = field
-    },
+    }, */
     /**
     * @desc 上传成功
     * @param {Object} response 返回对象
     */
-    uploadSuccess: function (response, file, fileList) {
+    /* uploadSuccess: function (response, file, fileList) {
       console.log(response)
       console.log(this.currentUploadField)
       this.fileList[this.currentUploadField].push(response.obj.filePath)
-    },
+    }, */
     /**
     * @desc string转为Boolean
     * @param {String} str 字符串
@@ -317,15 +325,19 @@ export default {
   },
   beforeRouteLeave (to, from, next) {
     // 离开页面时确认
-    this.$Modal.confirm({
-      title: '',
-      content: '数据未保存，确认离开此页？',
-      onOk: () => {
-        next()
-      },
-      onCancel: () => {
-      }
-    })
+    if (this.method === 'view' || this.saveFlag) {
+      next()
+    } else {
+      this.$Modal.confirm({
+        title: '',
+        content: '数据未保存，确认离开此页？',
+        onOk: () => {
+          next()
+        },
+        onCancel: () => {
+        }
+      })
+    }
   }
 }
 </script>
