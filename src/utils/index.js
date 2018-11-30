@@ -238,6 +238,40 @@ util.formatterTreeData = function (data) {
 }
 
 /**
+* @desc 格式化拖拽树数据
+* @param {Array} data 数据列表
+* @return {Array} data 数据列表
+*/
+util.formatterDragTreeData = function (data) {
+  for (let variable of data) {
+    variable.title = variable.text
+    variable.expand = true
+    if (variable.children.length > 0) {
+      for (let temp of variable.children) {
+        temp.title = temp.text
+        if (temp.children.length > 0) {
+          for (let tmp of temp.children) {
+            tmp.title = tmp.text
+            if (tmp.children.length > 0) {
+              for (let tp of tmp.children) {
+                tp.title = tp.text
+              }
+            } else {
+              tmp.isLeaf = true
+            }
+          }
+        } else {
+          temp.isLeaf = true
+        }
+      }
+    } else {
+      variable.isLeaf = true
+    }
+  }
+  return data
+}
+
+/**
 * @desc 数据转换为树结构数据格式
 * @param {Object} tableData 数据对象
 * @return {Array} arr 树结构数据列表
@@ -777,7 +811,7 @@ util.flowStateFormat = function (value) {
 * @return {String} 条件文本
 */
 util.urlInParaTypeFormat = function (value) {
-  return store.state.urlInParaCondition.find((element) => (element.value === value)).text
+  return this.isEmpty(value) ? '' : store.state.urlInParaCondition.find((element) => (element.value === value)).text
 }
 
 /**
@@ -794,8 +828,8 @@ util.trueFalseFormat = function (value) {
 * @param {String} value 参数值
 * @return {String} 参数名
 */
-util.urlInParaValueFormat = function (value) {
-  return store.state.urlInParaValue.find((element) => (element.value === value)).text
+util.urlInParaOptionFormat = function (value) {
+  return this.isEmpty(value) ? '' : store.state.urlInParaOption.find((element) => (element.value === value)).text
 }
 
 /**
@@ -807,15 +841,19 @@ util.initFormQuoteSelectData = function (fields) {
     if (fields[i].fieldType === 'combobox' && fields[i].selectType === '1') {
       let obj = {}
       obj.name = fields[i].selectID
+      // 下拉输入字段
       if (!this.isEmpty(fields[i].inParas) && fields[i].inParas.length > 0) {
         for (let j = 0; j < fields[i].inParas.length; j++) {
-          if (fields[i].inParas[j].value === 'userId') {
+          if (fields[i].inParas[j].option === 'userId') {
             obj[fields[i].inParas[j].name] = store.state.user.id
+          } else if (fields[i].inParas[j].option === 'write') {
+            obj[fields[i].inParas[j].name] = fields[i].inParas[j].value
           }
         }
       }
       api.post('/develop/url/getUrl.do', obj, r => {
         store.state.selectData[fields[i].selectID] = r.data
+        console.log('链接下拉')
         console.log(store.state.selectData)
       })
     }

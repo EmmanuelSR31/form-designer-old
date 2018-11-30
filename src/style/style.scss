@@ -93,7 +93,8 @@ body {
   height: 100%;
 }
 .left-menu-con {
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   height: 100%;
   position: fixed;
   top: 0;
@@ -163,8 +164,7 @@ body {
 }
 .add-field-con {
   padding: 20px;
-  min-height: 200px;
-  max-height: 500px;
+  min-height: 400px;
   background-color: #ffffff;
   border-radius: 5px;
   margin-left: 20px;

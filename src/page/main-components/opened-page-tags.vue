@@ -1,10 +1,9 @@
 <template>
   <div class="tags-outer-con" ref="tagCon" @DOMMouseScroll="handlescroll" @mousewheel="handlescroll">
     <div class="tags-scroll-con" ref="scrollCon" :style="{left: tagConLeft + 'px'}">
-      <Tag type="dot" v-for="item in pageTagsList" ref="tagsPageOpened" :name="item.name" :key="item.name"
-      :closable="item.name==='home'?false:true"
-      :color="item.children?(item.children[0].name===currentPageName?'blue':'default'):(item.name===currentPageName?'blue':'default')"
-      @on-close="closeTag(item.name)" @click.native="linkTo(item)" v-on:contextmenu.native="showTagMenu(item, $event)">{{item.title}}</Tag>
+      <Tag type="dot" v-for="item in pageTagsList" ref="tagsPageOpened" :name="item.text" :key="item.text"
+      :closable="item.text==='首页'?false:true" :color="item.text===currentPageName?'blue':'default'"
+      @on-close="closeTag(item.text)" @click.native="linkTo(item)" v-on:contextmenu.native="showTagMenu(item, $event)">{{item.text}}</Tag>
       <div class="contextmenu-con" v-show="tagContextmenuShow" @mouseleave="contextMenuClose" :style="{left: axios.x + 'px', top: axios.y + 'px'}">
         <ul>
           <li v-for="item in contextMenuList" :key="item.name" @click="contextMenuClick(item.name)">
@@ -50,7 +49,7 @@ export default {
       let lastPageObj = pageOpenedList[0]
       if (this.currentPageName === name) {
         let len = pageOpenedList.length
-        let i = pageOpenedList.findIndex((element) => (element.name === name))
+        let i = pageOpenedList.findIndex((element) => (element.text === name))
         lastPageObj = i < (len - 1) ? pageOpenedList[i + 1] : pageOpenedList[i - 1]
       }
       this.$store.dispatch('removeTag', name)
@@ -67,9 +66,9 @@ export default {
     */
     linkTo: function (item) { // 跳转页面
       this.$router.push({
-        path: '/' + item.name
+        path: item.url
       })
-      this.$store.dispatch('setCurrentPageName', item.name)
+      this.$store.dispatch('setCurrentPageName', item.text)
     },
     /**
     * @desc 打开右键菜单
@@ -80,7 +79,7 @@ export default {
       event.preventDefault()
       var x = event.clientX - 5
       var y = event.clientY - 5
-      this.$store.dispatch('setContextMenuOpenedTag', item.name)
+      this.$store.dispatch('setContextMenuOpenedTag', item.text)
       this.tagContextmenuShow = true
       this.axios.x = x
       this.axios.y = y
@@ -104,10 +103,10 @@ export default {
         }
       } else if (name === 'closeOther') {
         this.$store.dispatch('closeOtherTag')
-        this.linkTo({name: this.$store.state.contextMenuOpenedTag})
+        this.linkTo(this.$store.state.pageOpenedList[this.$store.state.pageOpenedList.length - 1])
       } else if (name === 'closeAll') {
         this.$store.dispatch('closeAllTag')
-        this.linkTo({name: 'home'})
+        this.linkTo({url: '/home', text: '首页'})
       }
       this.contextMenuClose()
     },
@@ -183,6 +182,9 @@ export default {
   overflow: visible;
   white-space: nowrap;
   transition: left 0.3s ease;
+}
+.ivu-tag-blue .ivu-tag-dot-inner{
+  background: #1890ff;
 }
 .contextmenu-con{
   position: fixed;

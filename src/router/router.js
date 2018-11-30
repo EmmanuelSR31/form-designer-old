@@ -93,29 +93,6 @@ export const appRouter = [
     ]
   },
   {
-    path: '/chart',
-    icon: 'md-alert',
-    name: 'chart',
-    title: '图表',
-    component: Main,
-    children: [
-      {
-        path: '/lineChart',
-        icon: 'compose',
-        name: 'lineChart',
-        title: '折线图',
-        component: resolve => { require(['@/page/chart/lineChart.vue'], resolve) }
-      },
-      {
-        path: '/barChart',
-        icon: 'compose',
-        name: 'barChart',
-        title: '柱状图',
-        component: resolve => { require(['@/page/chart/barChart.vue'], resolve) }
-      }
-    ]
-  },
-  {
     path: '/selectManage',
     icon: 'md-cog',
     name: 'selectManage',

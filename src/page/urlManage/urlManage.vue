@@ -134,7 +134,6 @@ export default {
         this.$Message.warning('请先选择一条目录')
       } else {
         this.$layer.iframe({
-          type: 2,
           content: {
             content: editUrl, // 传递的组件对象
             parent: this, // 当前的vue对象
@@ -145,8 +144,7 @@ export default {
             }
           },
           shadeClose: false,
-          shade: false,
-          maxmin: true,
+          shade: true,
           area: ['800px', document.body.clientHeight - 20 + 'px'],
           title: '新增URL'
         })
@@ -160,8 +158,7 @@ export default {
       let temp = row.row
       delete temp._index
       delete temp.orwKey
-      this.$layer.open({
-        type: 2,
+      this.$layer.iframe({
         content: {
           content: editUrl, // 传递的组件对象
           parent: this, // 当前的vue对象
@@ -172,8 +169,7 @@ export default {
           }
         },
         shadeClose: false,
-        shade: false,
-        maxmin: true,
+        shade: true,
         area: ['800px', document.body.clientHeight - 20 + 'px'],
         title: '修改URL'
       })

@@ -1,36 +1,31 @@
 <template>
 <div class="main-con">
   <div class="left-menu-con" :style="{width: leftMenuWidth + 'px'}">
-    <Menu :theme="leftMenuTheme" width="200px" active-name="menulist" :open-names="['1']" accordion @on-select="routeTo">
+    <Menu :theme="leftMenuTheme" :style="{width: leftMenuWidth + 'px'}" active-name="menulist" :open-names="['1']" accordion @on-select="routeTo">
       <template v-for="item in menuList">
-        <!-- <template v-if="item.children.length>0">
-          <Submenu :name="item" :key="item.url">
+        <template v-if="item.children !== null && item.children !== undefined && item.children.length > 0">
+          <Submenu :name="item" :key="item.text">
             <template slot="title">
-              <Icon :type="item.iconCls"></Icon>
+              <Icon :type="item.iconCls !== null ? 'ios-alert' : 'ios-alert'"></Icon>
               {{item.text}}
             </template>
-            <MenuItem v-for="tmp in item.children" :name="tmp" :key="tmp.url">{{tmp.text}}</MenuItem>
-          </Submenu>
-        </template>
-        <template v-else>
-          <MenuItem :name="item" :key="item.url">
-            <Icon :type="item.iconCls" :key="item.url"></Icon>
-            {{item.text}}
-          </MenuItem>
-        </template> -->
-        <template v-if="item.children.length>0">
-          <Submenu :name="item" :key="item.name">
-            <template slot="title">
-              <Icon :type="item.icon"></Icon>
-              {{item.title}}
+            <template v-for="tmp in item.children">
+              <template v-if="tmp.children !== null && tmp.children !== undefined && tmp.children.length > 0">
+                <Submenu :name="tmp" :key="tmp.text">
+                  <template slot="title">{{tmp.text}}</template>
+                  <MenuItem  v-for="tm in tmp.children" :name="tm" :key="tm.text">{{tm.text}}</MenuItem>
+                </Submenu>
+              </template>
+              <template v-else>
+                <MenuItem :name="tmp" :key="tmp.text">{{tmp.text}}</MenuItem>
+              </template>
             </template>
-            <MenuItem v-for="tmp in item.children" :name="tmp" :key="tmp.name">{{tmp.title}}</MenuItem>
           </Submenu>
         </template>
         <template v-else>
-          <MenuItem :name="item" :key="item.name">
-            <Icon :type="item.icon" :key="item.name"></Icon>
-            {{item.title}}
+          <MenuItem :name="item" :key="item.text">
+            <Icon :type="item.iconCls !== null ? 'ios-alert' : 'ios-alert'" :key="item.text"></Icon>
+            {{item.text}}
           </MenuItem>
         </template>
       </template>
@@ -96,7 +91,7 @@ export default {
   data () {
     return {
       leftMenuTheme: this.$store.state.leftMenuTheme, // 左侧菜单样式
-      leftMenuWidth: 200, // 左侧菜单宽度
+      leftMenuWidth: 250, // 左侧菜单宽度
       shrink: false, // 左侧菜单切换
       userName: '', // 用户名
       systemObj: {system_name: '克莱特商务云平台'}, // 系统名称对象
@@ -140,7 +135,7 @@ export default {
       if (this.shrink) {
         this.leftMenuWidth = 0
       } else {
-        this.leftMenuWidth = 200
+        this.leftMenuWidth = 250
       }
     },
     /**
@@ -174,7 +169,8 @@ export default {
     routeTo: function (e) {
       this.$store.dispatch('increateTag', e)
       this.$router.push({
-        path: '/' + e.name
+        // path: '/' + e.name
+        path: e.url
       })
     }
   },

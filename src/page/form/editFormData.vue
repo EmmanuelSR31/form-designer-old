@@ -80,7 +80,12 @@
               </template>
             </template>
             <template v-else-if="item.fieldType === 'tablebox'">
-              <childTable :childTableName="item.tableTitle" :recordID="formDataObj.uuid"></childTable>
+              <template v-if="item.editChildTable === 'true'">
+                <editTable :tableName="item.tableTitle" :recordID="formDataObj.uuid" :viewFlag="false"></editTable>
+              </template>
+              <template v-else>
+                <childTable :childTableName="item.tableTitle" :recordID="formDataObj.uuid"></childTable>
+              </template>
             </template>
             <template v-else-if="item.fieldType === 'filebox'">
               <form-file :is-view="method === 'view'" :field="item.text" :paths="formDataObj[item.text]" @change-field-files="changeFieldFiles"></form-file>
@@ -114,11 +119,13 @@
 import Util from '@/utils/index'
 import childTable from './childTable/childTable.vue'
 import formFile from './fileManage/formFile.vue'
+import editTable from '../components/editTable.vue'
 // import filesManage from './fileManage/filesManage.vue'
 export default {
   components: {
     childTable, // 子表组件
-    formFile // 附件展示
+    formFile, // 附件展示
+    editTable
   },
   data () {
     return {

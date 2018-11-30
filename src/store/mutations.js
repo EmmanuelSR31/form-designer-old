@@ -1,6 +1,6 @@
 import * as types from './mutation-types'
 import Util from '@/utils/index'
-import {appRouter} from '@/router/router'
+// import {appRouter} from '@/router/router'
 import api from '@/api/index.js'
 
 export default {
@@ -15,32 +15,28 @@ export default {
   * @param {Object} tagObj 标签对象
   */
   [types.INCREATE_TAG] (state, tagObj) {
-    if (!Util.oneOf(tagObj.name, state.dontCache)) {
-      state.cachePage.push(tagObj.name)
+    if (!Util.oneOf(tagObj.text, state.dontCache)) {
+      state.cachePage.push(tagObj.text)
       localStorage.cachePage = JSON.stringify(state.cachePage)
     }
     if (!Util.oneOf(tagObj, state.pageOpenedList)) {
       state.pageOpenedList.push(tagObj)
       localStorage.pageOpenedList = JSON.stringify(state.pageOpenedList)
     }
-    state.currentPageName = tagObj.name
+    console.log(state.pageOpenedList)
+    state.currentPageName = tagObj.text
   },
   /**
   * @desc 更新菜单
   */
   [types.UPDATE_MENULIST] (state) {
     let menuList = []
-    /* api.post('/topJUI/index/getMenu.do', {name: '1', position_id: '9'}, r => {
-      menuList = r.data
-      for (let iterator of menuList) {
-        api.post('/topJUI/index/getMenu.do', {name: iterator.id, position_id: '9'}, rs => {
-          iterator.children = rs.data
-        })
-      }
-      state.menuList = menuList
+    api.post('/topJUI/index/getMenuList.do', {}, r => {
+      console.log(r)
+      state.menuList = r.data[0].children
       console.log(menuList)
-    }) */
-    appRouter.forEach((item, index) => {
+    })
+    /* appRouter.forEach((item, index) => {
       if (item.children.length === 1) {
         menuList.push(item)
       } else {
@@ -70,7 +66,7 @@ export default {
         }
       }
     })
-    menuList.push(menuTemp)
+    menuList.push(menuTemp) */
     state.menuList = menuList
   },
   /**
@@ -86,7 +82,7 @@ export default {
   */
   [types.REMOVE_TAG] (state, name) {
     state.pageOpenedList.map((item, index) => {
-      if (item.name === name) {
+      if (item.text === name) {
         state.pageOpenedList.splice(index, 1)
       }
     })
@@ -108,7 +104,7 @@ export default {
   [types.CLOSE_CURRENT_TAG] (state) {
     let currentIndex = 0
     state.pageOpenedList.forEach((item, index) => {
-      if (item.name === state.contextMenuOpenedTag) {
+      if (item.text === state.contextMenuOpenedTag) {
         currentIndex = index
       }
     })
@@ -122,7 +118,7 @@ export default {
   [types.CLOSE_OTHER_TAGS] (state) {
     let currentIndex = 0
     state.pageOpenedList.forEach((item, index) => {
-      if (item.name === state.contextMenuOpenedTag) {
+      if (item.text === state.contextMenuOpenedTag) {
         currentIndex = index
       }
     })

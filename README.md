@@ -1,6 +1,6 @@
-# vue-iview-admin
+# form-designer
 
-> A Vue.js project
+> 表单设计器
 
 ## Build Setup
 

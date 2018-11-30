@@ -1,7 +1,7 @@
 {
-  "name": "vue-iview-admin",
+  "name": "form-designer",
   "version": "1.0.0",
-  "description": "A Vue.js project",
+  "description": "表单设计器",
   "author": "EmmanuelSR",
   "private": true,
   "scripts": {

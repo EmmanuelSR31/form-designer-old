@@ -12,11 +12,6 @@
                 <Option v-for="item in dataUrls" :value="item.name" :key="item.name">{{item.disc}}</Option>
               </Select>
             </FormItem>
-            <FormItem label="列表页地址">
-              <Select v-model="formAttrObj.listUrl">
-                <Option v-for="item in listUrls" :value="item.name" :key="item.name">{{item.disc}}</Option>
-              </Select>
-            </FormItem>
           </div>
           <FormItem label="表格表头">
             <div class="table-search-con">

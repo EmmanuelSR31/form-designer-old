@@ -13,16 +13,18 @@ const state = {
   leftMenuTheme: 'dark', // 左侧菜单主题
   openedSubmenu: '', // 左侧菜单打开项
   pageOpenedList: [{ // 打开页面列表
-    title: '首页',
-    path: '',
-    name: 'home'
+    text: '首页',
+    path: '/home',
+    name: 'home',
+    url: '/home'
   }],
-  currentPageName: 'home', // 当前页面名
+  currentPageName: '首页', // 当前页面名
   currentPath: [ // 当前页面路径
     {
-      title: '首页',
-      path: '',
-      name: 'home'
+      text: '首页',
+      path: '/home',
+      name: 'home',
+      url: '/home'
     }
   ],
   dontCache: [], // 在这里定义你不想要缓存的页面的name属性值
@@ -213,10 +215,14 @@ const state = {
       value: 'date<='
     }
   ],
-  urlInParaValue: [ // 引用下拉输入参数值列表
+  urlInParaOption: [ // 引用下拉输入参数类型列表
     {
       text: '用户ID',
       value: 'userId'
+    },
+    {
+      text: '手填',
+      value: 'write'
     }
   ],
   chartFieldCalculateType: [ // 图表字段计算方式

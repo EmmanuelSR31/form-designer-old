@@ -267,7 +267,7 @@
                       </Select>
                     </FormItem>
                     <template v-if="field.selectType === '1' && field.selectID !== ''">
-                      <FormItem class="whole-line-tablebox" label="输出参数">
+                      <FormItem class="whole-line-tablebox" label="输入参数">
                         <Table border :columns="quoteSelectInColumns" :data="quoteSelectInTableData" stripe></Table>
                       </FormItem>
                       <FormItem class="whole-line-tablebox" label="输出参数">
@@ -299,6 +299,12 @@
                     <FormItem label="子表">
                       <Select v-model="field.tableTitle">
                         <Option v-for="item in childTables" :value="item.title" :key="item.title">{{ item.name }}</Option>
+                      </Select>
+                    </FormItem>
+                    <FormItem label="是否表格内编辑">
+                      <Select v-model="field.editChildTable">
+                        <Option value="false">否</Option>
+                        <Option value="true">是</Option>
                       </Select>
                     </FormItem>
                   </template>
@@ -401,10 +407,13 @@
           <FormItem label="是否必须">
             <Input :value="trueFalseFormat(quoteSelectInObj.is_necessary)"></Input>
           </FormItem>
-          <FormItem label="组件名">
-            <Select v-model="quoteSelectInObj.value">
-              <Option v-for="item in urlInParaValue" :value="item.value" :key="item.value">{{ item.text }}</Option>
+          <FormItem label="输入类型">
+            <Select v-model="quoteSelectInObj.option">
+              <Option v-for="item in urlInParaOption" :value="item.value" :key="item.value">{{ item.text }}</Option>
             </Select>
+          </FormItem>
+          <FormItem v-show="quoteSelectInObj.option === 'write'" label="输入值">
+            <Input v-model="quoteSelectInObj.value"></Input>
           </FormItem>
         </Form>
       </div>
@@ -431,7 +440,7 @@ export default {
       formControls: [], // 表单字段
       normalSelect: this.$store.state.normalSelect, // 普通下拉选项
       quoteSelect: this.$store.state.quoteSelect, // 引用下拉选项
-      urlInParaValue: this.$store.state.urlInParaValue, // 引用下拉输入参数值列表
+      urlInParaOption: this.$store.state.urlInParaOption, // 引用下拉输入参数类型列表
       radiosText: '', // 单选框文本
       radioTemp: '', // 单选框临时数据
       checkboxsText: '', // 多选框文本
@@ -490,11 +499,15 @@ export default {
           }
         },
         {
-          key: 'value',
-          title: '输入值',
+          key: 'option',
+          title: '输入选项',
           render: (h, params) => {
-            return h('div', Util.urlInParaValueFormat(params.row.value))
+            return h('div', Util.urlInParaOptionFormat(params.row.option))
           }
+        },
+        {
+          key: 'value',
+          title: '输入值'
         },
         {
           title: '操作',
