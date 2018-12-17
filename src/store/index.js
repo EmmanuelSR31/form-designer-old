@@ -225,6 +225,20 @@ const state = {
       value: 'write'
     }
   ],
+  autoFillType: [ // 新增时自动填写类型
+    {
+      text: '用户名',
+      value: 'userName'
+    },
+    {
+      text: '用户部门',
+      value: 'department'
+    },
+    {
+      text: '接口类',
+      value: 'interface'
+    }
+  ],
   chartFieldCalculateType: [ // 图表字段计算方式
     {
       text: '求和',

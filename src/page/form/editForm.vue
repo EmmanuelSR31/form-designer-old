@@ -187,7 +187,7 @@
                         <Option value="right">右对齐</Option>
                       </Select>
                     </FormItem>
-                    <template v-if="field.fieldType !== 'radio' && field.fieldType !== 'checkbox' && field.fieldType !== 'switch'">
+                    <template v-if="['radio', 'checkbox', 'switch'].indexOf(field.fieldType) === -1">
                       <FormItem label="提示信息">
                         <Input v-model="field.prompt"></Input>
                       </FormItem>
@@ -214,7 +214,7 @@
                         <Option value="true">是</Option>
                       </Select>
                     </FormItem>
-                    <template v-if="field.needCalculate === 'true'">
+                    <template v-show="field.needCalculate === 'true'">
                       <FormItem label="计算方式">
                         <Select v-model="field.calculateType">
                           <Option value="multiply">乘</Option>
@@ -225,18 +225,18 @@
                       </FormItem>
                       <FormItem v-show="field.calculateType === 'multiply' || field.calculateType === 'plus'" label="从哪些字段计算">
                         <Select v-model="field.calculateFields" multiple>
-                          <Option v-for="item in fieldsForSelect" :value="item.text" :key="item.text">{{ item.title }}</Option>
+                          <Option v-for="item in fieldsForSelect" :value="item.text" :key="item.text">{{item.title}}</Option>
                         </Select>
                       </FormItem>
                       <template v-show="field.calculateType === 'divide' || field.calculateType === 'minus'">
                         <FormItem label="前数">
                           <Select v-model="field.calculateFirstField">
-                            <Option v-for="item in fieldsForSelect" :value="item.text" :key="item.text">{{ item.title }}</Option>
+                            <Option v-for="item in fieldsForSelect" :value="item.text" :key="item.text">{{item.title}}</Option>
                           </Select>
                         </FormItem>
                         <FormItem label="后数">
                           <Select v-model="field.calculateLastField">
-                            <Option v-for="item in fieldsForSelect" :value="item.text" :key="item.text">{{ item.title }}</Option>
+                            <Option v-for="item in fieldsForSelect" :value="item.text" :key="item.text">{{item.title}}</Option>
                           </Select>
                         </FormItem>
                       </template>
@@ -252,14 +252,14 @@
                         <Option value="1">引用</Option>
                       </Select>
                     </FormItem>
-                    <FormItem v-if="field.selectType === '0'" label="关联选项">
+                    <FormItem v-show="field.selectType === '0'" label="关联选项">
                       <Select v-model="field.selectID">
                         <Option v-for="(item, index) in normalSelect" :key="index" :value="item.table_name">
                           {{item.title}}
                         </Option>
                       </Select>
                     </FormItem>
-                    <FormItem v-if="field.selectType === '1'" label="关联选项">
+                    <FormItem v-show="field.selectType === '1'" label="关联选项">
                       <Select v-model="field.selectID" @on-change="changeQuoteSelect">
                         <Option v-for="(item, index) in quoteSelect" :key="index" :value="item.name">
                           {{item.disc}}
@@ -274,6 +274,19 @@
                         <Table border :columns="quoteSelectColumns" :data="quoteSelectTableData" stripe></Table>
                       </FormItem>
                     </template>
+                    <FormItem label="是否级联下拉">
+                      <Select v-model="field.cascade">
+                        <Option value="false">否</Option>
+                        <Option value="true">是</Option>
+                      </Select>
+                    </FormItem>
+                    <FormItem v-show="field.cascade === 'true'" label="级联字段">
+                      <Select v-model="field.cascadeField">
+                        <Option v-for="(item, index) in cascadeFields" :key="index" :value="item.text">
+                          {{item.title}}
+                        </Option>
+                      </Select>
+                    </FormItem>
                   </template>
                   <template v-if="field.fieldType === 'radio'">
                     <FormItem label="选项">
@@ -287,7 +300,7 @@
                        一行一个选项
                     </FormItem>
                   </template>
-                  <template v-if="field.fieldType === 'datebox' || field.fieldType === 'datetimebox' || field.fieldType === 'monthbox' || field.fieldType === 'yearbox'">
+                  <template v-if="['datebox', 'datetimebox', 'monthbox', 'yearbox'].indexOf(field.fieldType) !== -1">
                     <FormItem label="是否取当前时间">
                       <Select v-model="field.currentDate">
                         <Option value="false">否</Option>
@@ -295,16 +308,93 @@
                       </Select>
                     </FormItem>
                   </template>
+                  <template v-if="['tablebox', 'filebox'].indexOf(field.fieldType) === -1">
+                    <template v-if="['datebox', 'datetimebox', 'monthbox', 'yearbox'].indexOf(field.fieldType) === -1">
+                      <FormItem label="新增时是否自动填写">
+                        <Select v-model="field.autoFill">
+                          <Option value="false">否</Option>
+                          <Option value="true">是</Option>
+                        </Select>
+                      </FormItem>
+                      <FormItem label="自动填写类型">
+                        <Select v-model="field.autoFillType">
+                          <Option v-for="(item, index) in autoFillType" :key="index" :value="item.value">
+                            {{item.text}}
+                          </Option>
+                        </Select>
+                      </FormItem>
+                      <template v-if="field.autoFillType === 'interface'">
+                        <FormItem label="写入数据接口地址">
+                          <Input v-model="field.autoFillInterface"></Input>
+                        </FormItem>
+                        <FormItem class="whole-line-tablebox" label="接口参数">
+                          <div class="table-search-con">
+                            <Button type="primary" @click="addAutoFillParam">新增</Button>
+                          </div>
+                          <Table border :columns="autoFillParamColumns" :data="autoFillParamData" stripe></Table>
+                        </FormItem>
+                      </template>
+                    </template>
+                    <FormItem label="是否写入其他字段">
+                      <Select v-model="field.writeOtherField">
+                        <Option value="false">否</Option>
+                        <Option value="true">是</Option>
+                      </Select>
+                    </FormItem>
+                    <template v-if="field.writeOtherField === 'true'">
+                      <FormItem label="写入字段">
+                        <Select v-model="field.writeOtherFieldName">
+                          <Option v-for="(item, index) in formControls" :key="index" :value="item.text">
+                            {{item.title}}
+                          </Option>
+                        </Select>
+                      </FormItem>
+                      <FormItem label="写入数据接口地址">
+                        <Input v-model="field.writeOtherFieldInterface"></Input>
+                      </FormItem>
+                      <FormItem label="接口参数名">
+                        <Input v-model="field.writeOtherFieldInterfaceParam"></Input>
+                      </FormItem>
+                      <FormItem class="whole-line-tablebox" label="接口其他参数">
+                        <div class="table-search-con">
+                          <Button type="primary" @click="addWriteOtherFieldParam">新增</Button>
+                        </div>
+                        <Table border :columns="writeOtherFieldParamColumns" :data="writeOtherFieldParamData" stripe></Table>
+                      </FormItem>
+                    </template>
+                  </template>
                   <template v-if="field.fieldType === 'tablebox'">
                     <FormItem label="子表">
-                      <Select v-model="field.tableTitle">
-                        <Option v-for="item in childTables" :value="item.title" :key="item.title">{{ item.name }}</Option>
+                      <Select v-model="field.tableTitle" @on-change="initChildFormFields">
+                        <Option v-for="item in childTables" :value="item.title" :key="item.title">{{item.name}}</Option>
                       </Select>
                     </FormItem>
                     <FormItem label="是否表格内编辑">
                       <Select v-model="field.editChildTable">
                         <Option value="false">否</Option>
                         <Option value="true">是</Option>
+                      </Select>
+                    </FormItem>
+                    <FormItem label="是否字段数据计算后写入主表字段">
+                      <Select v-model="field.calculateToMain">
+                        <Option value="false">否</Option>
+                        <Option value="true">是</Option>
+                      </Select>
+                    </FormItem>
+                    <FormItem v-show="field.calculateToMain === 'true'" label="要计算的字段">
+                      <Select v-model="field.calculateChildField">
+                        <Option v-for="item in childFormFields" :value="item.text" :key="item.text">{{item.title}}</Option>
+                      </Select>
+                    </FormItem>
+                    <FormItem v-show="field.calculateToMain === 'true'" label="计算方式">
+                      <Select v-model="field.calculateChildFieldType">
+                        <Option value="multiply">乘</Option>
+                        <Option value="plus">加</Option>
+                      </Select>
+                    </FormItem>
+                    <FormItem v-show="field.calculateToMain === 'true'" label="写入主表字段">
+                      <Select v-model="field.calculateToMainField">
+                        <Option v-for="item in formControls" :value="item.text" :key="item.text">{{item.title}}</Option>
                       </Select>
                     </FormItem>
                   </template>
@@ -384,7 +474,7 @@
           </FormItem>
           <FormItem label="组件名">
             <Select v-model="quoteSelectObj.inputName">
-              <Option v-for="item in formControls" :value="item.text" :key="item.text">{{ item.title }}</Option>
+              <Option v-for="item in formControls" :value="item.text" :key="item.text">{{item.title}}</Option>
             </Select>
           </FormItem>
         </Form>
@@ -409,11 +499,39 @@
           </FormItem>
           <FormItem label="输入类型">
             <Select v-model="quoteSelectInObj.option">
-              <Option v-for="item in urlInParaOption" :value="item.value" :key="item.value">{{ item.text }}</Option>
+              <Option v-for="item in urlInParaOption" :value="item.value" :key="item.value">{{item.text}}</Option>
             </Select>
           </FormItem>
           <FormItem v-show="quoteSelectInObj.option === 'write'" label="输入值">
             <Input v-model="quoteSelectInObj.value"></Input>
+          </FormItem>
+        </Form>
+      </div>
+    </div>
+  </Modal>
+  <Modal v-model="modalWriteOtherFieldParam" :title="modalWriteOtherFieldParamTitle" @on-ok="saveWriteOtherFieldParam">
+    <div class="modal-field-con">
+      <div>
+        <Form :model="writeOtherFieldParamObj" :label-width="120">
+          <FormItem label="参数名">
+            <Input v-model="writeOtherFieldParamObj.name"></Input>
+          </FormItem>
+          <FormItem label="数值">
+            <Input v-model="writeOtherFieldParamObj.value"></Input>
+          </FormItem>
+        </Form>
+      </div>
+    </div>
+  </Modal>
+  <Modal v-model="modalAutoFillParam" :title="modalAutoFillParamTitle" @on-ok="saveAutoFillParam">
+    <div class="modal-field-con">
+      <div>
+        <Form :model="autoFillParamObj" :label-width="120">
+          <FormItem label="参数名">
+            <Input v-model="autoFillParamObj.name"></Input>
+          </FormItem>
+          <FormItem label="数值">
+            <Input v-model="autoFillParamObj.value"></Input>
           </FormItem>
         </Form>
       </div>
@@ -537,6 +655,94 @@ export default {
       quoteSelectInTableData: [], // 引用下拉输入字段表格数据
       modalQuoteSelectIn: false, // 修改输入字段对话框是否显示
       quoteSelectInObj: {}, // 引用下拉输入字段对象
+      writeOtherFieldParamColumns: [ // 写入数据接口其他参数表头
+        {key: 'name', title: '名称'},
+        {key: 'value', title: '输入值'},
+        {
+          title: '操作',
+          key: 'action',
+          width: 120,
+          align: 'center',
+          render: (h, params) => {
+            return h('div', [
+              h('Button', {
+                props: {
+                  type: 'primary',
+                  size: 'small'
+                },
+                style: {
+                  marginRight: '5px'
+                },
+                on: {
+                  click: () => {
+                    this.editWriteOtherFieldParam(params)
+                  }
+                }
+              }, '修改'),
+              h('Button', {
+                props: {
+                  type: 'error',
+                  size: 'small'
+                },
+                on: {
+                  click: () => {
+                    this.deleteWriteOtherFieldParam(params)
+                  }
+                }
+              }, '删除')
+            ])
+          }
+        }
+      ],
+      writeOtherFieldParamData: [], // 写入数据接口其他参数数据
+      modalWriteOtherFieldParam: false, // 修改写入数据接口其他参数对话框是否显示
+      modalWriteOtherFieldParamTitle: '', // 写入数据接口其他参数对话框标题
+      writeOtherFieldParamObj: {}, // 写入数据接口其他参数对象
+      autoFillType: this.$store.state.autoFillType, // 新增时自动填写类型
+      autoFillParamColumns: [ // 自动填写接口参数表头
+        {key: 'name', title: '名称'},
+        {key: 'value', title: '输入值'},
+        {
+          title: '操作',
+          key: 'action',
+          width: 120,
+          align: 'center',
+          render: (h, params) => {
+            return h('div', [
+              h('Button', {
+                props: {
+                  type: 'primary',
+                  size: 'small'
+                },
+                style: {
+                  marginRight: '5px'
+                },
+                on: {
+                  click: () => {
+                    this.editAutoFillParam(params)
+                  }
+                }
+              }, '修改'),
+              h('Button', {
+                props: {
+                  type: 'error',
+                  size: 'small'
+                },
+                on: {
+                  click: () => {
+                    this.deleteAutoFillParam(params)
+                  }
+                }
+              }, '删除')
+            ])
+          }
+        }
+      ],
+      autoFillParamData: [], // 自动填写接口参数数据
+      modalAutoFillParam: false, // 修改自动填写接口参数对话框是否显示
+      modalAutoFillParamTitle: '', // 自动填写接口参数对话框标题
+      autoFillParamObj: {}, // 自动填写接口参数对象
+      childFormFields: [], // 子表字段组
       treeForms: [], // 树结构表单数据
       formListUrl: this.$store.state.formListUrl // 表单数据列表地址
     }
@@ -600,6 +806,12 @@ export default {
           this.quoteSelectInTableData = this.field.inParas
         }
       }
+      if (this.field.writeOtherField === 'true') {
+        this.writeOtherFieldParamData = this.field.writeOtherFieldParam
+      }
+      if (this.field.autoFill === 'true' && this.field.autoFillType === 'interface') {
+        this.autoFillParamData = this.field.autoFillParamData
+      }
       this.modalField = true
     },
     /**
@@ -626,6 +838,12 @@ export default {
       if (this.field.fieldType === 'combobox' && this.field.selectType === '1') {
         this.field.selectFields = this.quoteSelectTableData
         this.field.inParas = this.quoteSelectInTableData
+      }
+      if (this.field.writeOtherField === 'true') {
+        this.field.writeOtherFieldParam = this.writeOtherFieldParamData
+      }
+      if (this.field.autoFill === 'true' && this.field.autoFillType === 'interface') {
+        this.field.autoFillParamData = this.autoFillParamData
       }
     },
     /**
@@ -683,6 +901,81 @@ export default {
     */
     saveQuoteSelectData: function () {
       this.quoteSelectTableData[this.quoteSelectObj._index] = this.quoteSelectObj
+    },
+    /**
+    * @desc 新增写入数据接口其他参数
+    */
+    addWriteOtherFieldParam: function () {
+      this.modalWriteOtherFieldParamTitle = '新增其他参数'
+      this.writeOtherFieldParamObj = {}
+      this.modalWriteOtherFieldParam = true
+    },
+    /**
+    * @desc 修改写入数据接口其他参数
+    * @param {Object} params 参数对象
+    */
+    editWriteOtherFieldParam: function (params) {
+      this.modalWriteOtherFieldParamTitle = '修改其他参数'
+      this.writeOtherFieldParamObj = params.row
+      this.modalWriteOtherFieldParam = true
+    },
+    /**
+    * @desc 保存写入数据接口其他参数
+    */
+    saveWriteOtherFieldParam: function () {
+      if (this.modalWriteOtherFieldParamTitle === '新增其他参数') {
+        this.writeOtherFieldParamData.push(this.writeOtherFieldParamObj)
+      }
+      this.modalWriteOtherFieldParam = false
+    },
+    /**
+    * @desc 删除写入数据接口其他参数
+    * @param {Object} params 参数对象
+    */
+    deleteWriteOtherFieldParam: function (params) {
+      this.writeOtherFieldParamData.splice(this.writeOtherFieldParamData.indexOf(params.row), 1)
+    },
+    /**
+    * @desc 新增自动填写接口参数
+    */
+    addAutoFillParam: function () {
+      this.modalAutoFillParamTitle = '新增参数'
+      this.autoFillParamObj = {}
+      this.modalAutoFillParam = true
+    },
+    /**
+    * @desc 修改自动填写接口参数
+    * @param {Object} params 参数对象
+    */
+    editAutoFillParam: function (params) {
+      this.modalAutoFillParamTitle = '修改参数'
+      this.autoFillParamObj = params.row
+      this.modalAutoFillParam = true
+    },
+    /**
+    * @desc 保存自动填写接口参数
+    */
+    saveAutoFillParam: function () {
+      if (this.modalAutoFillParamTitle === '新增参数') {
+        this.autoFillParamData.push(this.autoFillParamObj)
+      }
+      this.modalAutoFillParam = false
+    },
+    /**
+    * @desc 删除自动填写接口参数
+    * @param {Object} params 参数对象
+    */
+    deleteAutoFillParam: function (params) {
+      this.autoFillParamData.splice(this.autoFillParamData.indexOf(params.row), 1)
+    },
+    /**
+    * @desc 去子表字段组
+    * @param {Object} params 输出字段对象
+    */
+    initChildFormFields: function (value) {
+      this.$api.post('/pages/crminterface/getDatagridForJson.do', {tableName: value}, r => {
+        this.childFormFields = r.data.field
+      })
     },
     /**
     * @desc 判断表名重复
@@ -747,6 +1040,15 @@ export default {
     },
     fieldsForSelect () { // 表单字段转为下拉选项
       return Util.fieldsForSelect(this.formControls)
+    },
+    cascadeFields () { // 级联可选字段
+      let temp = []
+      for (let i = 0; i < this.formControls.length; i++) {
+        if (this.formControls[i].fieldType === 'combobox') {
+          temp.push(this.formControls[i])
+        }
+      }
+      return temp
     }
   },
   mounted () {

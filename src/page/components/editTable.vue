@@ -206,6 +206,7 @@ export default {
         this.$api.post('/crm/ActionFormUtil/insert.do', {jsonStr: jsonStr}, r => {
           if (r.data === 1) {
             this.$Message.success('新增数据成功')
+            this.$emit('edit-success')
             this.getData()
           } else {
             this.$Message.error('新增数据失败')
@@ -217,6 +218,7 @@ export default {
         this.$api.post('/crm/ActionFormUtil/update.do', {jsonStr: jsonStr, id: params.row.id}, r => {
           if (r.data === 1) {
             this.$Message.success('修改数据成功')
+            this.$emit('edit-success')
             this.getData()
           } else {
             this.$Message.error('修改数据失败')
@@ -239,6 +241,7 @@ export default {
                 iView.Message.error('删除数据失败')
               } else {
                 iView.Message.success('删除数据成功')
+                this.$emit('edit-success')
                 this.getData()
               }
             })

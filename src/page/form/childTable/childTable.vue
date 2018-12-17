@@ -92,6 +92,13 @@ export default {
       })
     },
     /**
+    * @desc 修改数据成功后触发主表页事件
+    */
+    editSuccess: function () {
+      this.$emit('edit-success')
+      this.changePage(1)
+    },
+    /**
     * @desc 查看数据
     * @param {Object} params 要查看的数据
     */
@@ -174,6 +181,7 @@ export default {
               on: {
                 click: () => {
                   Util.deleteFormData(this.childTableName, params, this.changePage, this.currentPage)
+                  this.editSuccess()
                 }
               }
             }, '删除')

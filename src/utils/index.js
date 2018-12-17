@@ -98,6 +98,19 @@ util.strToInt = function (str) {
 }
 
 /**
+* @desc 百分数转小数
+* @param {String} str 字符串
+* @return {Num} 数字
+*/
+util.changePercentToPoint = function (str) {
+  if (str.toString().indexOf('%') !== -1) {
+    str = str.toString().replace('%', '')
+    str = str / 100
+  }
+  return str
+}
+
+/**
 * @desc 字段数组加数据类型
 * @param {Array} fields 字段数组
 * @return {Array} 字段数组
@@ -834,7 +847,7 @@ util.urlInParaOptionFormat = function (value) {
 
 /**
 * @desc 初始化表单引用下拉数据
-* @param {String} fields 字段列表
+* @param {Array} fields 字段列表
 */
 util.initFormQuoteSelectData = function (fields) {
   for (let i = 0; i < fields.length; i++) {
@@ -858,6 +871,50 @@ util.initFormQuoteSelectData = function (fields) {
       })
     }
   }
+}
+
+/**
+* @desc 初始化级联字段下拉数据
+* @param {Object} field 级联字段
+* @param {Array} fields 字段列表
+* @param {String} val 字段值
+*/
+util.changeCascadeSelectData = function (field, fields, val) {
+  let toField = fields.find(ele => ele.text === field.cascadeField)
+  api.post('/develop/url/getUrl.do', {name: toField.selectID, value: val}, r => {
+    store.state.selectData[toField.selectID] = r.data
+    console.log('级联下拉')
+    console.log(store.state.selectData)
+  })
+}
+
+/**
+* @desc 数字字段值计算
+* @param {Object} field 数字字段
+* @param {Object} formDataObj 数据对象
+* @return {Number} 计算值
+*/
+util.numberCalculate = function (field, formDataObj) {
+  let count = 0
+  if (field.calculateType === 'multiply' || field.calculateType === 'plus') {
+    for (let i = 0; i < field.calculateFields.length; i++) {
+      let temp = field.calculateFields[i]
+      if (i === 0) {
+        count = formDataObj[temp]
+      } else {
+        if (field.calculateType === 'multiply') {
+          count = this.FloatMul(this.changePercentToPoint(count), this.changePercentToPoint(formDataObj[temp]))
+        } else if (field.calculateType === 'plus') {
+          count = this.FloatAdd(this.changePercentToPoint(count), this.changePercentToPoint(formDataObj[temp]))
+        }
+      }
+    }
+  } else if (field.calculateType === 'divide') {
+    count = this.FloatDiv(this.changePercentToPoint(formDataObj[field.calculateFirstField]), this.changePercentToPoint(formDataObj[field.calculateLastField]))
+  } else if (field.calculateType === 'minus') {
+    count = this.FloatSub(this.changePercentToPoint(formDataObj[field.calculateFirstField]), this.changePercentToPoint(formDataObj[field.calculateLastField]))
+  }
+  return count
 }
 
 /**
