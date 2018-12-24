@@ -72,18 +72,31 @@ export default {
               title: variable.title,
               key: variable.text,
               render: (h, params) => {
-                return h('Select', {
-                  props: {
-                    value: parseInt(params.row[variable.text])
-                  },
-                  on: {
-                    input: (e) => {
-                      params.row[variable.text] = e + ''
+                if (params.row._isEdit) {
+                  return h('Select', {
+                    props: {
+                      value: parseInt(params.row[variable.text])
+                    },
+                    on: {
+                      input: (e) => {
+                        params.row[variable.text] = e + ''
+                      }
+                    }
+                  }, this.selectData[variable.selectID].map((item) => (
+                    h('Option', {props: {value: item.id}}, item.text)
+                  )))
+                } else {
+                  let fieldText = params.column.key
+                  let selectId = variable.selectID
+                  let valueTemp = ''
+                  if (!Util.isEmpty(params.row[fieldText]) && !Util.isEmpty(this.$store.state.selectData[selectId])) {
+                    let valueTemp1 = this.$store.state.selectData[selectId].find((element) => (element.id.toString() === params.row[fieldText]))
+                    if (!Util.isEmpty(valueTemp1)) {
+                      valueTemp = valueTemp1.text
                     }
                   }
-                }, this.selectData[variable.selectID].map((item) => (
-                  h('Option', {props: {value: item.id}}, item.text)
-                )))
+                  return h('div', valueTemp)
+                }
               }
             })
           } else if (variable.fieldType === 'numberbox') {
@@ -91,16 +104,20 @@ export default {
               title: variable.title,
               key: variable.text,
               render: (h, params) => {
-                return h('InputNumber', {
-                  props: {
-                    value: params.row[variable.text]
-                  },
-                  on: {
-                    input: (e) => {
-                      params.row[variable.text] = e
+                if (params.row._isEdit) {
+                  return h('InputNumber', {
+                    props: {
+                      value: params.row[variable.text]
+                    },
+                    on: {
+                      input: (e) => {
+                        params.row[variable.text] = e
+                      }
                     }
-                  }
-                })
+                  })
+                } else {
+                  return h('div', params.row[variable.text])
+                }
               }
             })
           } else if (['datebox', 'datetimebox', 'monthbox', 'yearbox'].indexOf(variable.fieldType) !== -1) {
@@ -108,17 +125,21 @@ export default {
               title: variable.title,
               key: variable.text,
               render: (h, params) => {
-                return h('DatePicker', {
-                  props: {
-                    value: params.row[variable.text],
-                    type: variable.fieldType.substring(0, variable.fieldType.length - 3)
-                  },
-                  on: {
-                    input: (e) => {
-                      params.row[variable.text] = e
+                if (params.row._isEdit) {
+                  return h('DatePicker', {
+                    props: {
+                      value: params.row[variable.text],
+                      type: variable.fieldType.substring(0, variable.fieldType.length - 3)
+                    },
+                    on: {
+                      input: (e) => {
+                        params.row[variable.text] = e
+                      }
                     }
-                  }
-                })
+                  })
+                } else {
+                  return h('div', params.row[variable.text])
+                }
               }
             })
           } else {
@@ -126,16 +147,20 @@ export default {
               title: variable.title,
               key: variable.text,
               render: (h, params) => {
-                return h('Input', {
-                  props: {
-                    value: params.row[variable.text]
-                  },
-                  on: {
-                    input: (e) => {
-                      params.row[variable.text] = e
+                if (params.row._isEdit) {
+                  return h('Input', {
+                    props: {
+                      value: params.row[variable.text]
+                    },
+                    on: {
+                      input: (e) => {
+                        params.row[variable.text] = e
+                      }
                     }
-                  }
-                })
+                  })
+                } else {
+                  return h('div', params.row[variable.text])
+                }
               }
             })
           }
@@ -153,6 +178,20 @@ export default {
         align: 'center',
         render: (h, params) => {
           return h('div', [
+            h('Button', {
+              props: {
+                type: 'primary',
+                size: 'small'
+              },
+              style: {
+                marginRight: '5px'
+              },
+              on: {
+                click: () => {
+                  this.editTableData(params)
+                }
+              }
+            }, '修改'),
             h('Button', {
               props: {
                 type: 'primary',
@@ -189,6 +228,13 @@ export default {
       this.data.push({})
     },
     /**
+    * @desc 修改数据
+    * @param {Object} params 要修改的数据
+    */
+    editTableData: function (params) {
+      this.$set(params.row, '_isEdit', true)
+    },
+    /**
     * @desc 保存数据
     * @param {Object} params 要保存的数据
     */
@@ -197,6 +243,7 @@ export default {
       let temp = JSON.parse(JSON.stringify(params.row))
       delete temp._index
       delete temp._rowKey
+      delete temp._isEdit
       obj.title = this.tableName
       obj.field = Util.getFormValues(temp)
       if (temp.id === undefined) {

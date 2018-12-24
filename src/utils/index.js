@@ -2,6 +2,7 @@ import store from '@/store'
 import api from '@/api/index.js'
 import {router} from '@/router/index'
 import iView from 'iview'
+import uuidv4 from 'uuid/v4'
 
 let util = {}
 
@@ -356,10 +357,11 @@ util.getCurrentDate = function () {
 * @return {String} uuid
 */
 util.uuid = function () {
-  function S4 () {
+  /* function S4 () {
     return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1)
   }
-  return (S4() + S4() + '-' + S4() + '-' + S4() + '-' + S4() + '-' + S4() + S4() + S4())
+  return (S4() + S4() + '-' + S4() + '-' + S4() + '-' + S4() + '-' + S4() + S4() + S4()) */
+  return uuidv4()
 }
 
 /**
