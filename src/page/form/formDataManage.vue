@@ -182,22 +182,67 @@ export default {
         })
       })
     },
+    /**
+    * @desc 初始化
+    */
     initApi: async function () {
-      try {
-        alert(111)
-        let temp = await this.getFormJson()
-        temp.then()
-        alert(222)
-        console.log(temp)
-      } catch (err) {
-        console.log(err)
+      this.formObj = await this.getFormJson()
+      this.isAct = await this.getAct()
+      let frameworkObj = await this.getFramework()
+      if (frameworkObj !== null) {
+        this.formAttrObj = frameworkObj
+        console.log(this.formAttrObj)
+        this.columns = this.columns.concat([{type: 'index', title: '序列', width: 50, align: 'center'}], Util.columnsFormatter(JSON.parse(this.formAttrObj.columns)))
+        this.buttons = JSON.parse(this.formAttrObj.buttons)
+        this.searchs = JSON.parse(this.formAttrObj.searchs)
+        this.searchButtons = JSON.parse(this.formAttrObj.search_buttons)
+        eval(this.formAttrObj.js_code.replace(/&quot;/g, '"').replace(/换行符/g, '\n').replace(/&acute;/g, '\''))
+      } else {
+        this.columns = Util.initColumns(this.formObj.field, true)
+      }
+      this.columns = Util.columnsAddAction(this.columns, this.tableName, this.formObj, this.changePage, this.currentPage)
+      if (this.isAct === 0) {
+        this.columns = Util.columnsAddProcess(this.columns, this.viewProcessDetail)
+      }
+      if (this.formObj.needTree === 'true' && this.formObj.treeForm !== '') {
+        this.$api.post('/pages/crminterface/getDatagridForJson.do', {tableName: this.formObj.treeForm}, r => {
+          let treeField = r.data.treeField
+          this.treeColumns = Util.initColumns(r.data.field, false)
+          this.$api.post('/crm/ActionFormUtil/getByTableName.do', {rows: this.pageSize, page: this.currentPage, tableName: this.formObj.treeForm}, r => {
+            this.treeData = Util.dataConvertForTree(r.data, treeField)
+          })
+        })
+      } else {
+        this.changePage(this.currentPage)
       }
     },
-    getFormJson: function () {
+    /**
+    * @desc 取表单json
+    */
+    getFormJson: async function () {
       return new Promise((resolve) => {
         this.$api.post('/pages/crminterface/getDatagridForJson.do', {tableName: this.tableName}, r => {
-          this.formObj = r.data
-          console.log(this.formObj)
+          resolve(r.data)
+        })
+      })
+    },
+    /**
+    * @desc 取表单是否有流程
+    */
+    getAct: async function () {
+      return new Promise((resolve) => {
+        this.$api.post('/profFormRel/isAct', {tableName: this.tableName}, r => {
+          resolve(r.data)
+        })
+      })
+    },
+    /**
+    * @desc 取表单配置
+    */
+    getFramework: async function () {
+      return new Promise((resolve) => {
+        this.$api.post('/pages/button/framework/get.do', {title: this.tableName}, r => {
+          resolve(r.data.obj)
         })
       })
     },
@@ -252,12 +297,13 @@ export default {
     }
   },
   mounted () {
-    this.init()
+    // this.init()
+    this.initApi()
   },
   watch: {
     '$route' (to, from) { // 强制初始化
       this.tableName = to.params.tableName
-      this.init()
+      this.initApi()
     }
   }
 }

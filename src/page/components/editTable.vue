@@ -225,7 +225,7 @@ export default {
     * @desc 新增数据
     */
     addTableData: function () {
-      this.data.push({})
+      this.data.push({_isEdit: true})
     },
     /**
     * @desc 修改数据
