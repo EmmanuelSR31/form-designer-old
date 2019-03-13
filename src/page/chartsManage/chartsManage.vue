@@ -186,7 +186,7 @@
           </ul>
         </div>
         <div class="chart-con">
-          <div class="chart-title">{{chartObj.title}}</div>
+          <!-- <div class="chart-title">{{chartObj.title}}</div> -->
           <div class="chart-search-condition-con">
             <ul>
               <li v-for="(item, index) in searchConditions" :key="index">
@@ -220,6 +220,21 @@
       <Form :model="chartObj" :label-width="72">
         <div class="chart-set-title">图表标题</div>
         <Input v-model="chartObj.title"></Input>
+        <Checkbox v-model="chartObj.showTitle">显示标题</Checkbox>
+        <div v-show="chartObj.showTitle" class="chart-set-inner-line">
+          <label>字体大小</label>
+          <Select v-model="chartObj.titleFontSize" style="width:65px;">
+            <Option v-for="(item, index) in fontSize" :value="item" :key="index">{{item + 'px'}}</Option>
+          </Select>
+          <label>颜色</label>
+          <ColorPicker v-model="chartObj.titleColor" format="rgb" />
+          <!-- <label>标题位置</label>
+          <Select v-model="chartObj.titleLocation">
+            <Option value="left">左侧</Option>
+            <Option value="center">中间</Option>
+            <Option value="right">右侧</Option>
+          </Select> -->
+        </div>
         <div class="line"></div>
         <div class="chart-set-title">图表类型</div>
         <ul class="chart-type-list">
@@ -536,6 +551,7 @@
           </FormItem> -->
         </Form>
       </div>
+      <Button type="primary" @click="save">保存</Button>
     </div>
     <div class="clear"></div>
   </div>
@@ -854,6 +870,10 @@ export default {
       fields: [], // 表单字段
       chartObj: { // 图表对象
         title: '未命名图表',
+        showTitle: false,
+        titleFontSize: '18',
+        titleColor: 'rgb(51, 51, 51)',
+        titleLocation: 'left',
         type: '',
         x: {show: true, rotation: '0', showAll: false, showLabels: true, showTitle: false, location: 'end', labelFontSize: '12', labelColor: 'rgb(51, 51, 51)', nameFontSize: '12', nameColor: 'rgb(51, 51, 51)', lineWidth: '1', lineColor: 'rgb(51, 51, 51)', lineType: 'solid', showSplitLine: true, splitLineWidth: '1', splitLineColor: 'rgb(204, 204, 204)', splitLineType: 'solid'},
         y: {show: true, showLabels: true, showTitle: false, labelFontSize: '12', labelColor: 'rgb(51, 51, 51)', nameFontSize: '12', nameColor: 'rgb(51, 51, 51)', lineWidth: '1', lineColor: 'rgb(51, 51, 51)', lineType: 'solid', showSplitLine: false, splitLineWidth: '1', splitLineColor: 'rgb(204, 204, 204)', splitLineType: 'solid'},
@@ -1482,6 +1502,23 @@ export default {
       console.log(this.yData)
       this.option = Util.initChartOption(this.chartObj, this.x_field, this.y_field, this.y_field_type, this.scatter_y_field, this.secondary_y_field, this.secondary_y_field_type, this.currentColorTheme, this.radarMax, this.xData, this.yData, this.SYData)
       this.charts.setOption(this.option)
+    },
+    /**
+    * @desc 保存
+    */
+    save: function () {
+      let obj = {
+        chartObj: this.chartObj,
+        x_field: this.x_field,
+        y_field: this.y_field,
+        y_field_type: this.y_field_type,
+        scatter_y_field: this.scatter_y_field,
+        secondary_y_field: this.secondary_y_field,
+        secondary_y_field_type: this.secondary_y_field_type,
+        currentColorTheme: this.currentColorTheme,
+        radarMax: this.radarMax
+      }
+      console.log(JSON.stringify(obj))
     }
   },
   computed: {

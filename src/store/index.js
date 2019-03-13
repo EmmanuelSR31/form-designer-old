@@ -46,50 +46,116 @@ const state = {
   controlArray: [ // 字段类型列表
     {
       title: '文本输入框',
-      fieldType: 'textbox'
+      fieldType: 'textbox',
+      width: '278',
+      disabled: 'false',
+      readonly: 'false',
+      required: 'false',
+      listDisplay: 'true',
+      trWidth: '0'
     },
     {
       title: '多行文本输入框',
       fieldType: 'textboxMultiline',
-      height: 64
+      height: '64',
+      width: '703',
+      disabled: 'false',
+      readonly: 'false',
+      required: 'false',
+      listDisplay: 'true',
+      trWidth: '0'
     },
     {
       title: '数字输入框',
-      fieldType: 'numberbox'
+      fieldType: 'numberbox',
+      width: '278',
+      disabled: 'false',
+      readonly: 'false',
+      required: 'false',
+      listDisplay: 'true',
+      trWidth: '0'
     },
     {
       title: '下拉选择器',
-      fieldType: 'combobox'
+      fieldType: 'combobox',
+      width: '278',
+      disabled: 'false',
+      readonly: 'false',
+      required: 'false',
+      listDisplay: 'true',
+      trWidth: '0'
     },
     {
       title: '单选框',
       fieldType: 'radio',
-      radios: ['单选框']
+      radios: ['单选框'],
+      width: '278',
+      disabled: 'false',
+      readonly: 'false',
+      required: 'false',
+      listDisplay: 'true',
+      trWidth: '0'
     },
     {
       title: '多选框',
       fieldType: 'checkbox',
-      checkboxs: ['多选框']
+      checkboxs: ['多选框'],
+      width: '278',
+      disabled: 'false',
+      readonly: 'false',
+      required: 'false',
+      listDisplay: 'true',
+      trWidth: '0'
     },
     {
       title: '开关选择器',
-      fieldType: 'switch'
+      fieldType: 'switch',
+      width: '278',
+      disabled: 'false',
+      readonly: 'false',
+      required: 'false',
+      listDisplay: 'true',
+      trWidth: '0'
     },
     {
       title: '日期选择器',
-      fieldType: 'datebox'
+      fieldType: 'datebox',
+      width: '278',
+      disabled: 'false',
+      readonly: 'false',
+      required: 'false',
+      listDisplay: 'true',
+      trWidth: '0'
     },
     {
       title: '日期时间选择器',
-      fieldType: 'datetimebox'
+      fieldType: 'datetimebox',
+      width: '278',
+      disabled: 'false',
+      readonly: 'false',
+      required: 'false',
+      listDisplay: 'true',
+      trWidth: '0'
     },
     {
       title: '月份选择器',
-      fieldType: 'monthbox'
+      fieldType: 'monthbox',
+      width: '278',
+      disabled: 'false',
+      readonly: 'false',
+      required: 'false',
+      listDisplay: 'true',
+      trWidth: '0'
     },
     {
       title: '年份选择器',
-      fieldType: 'yearbox'
+      fieldType: 'yearbox',
+      width: '278',
+      disabled: 'false',
+      readonly: 'false',
+      required: 'false',
+      listDisplay: 'true',
+      trWidth: '0'
     },
     {
       title: '子表',
@@ -97,7 +163,13 @@ const state = {
     },
     {
       title: '附件上传',
-      fieldType: 'filebox'
+      fieldType: 'filebox',
+      width: '278',
+      disabled: 'false',
+      readonly: 'false',
+      required: 'false',
+      listDisplay: 'true',
+      trWidth: '0'
     }
   ],
   currentEditForm: {}, // 当前修改表单

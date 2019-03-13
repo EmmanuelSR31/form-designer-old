@@ -90,11 +90,12 @@ import Util from '@/utils/index'
 export default {
   props: {
     pid: String, // 表单id
-    urlObj: Object, // url对象
+    urlObjStr: String, // url对象字符串
     method: String // 方法
   },
   data () {
     return {
+      urlObj: {}, // url对象
       urlInParaCondition: this.$store.state.urlInParaCondition, // 链接输入参数条件列表
       modalOut: false, // 输出参数对话框是否显示
       modalOutTitle: '新增输出参数', // 输出参数对话框标题
@@ -365,6 +366,7 @@ export default {
     * @desc 取输入输出参数
     */
     init: function () {
+      this.urlObj = JSON.parse(this.urlObjStr)
       if (this.method === 'edit') {
         this.$api.post('/develop/url/findUrlIutputParaByPid.do', {pid: this.urlObj.id}, r => {
           this.inData = r.data

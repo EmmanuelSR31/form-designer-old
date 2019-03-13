@@ -128,6 +128,13 @@ export const appRouter = [
         component: resolve => { require(['@/page/chartsManage/chartsManage.vue'], resolve) }
       },
       {
+        path: '/editDash',
+        icon: 'compose',
+        name: 'editDash',
+        title: '看板管理',
+        component: resolve => { require(['@/page/chartsManage/editDash.vue'], resolve) }
+      },
+      {
         path: '/systemSet',
         icon: 'compose',
         name: 'systemSet',

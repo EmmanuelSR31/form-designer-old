@@ -130,7 +130,9 @@ export default {
         this.formObj = r.data
         Util.initFormQuoteSelectData(this.formObj.field)
         this.columns = Util.initColumns(this.formObj.field, true)
-        this.columnsAddAction()
+        if (!this.isView) {
+          this.columnsAddAction()
+        }
       })
       this.changePage(this.currentPage)
     },

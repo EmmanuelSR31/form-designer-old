@@ -58,6 +58,12 @@
                 <Option v-for="item in treeForms" :value="item.title" :key="item.title">{{item.name}}</Option>
               </Select>
             </FormItem>
+            <FormItem label="输入框分组标签">
+              <div class="table-search-con">
+                <Button type="primary" @click="addLegend">新增</Button>
+              </div>
+              <Table :columns="legendColumns" :data="formLegendData"></Table>
+            </FormItem>
           </Form>
         </Col>
       </Row>
@@ -120,19 +126,25 @@
                   <Col span="10" class="text-center">
                     <Button @click="showSet(item)">设置</Button>
                     <Button type="error" @click="deleteField(item)">删除</Button>
+                    <template v-if="item.flag">
+                      已设置
+                    </template>
+                    <template v-else>
+                      <span style="color:red;">未设置</span>
+                    </template>
                   </Col>
                 </Row>
               </FormItem>
             </draggable>
           </Form>
-          <Modal v-model="modalField" title="设置字段属性" width="900" @on-ok="saveField">
+          <Modal v-model="modalField" title="设置字段属性" width="900" :loading="loading" @on-ok="saveField">
             <div class="modal-field-con">
               <div class="modal-field-2">
-                <Form ref="formField" :model="field" :label-width="120">
-                  <FormItem label="数据库字段名">
+                <Form ref="formField" :model="field" :rules="ruleValidate" :label-width="120">
+                  <FormItem label="数据库字段名" prop="text">
                     <Input v-model="field.text"></Input>
                   </FormItem>
-                  <FormItem label="字段标题">
+                  <FormItem label="字段标题" prop="title">
                     <Input v-model="field.title"></Input>
                   </FormItem>
                   <template v-if="field.fieldType !== 'tablebox'">
@@ -250,6 +262,7 @@
                       <Select v-model="field.selectType">
                         <Option value="0">普通</Option>
                         <Option value="1">引用</Option>
+                        <Option value="2">树形</Option>
                       </Select>
                     </FormItem>
                     <FormItem v-show="field.selectType === '0'" label="关联选项">
@@ -263,6 +276,13 @@
                       <Select v-model="field.selectID" @on-change="changeQuoteSelect">
                         <Option v-for="(item, index) in quoteSelect" :key="index" :value="item.name">
                           {{item.disc}}
+                        </Option>
+                      </Select>
+                    </FormItem>
+                    <FormItem v-show="field.selectType === '2'" label="关联选项">
+                      <Select v-model="field.selectID">
+                        <Option v-for="(item, index) in treeSelect" :key="index" :value="item.name">
+                          {{item.title}}
                         </Option>
                       </Select>
                     </FormItem>
@@ -407,49 +427,47 @@
         <Col span="10" offset="2">
           <div class="controls-con">
             <Form :label-width="120">
-              <draggable v-model="controlArray" :options="dragOptions">
-                <transition-group>
-                  <FormItem v-for="(item, index) in controlArray" :key="index" :label="item.title">
-                    <template v-if="item.fieldType === 'textbox' || item.fieldType === 'filebox'">
-                      <Input></Input>
-                    </template>
-                    <template v-else-if="item.fieldType === 'textboxMultiline'">
-                      <Input type="textarea" :rows="2"></Input>
-                    </template>
-                    <template v-else-if="item.fieldType === 'numberbox'">
-                      <InputNumber></InputNumber>
-                    </template>
-                    <template v-else-if="item.fieldType === 'combobox'">
-                      <Select>
-                        <Option value="1">请选择</Option>
-                      </Select>
-                    </template>
-                    <template v-else-if="item.fieldType === 'radio'">
-                      <Radio>单选框</Radio>
-                    </template>
-                    <template v-else-if="item.fieldType === 'checkbox'">
-                      <Checkbox>多选框</Checkbox>
-                    </template>
-                    <template v-else-if="item.fieldType === 'switch'">
-                      <i-switch></i-switch>
-                    </template>
-                    <template v-else-if="item.fieldType === 'datebox'">
-                      <DatePicker type="date"></DatePicker>
-                    </template>
-                    <template v-else-if="item.fieldType === 'datetimebox'">
-                      <DatePicker type="datetime"></DatePicker>
-                    </template>
-                    <template v-else-if="item.fieldType === 'monthbox'">
-                      <DatePicker type="month"></DatePicker>
-                    </template>
-                    <template v-else-if="item.fieldType === 'yearbox'">
-                      <DatePicker type="year"></DatePicker>
-                    </template>
-                    <template v-else-if="item.fieldType === 'tablebox'">
-                      <Table></Table>
-                    </template>
-                  </FormItem>
-                </transition-group>
+              <draggable v-model="controlArray" @end="dragEnd" :options="dragOptions">
+                <FormItem v-for="(item, index) in controlArray" :key="index" :label="item.title">
+                  <template v-if="item.fieldType === 'textbox' || item.fieldType === 'filebox'">
+                    <Input></Input>
+                  </template>
+                  <template v-else-if="item.fieldType === 'textboxMultiline'">
+                    <Input type="textarea" :rows="2"></Input>
+                  </template>
+                  <template v-else-if="item.fieldType === 'numberbox'">
+                    <InputNumber></InputNumber>
+                  </template>
+                  <template v-else-if="item.fieldType === 'combobox'">
+                    <Select>
+                      <Option value="1">请选择</Option>
+                    </Select>
+                  </template>
+                  <template v-else-if="item.fieldType === 'radio'">
+                    <Radio>单选框</Radio>
+                  </template>
+                  <template v-else-if="item.fieldType === 'checkbox'">
+                    <Checkbox>多选框</Checkbox>
+                  </template>
+                  <template v-else-if="item.fieldType === 'switch'">
+                    <i-switch></i-switch>
+                  </template>
+                  <template v-else-if="item.fieldType === 'datebox'">
+                    <DatePicker type="date"></DatePicker>
+                  </template>
+                  <template v-else-if="item.fieldType === 'datetimebox'">
+                    <DatePicker type="datetime"></DatePicker>
+                  </template>
+                  <template v-else-if="item.fieldType === 'monthbox'">
+                    <DatePicker type="month"></DatePicker>
+                  </template>
+                  <template v-else-if="item.fieldType === 'yearbox'">
+                    <DatePicker type="year"></DatePicker>
+                  </template>
+                  <template v-else-if="item.fieldType === 'tablebox'">
+                    <Table></Table>
+                  </template>
+                </FormItem>
               </draggable>
             </Form>
           </div>
@@ -537,6 +555,22 @@
       </div>
     </div>
   </Modal>
+  <Modal v-model="modalLegend" :title="modalLegendTitle" @on-ok="saveLegend">
+    <div class="modal-field-con">
+      <div>
+        <Form :model="legendObj" :label-width="120">
+          <FormItem label="名称">
+            <Input v-model="legendObj.name"></Input>
+          </FormItem>
+          <FormItem label="前一字段">
+            <Select v-model="legendObj.field">
+              <Option v-for="item in formControls" :value="item.text" :key="item.text">{{item.title}}</Option>
+            </Select>
+          </FormItem>
+        </Form>
+      </div>
+    </div>
+  </Modal>
 </div>
 </template>
 <script>
@@ -558,6 +592,7 @@ export default {
       formControls: [], // 表单字段
       normalSelect: this.$store.state.normalSelect, // 普通下拉选项
       quoteSelect: this.$store.state.quoteSelect, // 引用下拉选项
+      treeSelect: this.$store.state.treeSelect, // 树形下拉选项
       urlInParaOption: this.$store.state.urlInParaOption, // 引用下拉输入参数类型列表
       radiosText: '', // 单选框文本
       radioTemp: '', // 单选框临时数据
@@ -742,9 +777,63 @@ export default {
       modalAutoFillParam: false, // 修改自动填写接口参数对话框是否显示
       modalAutoFillParamTitle: '', // 自动填写接口参数对话框标题
       autoFillParamObj: {}, // 自动填写接口参数对象
+      autoFillParamIndex: {}, // 自动填写接口参数位置
       childFormFields: [], // 子表字段组
       treeForms: [], // 树结构表单数据
-      formListUrl: this.$store.state.formListUrl // 表单数据列表地址
+      formListUrl: this.$store.state.formListUrl, // 表单数据列表地址
+      legendColumns: [ // 字段分组标签表头
+        {key: 'name', title: '名称'},
+        {key: 'field', title: '位置前一字段'},
+        {
+          title: '操作',
+          key: 'action',
+          width: 120,
+          align: 'center',
+          render: (h, params) => {
+            return h('div', [
+              h('Button', {
+                props: {
+                  type: 'primary',
+                  size: 'small'
+                },
+                style: {
+                  marginRight: '5px'
+                },
+                on: {
+                  click: () => {
+                    this.editLegend(params, params.index)
+                  }
+                }
+              }, '修改'),
+              h('Button', {
+                props: {
+                  type: 'error',
+                  size: 'small'
+                },
+                on: {
+                  click: () => {
+                    this.deleteLegend(params, params.index)
+                  }
+                }
+              }, '删除')
+            ])
+          }
+        }
+      ],
+      formLegendData: [], // 字段分组标签数据
+      modalLegend: false, // 字段分组标签对话框是否显示
+      modalLegendTitle: '', // 字段分组标签对话框标题
+      legendObj: {}, // 字段分组标签对象
+      currentLegendIndex: 0, // 当前字段分组标签位置
+      ruleValidate: { // 字段设置表单验证
+        text: [
+          { required: true, message: '请填写数据库字段名', trigger: 'blur' }
+        ],
+        title: [
+          { required: true, message: '请填写字段标题', trigger: 'blur' }
+        ]
+      },
+      loading: true // 字段设置弹框载入状态
     }
   },
   methods: {
@@ -755,6 +844,7 @@ export default {
       if (this.method === 'edit') {
         this.formObj = this.$store.state.currentEditForm
         this.formControls = Util.removeFieldTable(this.formObj.field)
+        this.formLegendData = this.formObj.formLegendData === undefined ? [] : this.formObj.formLegendData
         console.log(this.formControls)
       }
       this.$api.post('/crm/ActionFormUtil/getChildTableByType.do', {}, r => { // 取所有子表
@@ -781,6 +871,40 @@ export default {
     nextStep: function () {
       this.currentStep = 1
       this.swiper.slideNext()
+    },
+    /**
+    * @desc 拖拽字段完成
+    */
+    dragEnd: function (evt) {
+      let type = evt.item.innerText
+      let arr = Util.copyArr(this.controlArray)
+      if (type.indexOf('多行文本输入框') !== -1) {
+        this.formControls.push(arr[1])
+      } else if (type.indexOf('文本输入框') !== -1) {
+        this.formControls.push(arr[0])
+      } else if (type.indexOf('数字输入框') !== -1) {
+        this.formControls.push(arr[2])
+      } else if (type.indexOf('下拉选择器') !== -1) {
+        this.formControls.push(arr[3])
+      } else if (type.indexOf('单选框') !== -1) {
+        this.formControls.push(arr[4])
+      } else if (type.indexOf('多选框') !== -1) {
+        this.formControls.push(arr[5])
+      } else if (type.indexOf('开关选择器') !== -1) {
+        this.formControls.push(arr[6])
+      } else if (type.indexOf('日期选择器') !== -1) {
+        this.formControls.push(arr[7])
+      } else if (type.indexOf('日期时间选择器') !== -1) {
+        this.formControls.push(arr[8])
+      } else if (type.indexOf('月份选择器') !== -1) {
+        this.formControls.push(arr[9])
+      } else if (type.indexOf('年份选择器') !== -1) {
+        this.formControls.push(arr[10])
+      } else if (type.indexOf('子表') !== -1) {
+        this.formControls.push(arr[11])
+      } else if (type.indexOf('附件上传') !== -1) {
+        this.formControls.push(arr[12])
+      }
     },
     /**
     * @desc 开始设置字段属性
@@ -833,18 +957,32 @@ export default {
     * @desc 保存字段属性
     */
     saveField: function () {
-      this.field.radios = this.radiosText.split('\n')
-      this.field.checkboxs = this.checkboxsText.split('\n')
-      if (this.field.fieldType === 'combobox' && this.field.selectType === '1') {
-        this.field.selectFields = this.quoteSelectTableData
-        this.field.inParas = this.quoteSelectInTableData
-      }
-      if (this.field.writeOtherField === 'true') {
-        this.field.writeOtherFieldParam = this.writeOtherFieldParamData
-      }
-      if (this.field.autoFill === 'true' && this.field.autoFillType === 'interface') {
-        this.field.autoFillParamData = this.autoFillParamData
-      }
+      this.$refs['formField'].validate((valid) => {
+        if (valid) {
+          this.field.radios = this.radiosText.split('\n')
+          this.field.checkboxs = this.checkboxsText.split('\n')
+          if (this.field.fieldType === 'combobox' && this.field.selectType === '1') {
+            this.field.selectFields = this.quoteSelectTableData
+            this.field.inParas = this.quoteSelectInTableData
+          }
+          if (this.field.writeOtherField === 'true') {
+            this.field.writeOtherFieldParam = this.writeOtherFieldParamData
+          }
+          if (this.field.autoFill === 'true' && this.field.autoFillType === 'interface') {
+            this.field.autoFillParamData = this.autoFillParamData
+          }
+          this.field.flag = true
+          this.loading = false
+          this.modalField = false
+        } else {
+          setTimeout(() => {
+            this.loading = false
+            this.$nextTick(() => {
+              this.loading = true
+            })
+          }, 100)
+        }
+      })
     },
     /**
     * @desc 选择引用
@@ -950,6 +1088,7 @@ export default {
     editAutoFillParam: function (params) {
       this.modalAutoFillParamTitle = '修改参数'
       this.autoFillParamObj = params.row
+      this.autoFillParamIndex = params.index
       this.modalAutoFillParam = true
     },
     /**
@@ -958,6 +1097,8 @@ export default {
     saveAutoFillParam: function () {
       if (this.modalAutoFillParamTitle === '新增参数') {
         this.autoFillParamData.push(this.autoFillParamObj)
+      } else {
+        this.autoFillParamData[this.autoFillParamIndex] = this.autoFillParamObj
       }
       this.modalAutoFillParam = false
     },
@@ -967,6 +1108,44 @@ export default {
     */
     deleteAutoFillParam: function (params) {
       this.autoFillParamData.splice(this.autoFillParamData.indexOf(params.row), 1)
+    },
+    /**
+    * @desc 新增字段分组标签
+    */
+    addLegend: function () {
+      this.modalLegendTitle = '新增标签'
+      this.legendObj = {}
+      this.modalLegend = true
+    },
+    /**
+    * @desc 修改字段分组标签
+    * @param {Object} params 标签对象
+    */
+    editLegend: function (params, index) {
+      this.modalLegendTitle = '修改标签'
+      this.legendObj = params.row
+      this.currentLegendIndex = index
+      this.modalLegend = true
+    },
+    /**
+    * @desc 保存字段分组标签
+    */
+    saveLegend: function () {
+      if (this.modalLegendTitle === '新增标签') {
+        this.formLegendData.push(this.legendObj)
+      } else {
+        this.formLegendData[this.currentLegendIndex] = this.legendObj
+      }
+      console.log(this.legendObj)
+      console.log(this.formLegendData)
+      this.modalLegend = false
+    },
+    /**
+    * @desc 删除字段分组标签
+    * @param {Object} params 标签对象
+    */
+    deleteLegend: function (params, index) {
+      this.formLegendData.splice(index, 1)
     },
     /**
     * @desc 去子表字段组
@@ -1006,6 +1185,12 @@ export default {
         this.formControls.push({fieldType: 'textbox', text: 'pid', title: '父ID', listDisplay: false, type: 'int'})
       }
       this.formObj.field = Util.fieldsAddType(this.formControls)
+      let formLegendIndex = []
+      for (let iterator of this.formLegendData) {
+        formLegendIndex.push(this.formControls.findIndex(ele => ele.text === iterator.field))
+      }
+      this.formObj.formLegendData = this.formLegendData
+      this.formObj.formLegendIndex = formLegendIndex
       let infoStr = JSON.stringify(this.formObj)
       console.log(infoStr)
       this.$api.post('/pages/crminterface/creatTable.do', {jsonStr: infoStr}, r => {
@@ -1030,9 +1215,7 @@ export default {
     },
     dragToOptions () { // 拖拽目标配置
       return {
-        group: {
-          put: ['controlTo']
-        }
+        group: 'control'
       }
     },
     swiper () { // 滑动插件

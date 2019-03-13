@@ -158,7 +158,7 @@ util.getFormValues = function (fields) {
 util.removeFieldTable = function (fields) {
   let arr = []
   for (let variable of fields) {
-    if (variable.text !== 'create_user_id' && variable.text !== 'taskid' && variable.text !== 'pid') {
+    if (!['create_user_id', 'taskid', 'pid'].includes(variable.text)) {
       arr.push(variable)
     }
   }
@@ -174,6 +174,11 @@ util.fieldArrToObj = function (fields) {
   let obj = {}
   for (let field of fields) {
     obj[field.text] = field.fieldType === 'numberbox' ? 0 : field.fieldType === 'checkbox' ? [] : ''
+    if (['datebox', 'datetimebox', 'monthbox', 'yearbox'].includes(field.fieldType)) {
+      if (field.currentDate === 'true') {
+        obj[field.text] = this.getCurrentDate()
+      }
+    }
   }
   return obj
 }
@@ -1367,6 +1372,15 @@ util.initChartOption = function (chartObj, xField, yField, yFieldType, scatterYF
     }
     if (chartObj.radarStyle === 'area') {
       obj.series[0].areaStyle = {}
+    }
+  }
+  if (chartObj.showTitle) {
+    obj.title = {
+      text: chartObj.title,
+      textStyle: {
+        fontSize: chartObj.titleFontSize,
+        color: chartObj.titleColor
+      }
     }
   }
   console.log(obj)

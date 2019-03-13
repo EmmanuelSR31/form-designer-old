@@ -139,7 +139,7 @@ export default {
             parent: this, // 当前的vue对象
             data: {
               pid: this.currentForm,
-              urlObj: {},
+              urlObjStr: '{}',
               method: 'add'
             }
           },
@@ -164,7 +164,7 @@ export default {
           parent: this, // 当前的vue对象
           data: {
             pid: '',
-            urlObj: temp,
+            urlObjStr: JSON.stringify(temp),
             method: 'edit'
           }
         },

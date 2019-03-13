@@ -81,10 +81,10 @@
             </template>
             <template v-else-if="item.fieldType === 'tablebox'">
               <template v-if="item.editChildTable === 'true'">
-                <editTable :tableName="item.tableTitle" :recordID="formDataObj.uuid" :viewFlag="false" @edit-success="calculateToMain(item)"></editTable>
+                <editTable :tableName="item.tableTitle" :recordID="formDataObj.uuid" :viewFlag="method === 'view'" @edit-success="calculateToMain(item)"></editTable>
               </template>
               <template v-else>
-                <childTable :childTableName="item.tableTitle" :recordID="formDataObj.uuid" @edit-success="calculateToMain(item)"></childTable>
+                <childTable :childTableName="item.tableTitle" :recordID="formDataObj.uuid" :is-view="method === 'view'" @edit-success="calculateToMain(item)"></childTable>
               </template>
             </template>
             <template v-else-if="item.fieldType === 'filebox'">
@@ -158,6 +158,7 @@ export default {
       delete this.formDataObj.uuid
       obj.field = Util.getFormValues(this.formDataObj)
       if (this.method === 'add') {
+        obj.field.push({text: 'uuid', value: '\'' + Util.uuid() + '\''})
         obj.field.push({text: 'create_user_id', value: '0'})
         obj.field.push({text: 'taskid', value: '0'})
         if (this.formObj.needTree === 'true' && this.pid !== '' && this.pid !== null) {
@@ -207,11 +208,14 @@ export default {
 
             } else if (field.autoFillType === 'interface') {
               let obj = {}
-              for (let iterator of field.autoFillParam) {
+              for (let iterator of field.autoFillParamData) {
                 obj[iterator.name] = iterator.value
               }
               this.$api.post(field.autoFillInterface, obj, r => {
                 console.log(r)
+                if (r.data) {
+                  this.formDataObj[field.text] = r.data
+                }
               })
             }
           }

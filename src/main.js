@@ -19,6 +19,8 @@ import VueCodemirror from 'vue-codemirror'
 import 'codemirror/lib/codemirror.css'
 // import ECharts from 'vue-echarts/components/ECharts.vue'
 // import VueCharts from 'vue-chartjs'
+import VueDraggableResizable from 'vue-draggable-resizable'
+import 'vue-draggable-resizable/dist/VueDraggableResizable.css'
 
 Vue.use(iView)
 Vue.use(VueAwesomeSwiper)
@@ -37,6 +39,8 @@ Vue.component(VPagination.name, VPagination)
 Vue.component('multiselect', Multiselect) */
 
 Vue.use(VueCodemirror)
+
+Vue.component('vue-draggable-resizable', VueDraggableResizable)
 
 // Vue.component('chart', ECharts)
 

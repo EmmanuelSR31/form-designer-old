@@ -1,6 +1,6 @@
 <template>
 <div>
-  <div class="table-search-con">
+  <div v-if="!viewFlag" class="table-search-con">
     <Button type="primary" @click="addTableData">新增</Button>
   </div>
   <Table border stripe :columns="columns" :data="data"></Table>
@@ -51,7 +51,9 @@ export default {
         this.formObj = r.data
         Util.initFormQuoteSelectData(this.formObj.field)
         this.initEditTableColumns()
-        this.columnsAddAction()
+        if (!this.viewFlag) {
+          this.columnsAddAction()
+        }
         this.getData()
       })
     },
