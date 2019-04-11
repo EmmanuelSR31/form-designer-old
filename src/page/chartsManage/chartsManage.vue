@@ -74,6 +74,7 @@
             </li>
           </ul>
         </div>
+        <div class="clear"></div>
       </div>
       <!-- 散点图数值 -->
       <!-- <div v-show="chartObj.type === 'scatter'" class="edit-chart-field-con">
@@ -138,6 +139,7 @@
             </li>
           </ul>
         </div>
+        <div class="clear"></div>
       </div>
       <div>
         <div class="chart-condition-con">
@@ -170,19 +172,24 @@
             </Collapse>
           </draggable>
           <div class="chart-condition-title">颜色</div>
-          <ul class="series-color-list">
-            <li v-for="item in y_field" @click="showColorTheme" :key="item.title">
-              <i v-show="['pie', 'funnel'].indexOf(chartObj.type) === -1" :style="{'background': item.color}"></i>
-              <template v-if="item.alias !== '' && item.alias !== undefined">{{item.alias}}</template>
-              <template v-else>{{item.title}}</template>
-              {{fieldCalculateTypeFormat(item)}}
-            </li>
-            <li v-for="item in secondary_y_field" @click="showColorTheme" :key="item.title">
-              <i :style="{'background': item.color}"></i>
-              <template v-if="item.alias !== '' && item.alias !== undefined">{{item.alias}}</template>
-              <template v-else>{{item.title}}</template>
-              {{fieldCalculateTypeFormat(item)}}
-            </li>
+          <ul class="series-color-list" v-show="!['k'].includes(chartObj.type)">
+            <template v-if="['treemap', 'sunburst', 'sankey'].includes(chartObj.type)">
+              <li @click="showColorTheme">配色方案</li>
+            </template>
+            <template v-else>
+              <li v-for="item in y_field" @click="showColorTheme" :key="item.title">
+                <i v-show="['pie', 'funnel'].indexOf(chartObj.type) === -1" :style="{'background': item.color}"></i>
+                <template v-if="item.alias !== '' && item.alias !== undefined">{{item.alias}}</template>
+                <template v-else>{{item.title}}</template>
+                {{fieldCalculateTypeFormat(item)}}
+              </li>
+              <li v-for="item in secondary_y_field" @click="showColorTheme" :key="item.title">
+                <i :style="{'background': item.color}"></i>
+                <template v-if="item.alias !== '' && item.alias !== undefined">{{item.alias}}</template>
+                <template v-else>{{item.title}}</template>
+                {{fieldCalculateTypeFormat(item)}}
+              </li>
+            </template>
           </ul>
         </div>
         <div class="chart-con">
@@ -212,7 +219,7 @@
               <li class="clear"></li>
             </ul>
           </div>
-          <div id="main" style="height:400px;"></div>
+          <div id="main" style="height:700px;"></div>
         </div>
       </div>
     </div>
@@ -296,7 +303,7 @@
           <FormItem v-show="['radar'].indexOf(chartObj.type) !== -1" label="最大值">
             <a href="javascript:void(0)" @click="showRadarMax"><Icon type="ios-settings" /></a>
           </FormItem>
-          <div v-show="['line', 'bar', 'stack-bar', 'waterfall', 'transverse-bar', 'stack-transverse-bar', 'area-line', 'stack-area-line', 'scatter', 'line-and-bar', 'radar'].indexOf(chartObj.type) !== -1">
+          <div v-show="['line', 'bar', 'stack-bar', 'waterfall', 'transverse-bar', 'stack-transverse-bar', 'area-line', 'stack-area-line', 'scatter', 'line-and-bar', 'radar', 'k'].indexOf(chartObj.type) !== -1">
             <!-- X轴配置 -->
             <div class="chart-set-title">坐标X轴</div>
             <Checkbox v-model="chartObj.x.show">显示坐标轴</Checkbox><br>
@@ -448,13 +455,22 @@
               <Radio label="right"><span>居右</span></Radio>
             </RadioGroup>
           </FormItem>
-          <Checkbox v-show="['gauge'].indexOf(chartObj.type) === -1" v-model="chartObj.showDatalabels">显示图表标签</Checkbox>
+          <Checkbox v-show="['gauge', 'treemap', 'sunburst', 'sankey'].indexOf(chartObj.type) === -1" v-model="chartObj.showDatalabels">显示图表标签</Checkbox>
           <div v-show="chartObj.showDatalabels" class="chart-set-inner-line">
             <label>字体大小</label>
             <Select v-model="chartObj.datalabelFontSize" style="width:65px;">
               <Option v-for="(item, index) in fontSize" :value="item" :key="index">{{item + 'px'}}</Option>
             </Select>
+            <label>颜色</label>
+            <ColorPicker v-model="chartObj.datalabelColor" format="rgb" />
           </div>
+          <FormItem label="柱宽度" v-show="['bar', 'stack-bar', 'transverse-bar', 'stack-transverse-bar', 'waterfall', 'line-and-bar', 'k'].indexOf(chartObj.type) !== -1">
+            <RadioGroup v-model="chartObj.barWidthType">
+              <Radio label="false"><span>自适应</span></Radio>
+              <Radio label="true"><span>指定值</span></Radio>
+            </RadioGroup>
+            <InputNumber v-show="chartObj.barWidthType === 'true'" :min="1" v-model="chartObj.barWidth"></InputNumber>
+          </FormItem>
           <FormItem label="线条样式" v-show="['line', 'area-line', 'stack-area-line', 'line-and-bar', 'sankey'].indexOf(chartObj.type) !== -1">
             <RadioGroup v-model="chartObj.lineStyle">
               <Radio label="straight"><span>直线</span></Radio>
@@ -484,7 +500,131 @@
               </Select>
             </FormItem>
           </div>
-          <FormItem label="点大小" v-show="['scatter'].indexOf(chartObj.type) !== -1">
+          <div v-show="['treemap'].includes(chartObj.type)">
+            <div class="chart-set-inner-line">
+              <a href="javascript:void(0)" @click="showTreemapLevels">多层样式配置 <Icon type="ios-settings" style="font-size: .18rem;" /></a>
+            </div>
+            <div class="chart-set-inner-line">
+              <label>边框宽度</label>
+              <InputNumber :min="0" v-model="chartObj.treemap.borderWidth"></InputNumber>
+              <label>边框颜色</label>
+              <ColorPicker v-model="chartObj.treemap.borderColor" format="rgb" />
+            </div>
+            <div class="chart-set-inner-line">
+              <label>间隔距离</label>
+              <InputNumber :min="0" v-model="chartObj.treemap.gapWidth"></InputNumber>
+            </div>
+            <Checkbox v-model="chartObj.treemap.breadcrumb.show">显示面包屑</Checkbox>
+            <div v-show="chartObj.treemap.breadcrumb.show">
+              <div class="chart-set-inner-line">
+                <label>面包屑高度</label>
+                <InputNumber :min="1" v-model="chartObj.treemap.breadcrumb.height"></InputNumber>
+                <label>面包屑颜色</label>
+                <ColorPicker v-model="chartObj.treemap.breadcrumb.color" format="rgb" />
+              </div>
+              <div class="chart-set-inner-line">
+                <label>面包屑阴影大小</label>
+                <InputNumber :min="0" v-model="chartObj.treemap.breadcrumb.shadowBlur"></InputNumber>
+                <label>阴影颜色</label>
+                <ColorPicker v-model="chartObj.treemap.breadcrumb.shadowColor" format="rgb" />
+              </div>
+              <div class="chart-set-inner-line">
+                <label>面包屑边框宽度</label>
+                <InputNumber :min="0" v-model="chartObj.treemap.breadcrumb.borderWidth"></InputNumber>
+                <label>边框颜色</label>
+                <ColorPicker v-model="chartObj.treemap.breadcrumb.borderColor" format="rgb" />
+              </div>
+              <div class="chart-set-inner-line">
+                <label>字体大小</label>
+                <Select v-model="chartObj.treemap.breadcrumb.fontSize" style="width:65px;">
+                  <Option v-for="(item, index) in fontSize" :value="item" :key="index">{{item + 'px'}}</Option>
+                </Select>
+                <label>文字颜色</label>
+                <ColorPicker v-model="chartObj.treemap.breadcrumb.textColor" format="rgb" />
+              </div>
+            </div>
+          </div>
+          <div v-show="['sunburst'].includes(chartObj.type)">
+            <div class="chart-set-inner-line">
+              <label>内半径</label>
+              <InputNumber :min="0" v-model="chartObj.sunburst.innerRadius"></InputNumber>%
+              <label>外半径</label>
+              <InputNumber :min="0" v-model="chartObj.sunburst.outerRadius"></InputNumber>%
+            </div>
+            <div class="chart-set-inner-line">
+              <a href="javascript:void(0)" @click="showTreemapLevels">多层样式配置 <Icon type="ios-settings" style="font-size: .18rem;" /></a>
+            </div>
+          </div>
+          <div v-show="['sankey'].includes(chartObj.type)">
+            <div class="chart-set-inner-line">
+              <label>矩形宽度</label>
+              <InputNumber :min="1" v-model="chartObj.sankey.nodeWidth"></InputNumber>
+              <label>线条颜色</label>
+              <ColorPicker v-model="chartObj.sankey.lineColor" format="rgb" />
+            </div>
+            <div class="chart-set-inner-line">
+              <label>字体大小</label>
+              <Select v-model="chartObj.sankey.label.fontSize" style="width:65px;">
+                <Option v-for="(item, index) in fontSize" :value="item" :key="index">{{item + 'px'}}</Option>
+              </Select>
+              <label>文字颜色</label>
+              <ColorPicker v-model="chartObj.sankey.label.color" format="rgb" />
+            </div>
+          </div>
+          <div v-show="['k'].includes(chartObj.type)">
+            <div class="chart-set-inner-line" style="padding-left: 120px;">
+              <label>阳线颜色</label>
+              <ColorPicker v-model="chartObj.k.color" format="rgb" />
+            </div>
+            <div class="chart-set-inner-line" style="padding-left: 120px;">
+              <label>阳线边框颜色</label>
+              <ColorPicker v-model="chartObj.k.borderColor" format="rgb" />
+            </div>
+            <div class="chart-set-inner-line" style="padding-left: 120px;">
+              <label>阴线颜色</label>
+              <ColorPicker v-model="chartObj.k.color0" format="rgb" />
+            </div>
+            <div class="chart-set-inner-line" style="padding-left: 120px;">
+              <label>阴线边框颜色</label>
+              <ColorPicker v-model="chartObj.k.borderColor0" format="rgb" />
+            </div>
+          </div>
+          <div v-show="['map'].includes(chartObj.type)">
+            <div class="chart-set-inner-line">
+              <label>地图中心点</label>
+              <Input v-model="chartObj.map.centerX" style="width: 80px;"></Input>-
+              <Input v-model="chartObj.map.centerY" style="width: 80px;"></Input>
+            </div>
+            <div class="chart-set-inner-line">
+              <label>地图缩放级别</label>
+              <InputNumber :min="1" v-model="chartObj.map.zoom"></InputNumber>
+            </div>
+            <div class="chart-set-inner-line" style="padding-left: 120px;">
+              <label>地面颜色</label>
+              <ColorPicker v-model="chartObj.map.landColor" />
+            </div>
+            <div class="chart-set-inner-line" style="padding-left: 120px;">
+              <label>水颜色</label>
+              <ColorPicker v-model="chartObj.map.waterColor" />
+            </div>
+            <!-- <div class="chart-set-inner-line" style="padding-left: 120px;">
+              <label>铁路颜色</label>
+              <ColorPicker v-model="chartObj.map.railwayColor" />
+            </div> -->
+            <div class="chart-set-inner-line" style="padding-left: 120px;">
+              <label>建筑颜色</label>
+              <ColorPicker v-model="chartObj.map.buildingColor" />
+            </div>
+            <div class="chart-set-inner-line" style="padding-left: 120px;">
+              <label>高速颜色</label>
+              <ColorPicker v-model="chartObj.map.highwayColor" />
+            </div>
+            <div class="chart-set-inner-line" style="padding-left: 120px;">
+              <label>干道颜色</label>
+              <ColorPicker v-model="chartObj.map.arterialColor" />
+            </div>
+          </div>
+          <FormItem label="点大小" v-show="['scatter', 'map'].indexOf(chartObj.type) !== -1">
             <InputNumber :min="1" v-model="chartObj.symbolSize"></InputNumber>
           </FormItem>
           <FormItem label="雷达样式" v-show="['radar'].indexOf(chartObj.type) !== -1">
@@ -503,7 +643,7 @@
               <Option value="top">头部图例</Option>
             </Select>
           </FormItem>
-          <div v-show="['line', 'bar', 'stack-bar', 'waterfall', 'transverse-bar', 'stack-transverse-bar', 'area-line', 'stack-area-line', 'scatter', 'line-and-bar', 'radar'].indexOf(chartObj.type) !== -1">
+          <div v-show="['line', 'bar', 'stack-bar', 'waterfall', 'transverse-bar', 'stack-transverse-bar', 'area-line', 'stack-area-line', 'scatter', 'line-and-bar', 'radar', 'k'].indexOf(chartObj.type) !== -1">
             <FormItem label="图例设置"></FormItem>
             <div class="chart-set-inner-line">
               <Checkbox v-model="chartObj.x.showSplitLine">横向网格</Checkbox>
@@ -733,12 +873,19 @@
               <Option v-for="(item, index) in chartColorTheme" :value="item" :key="index">{{item.name}}</Option>
             </Select>
             <ul class="modal-theme-colors">
-              <li v-for="(item, index) in currentColorTheme.colors" :class="{'active': item === currentColorThemeField.color}" :style="{'background': item}" @click="setFieldColor(item)" :key="index">
-                <Icon type="ios-checkmark" />
-              </li>
+              <template v-if="['treemap', 'sunburst', 'sankey'].includes(chartObj.type)">
+                <li v-for="(item, index) in currentColorTheme.colors" :style="{'background': item}" :key="index">
+                  <Icon type="ios-checkmark" />
+                </li>
+              </template>
+              <template v-else>
+                <li v-for="(item, index) in currentColorTheme.colors" :class="{'active': item === currentColorThemeField.color}" :style="{'background': item}" @click="setFieldColor(item)" :key="index">
+                  <Icon type="ios-checkmark" />
+                </li>
+              </template>
               <div class="clear"></div>
             </ul>
-            <div class="modal-condition-options-all">
+            <div v-if="!['treemap', 'sunburst', 'sankey'].includes(chartObj.type)" class="modal-condition-options-all">
               <ColorPicker v-model="currentColorThemeField.color" format="rgb" @on-change="setFieldColor" />自定义颜色
             </div>
           </Col>
@@ -841,6 +988,20 @@
       </ul>
     </div>
   </Modal>
+  <!-- 矩形树图多层配置 -->
+  <Modal v-model="modalTreemapLevels" title="矩形树图多层配置" @on-ok="saveTreemapLevels">
+    <div class="modal-field-con">
+      <Button type="button" @click="treemapLevelsAdd">添加层级配置</Button>
+      <ul class="treemapLevelsList">
+        <li v-for="(item, index) in chartObj.treemap.levels" :key="index">
+          <span>边框宽度</span><InputNumber :min="0" v-model="item.borderWidth"></InputNumber>
+          <span>边框颜色</span><ColorPicker v-model="item.borderColor" format="rgb" />
+          <span>间隔距离</span><InputNumber :min="0" v-model="item.gapWidth"></InputNumber>
+          <a href="javascript:void(0)" @click="treemapLevelsDel(index)" title="删除该层级配置"><Icon type="md-remove" /></a>
+        </li>
+      </ul>
+    </div>
+  </Modal>
 </div>
 </template>
 <script>
@@ -854,6 +1015,11 @@ require('echarts/lib/chart/gauge')
 require('echarts/lib/chart/scatter')
 require('echarts/lib/chart/funnel')
 require('echarts/lib/chart/radar')
+require('echarts/lib/chart/treemap')
+require('echarts/lib/chart/sunburst')
+require('echarts/lib/chart/sankey')
+require('echarts/lib/chart/candlestick')
+require('echarts/extension/bmap/bmap')
 require('echarts/lib/component/tooltip')
 require('echarts/lib/component/title')
 require('echarts/lib/component/legend')
@@ -880,7 +1046,10 @@ export default {
         rightY: {show: true, showLabels: true, showTitle: false, labelFontSize: '12', labelColor: 'rgb(51, 51, 51)', nameFontSize: '12', nameColor: 'rgb(51, 51, 51)', lineWidth: '1', lineColor: 'rgb(51, 51, 51)', lineType: 'solid'},
         showDatalabels: false,
         datalabelFontSize: '12',
+        datalabelColor: 'rgb(0, 0, 0)',
         symbolSize: 10,
+        barWidthType: 'false',
+        barWidth: 20,
         lineStyle: 'straight',
         lineStep: 'false',
         pieStyle: 'pieShape',
@@ -890,6 +1059,17 @@ export default {
           position: 'top'
         },
         gauge: {'unit': '', 'rateDigit': 2, 'conditions': []},
+        treemap: {
+          levels: [],
+          borderWidth: 0,
+          borderColor: 'rgb(255, 255, 255)',
+          gapWidth: 0,
+          breadcrumb: {show: true, height: 22, color: 'rgb(0, 0, 0)', borderWidth: 1, borderColor: 'rgb(255, 255, 255)', shadowBlur: 3, shadowColor: 'rgb(150, 150, 150)', fontSize: '12', textColor: 'rgb(255, 255, 255)'}
+        },
+        sunburst: {innerRadius: 0, outerRadius: 90},
+        sankey: {lineColor: 'rgb(49,70,86)', nodeWidth: 20, label: {fontSize: '12', color: 'rgb(0, 0, 0)'}},
+        k: {color: 'rgb(194,53,49)', borderColor: 'rgb(194,53,49)', color0: 'rgb(49,70,86)', borderColor0: 'rgb(49,70,86)'},
+        map: {centerX: 104.114129, centerY: 37.550339, zoom: 5, landColor: '#fff', waterColor: '#BEDBF9', railwayColor: '#BEDBF9', highwayColor: '#F7D164', buildingColor: '#f8f7f3', arterialColor: '#fff'},
         funnelAlign: 'center',
         hasBackgroundColor: 'false',
         backgroundColor: 'rgb(255, 255, 255)'
@@ -934,6 +1114,7 @@ export default {
       gaugeConditionsColors: this.$store.state.gaugeConditionsColors, // 仪表盘配置颜色
       modalRadarMax: false, // 雷达图最大值对话框是否显示
       radarMax: [], // 雷达图最大值
+      modalTreemapLevels: false, // 矩形树图多层配置对话框是否显示
       fontSize: this.$store.state.fontSize, // 字体大小
       lineWidth: this.$store.state.lineWidth, // 图表线条宽度
       lineType: this.$store.state.lineType // 图表线条类型
@@ -979,6 +1160,9 @@ export default {
     dragEnd: function (event) {
       if (event.to.className === 'drag-y-con') {
         this.setFieldCalculateType(this.y_field[this.y_field.length - 1], 'sum')
+        console.log(this.y_field.length)
+        console.log(this.secondary_y_field.length)
+        console.log(this.currentColorTheme.colors[this.y_field.length + this.secondary_y_field.length - 1])
         this.y_field[this.y_field.length - 1].color = this.currentColorTheme.colors[this.y_field.length + this.secondary_y_field.length - 1]
       } else if (event.to.className === 'drag-scatter-con') {
         this.setFieldCalculateType(this.scatter_y_field[this.scatter_y_field.length - 1], 'sum')
@@ -1093,8 +1277,14 @@ export default {
       if ((this.x_field.length < 3 && this.y_field.length > 1) || (this.y_field.length > 0 && this.secondary_y_field.length > 0)) {
         this.enableChartType.push('line-and-bar')
       }
-      if (this.x_field.length > 1 && this.y_field.length === 2) {
+      if (this.x_field.length > 1 && this.y_field.length === 1) {
         this.enableChartType.push('sankey')
+      }
+      if ((this.x_field.length === 1 || this.x_field.length === 2) && this.y_field.length === 1) {
+        this.enableChartType.push('k')
+      }
+      if (this.x_field.length === 1 && this.y_field.length === 1) {
+        this.enableChartType.push('map')
       }
       if (this.x_field.length === 1 && this.y_field.length > 0) {
         this.enableChartType.push('radar')
@@ -1164,7 +1354,12 @@ export default {
     * @return {String} 计算方式文本
     */
     fieldCalculateTypeFormat: function (item) {
-      return '(' + this.chartFieldCalculateType.find((element) => (element.value === item.calculateType)).text + ')'
+      let str = ''
+      let temp = this.chartFieldCalculateType.find((element) => (element.value === item.calculateType))
+      if (temp !== undefined) {
+        str = `(${temp.text})`
+      }
+      return str
     },
     /**
     * @desc 拖拽增加筛选条件
@@ -1461,6 +1656,32 @@ export default {
     */
     saveRadarMax: function () {
       this.modalRadarMax = false
+      this.createChart()
+    },
+    /**
+    * @desc 显示矩形树图多层配置
+    */
+    showTreemapLevels: function () {
+      this.modalTreemapLevels = true
+    },
+    /**
+    * @desc 增加一条矩形树图层级配置
+    */
+    treemapLevelsAdd: function () {
+      this.chartObj.treemap.levels.push({borderColor: 'rgb(255,255,255)', borderWidth: 0, gapWidth: 0})
+    },
+    /**
+    * @desc 删除一条矩形树图层级配置
+    * @param {Number} index 层级配置位置
+    */
+    treemapLevelsDel: function (index) {
+      this.chartObj.treemap.levels.splice(index, 1)
+    },
+    /**
+    * @desc 关闭矩形树图多层配置
+    */
+    saveTreemapLevels: function () {
+      this.modalTreemapLevels = false
       this.createChart()
     },
     /**
@@ -1831,6 +2052,12 @@ export default {
 .chart-icon-radar{
   background: url(../../assets/img/svg-sprite_d1903b5.svg) -748px -1302px no-repeat;
 }
+.chart-icon-k{
+  background: url(../../assets/img/svg-sprite_d1903b5.svg) -684px -1300px no-repeat;
+}
+.chart-icon-map{
+  background: url(../../assets/img/svg-sprite_d1903b5.svg) -333px -1300px no-repeat;
+}
 .active, .chart-type-list li a.selected{
   .chart-icon-line{
     background: url(../../assets/img/svg-sprite_d1903b5.svg) -1092px -1238px no-repeat;
@@ -1882,6 +2109,12 @@ export default {
   }
   .chart-icon-radar{
     background: url(../../assets/img/svg-sprite_d1903b5.svg) -780px -1302px no-repeat;
+  }
+  .chart-icon-k{
+    background: url(../../assets/img/svg-sprite_d1903b5.svg) -716px -1300px no-repeat;
+  }
+  .chart-icon-map{
+    background: url(../../assets/img/svg-sprite_d1903b5.svg) -364px -1300px no-repeat;
   }
 }
 .chart-condition-con{
@@ -2221,6 +2454,19 @@ body .ivu-modal .ivu-color-picker .ivu-select-dropdown{
       width: 140px;
       text-align: right;
       padding-right: 15px;
+    }
+  }
+}
+.treemapLevelsList{
+  margin-top: 8px;
+  li{
+    margin-bottom: 5px;
+    span{
+      padding-right: 3px;
+    }
+    a{
+      font-size: .2rem;
+      margin-left: 15px;
     }
   }
 }

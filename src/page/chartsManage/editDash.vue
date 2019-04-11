@@ -267,13 +267,13 @@ export default {
     },
     dashStyle () { // 看板背景样式
       let obj = {}
-      if (this.loaddashObj.isBackgroundColor === 'is') {
-        if (this.loaddashObj.hasBackgroundColor === 'true') {
-          obj.backgroundColor = this.loaddashObj.backgroundColor
+      if (this.dashObj.isBackgroundColor === 'is') {
+        if (this.dashObj.hasBackgroundColor === 'true') {
+          obj.backgroundColor = this.dashObj.backgroundColor
         }
-      } else {
-        if (this.loaddashObj.background !== '') {
-          obj.background = `url(${this.loaddashObj.background}) center no-repeat`
+      } else if (this.dashObj.isBackgroundColor !== undefined) {
+        if (this.dashObj.background !== '' && this.dashObj.background !== undefined) {
+          obj.background = `url(${this.dashObj.background}) center no-repeat`
           obj.backgroundSize = '100% 100%'
           console.log(obj)
         }

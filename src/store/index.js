@@ -439,6 +439,18 @@ const state = {
       title: '雷达图',
       icon: 'chart-icon-radar',
       tips: ['1个维度', '多个数值']
+    },
+    {
+      type: 'k',
+      title: 'K线图',
+      icon: 'chart-icon-k',
+      tips: ['1个或2个维度', '1个数值']
+    },
+    {
+      type: 'map',
+      title: '地图',
+      icon: 'chart-icon-map',
+      tips: ['1个维度', '1个数值']
     }
   ],
   chartCondition: [ // 图表搜索条件
