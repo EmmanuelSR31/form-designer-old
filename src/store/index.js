@@ -447,9 +447,27 @@ const state = {
       tips: ['1个或2个维度', '1个数值']
     },
     {
+      type: 'wordcloud',
+      title: '词云',
+      icon: 'chart-icon-wordcloud',
+      tips: ['1个维度', '0个数值']
+    },
+    {
+      type: 'liquidfill',
+      title: '水球图',
+      icon: 'chart-icon-liquidfill',
+      tips: ['0个维度', '1个数值']
+    },
+    {
       type: 'map',
       title: '地图',
       icon: 'chart-icon-map',
+      tips: ['1个维度', '1个数值']
+    },
+    {
+      type: 'mapLines',
+      title: '迁徙图',
+      icon: 'chart-icon-mapLines',
       tips: ['1个维度', '1个数值']
     }
   ],

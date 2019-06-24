@@ -303,6 +303,9 @@
           <FormItem v-show="['radar'].indexOf(chartObj.type) !== -1" label="最大值">
             <a href="javascript:void(0)" @click="showRadarMax"><Icon type="ios-settings" /></a>
           </FormItem>
+          <FormItem v-show="['line', 'area-line', 'stack-area-line', 'line-and-bar'].indexOf(chartObj.type) !== -1" label="视觉映射">
+            <a href="javascript:void(0)" @click="showVisualMap"><Icon type="ios-settings" /></a>
+          </FormItem>
           <div v-show="['line', 'bar', 'stack-bar', 'waterfall', 'transverse-bar', 'stack-transverse-bar', 'area-line', 'stack-area-line', 'scatter', 'line-and-bar', 'radar', 'k'].indexOf(chartObj.type) !== -1">
             <!-- X轴配置 -->
             <div class="chart-set-title">坐标X轴</div>
@@ -359,7 +362,8 @@
                   <Option value="45">右倾斜45</Option>
                 </Select>
               </FormItem>
-              <Checkbox v-model="chartObj.x.showAll">强制显示所有标签</Checkbox>
+              <Checkbox v-model="chartObj.x.showAll">强制显示所有标签</Checkbox><br>
+              <Checkbox v-model="chartObj.dataZoom">区域缩放</Checkbox>
             </div>
             <div class="line"></div>
             <!-- Y轴配置 -->
@@ -455,7 +459,7 @@
               <Radio label="right"><span>居右</span></Radio>
             </RadioGroup>
           </FormItem>
-          <Checkbox v-show="['gauge', 'treemap', 'sunburst', 'sankey'].indexOf(chartObj.type) === -1" v-model="chartObj.showDatalabels">显示图表标签</Checkbox>
+          <Checkbox v-show="['gauge', 'treemap', 'sunburst', 'sankey', 'wordcloud'].indexOf(chartObj.type) === -1" v-model="chartObj.showDatalabels">显示图表标签</Checkbox>
           <div v-show="chartObj.showDatalabels" class="chart-set-inner-line">
             <label>字体大小</label>
             <Select v-model="chartObj.datalabelFontSize" style="width:65px;">
@@ -485,6 +489,14 @@
               <Option value="end">末尾</Option>
             </Select>
           </FormItem>
+          <Checkbox v-show="['line', 'area-line', 'stack-area-line', 'line-and-bar', 'bar', 'stack-bar', 'transverse-bar', 'stack-transverse-bar', 'waterfall', 'k'].indexOf(chartObj.type) !== -1" v-model="chartObj.markLine.showMarkLine">显示警戒线</Checkbox>
+          <FormItem v-show="chartObj.markLine.showMarkLine" label="警戒线数值(数值用逗号隔开)">
+            <Input v-model="markLines" @on-blur="setMarkLine"></Input>
+          </FormItem>
+          <div v-show="chartObj.markLine.showMarkLine"  class="chart-set-inner-line" style="padding-left: 105px;">
+            <label>警戒线颜色</label>
+            <ColorPicker v-model="chartObj.markLine.color" format="rgb" />
+          </div>
           <div v-show="['pie'].indexOf(chartObj.type) !== -1">
             <FormItem label="饼图样式">
               <RadioGroup v-model="chartObj.pieStyle">
@@ -589,7 +601,47 @@
               <ColorPicker v-model="chartObj.k.borderColor0" format="rgb" />
             </div>
           </div>
-          <div v-show="['map'].includes(chartObj.type)">
+          <div v-show="['wordcloud'].includes(chartObj.type)">
+            <div class="chart-set-inner-line">
+              <label>随机颜色</label>
+              <RadioGroup v-model="chartObj.wordcloud.radomColor">
+                <Radio label="false"><span>否</span></Radio>
+                <Radio label="true"><span>是</span></Radio>
+              </RadioGroup>
+              <label>字体颜色</label>
+              <ColorPicker v-model="chartObj.wordcloud.color" format="rgb" />
+            </div>
+            <div class="chart-set-inner-line">
+              <label>形状</label>
+              <Select v-model="chartObj.wordcloud.shape" style="width: 160px;">
+                <Option value="circle">圆形</Option>
+                <Option value="cardioid">心型</Option>
+                <Option value="diamond">钻石</Option>
+                <Option value="triangle-forward">向前三角形</Option>
+                <Option value="triangle">三角形</Option>
+                <Option value="triangle-upright">垂直三角形</Option>
+                <Option value="pentagon">五角形</Option>
+                <Option value="star">星型</Option>
+              </Select>
+            </div>
+            <div class="chart-set-inner-line">
+              <label>字体大小范围</label>
+              <InputNumber :min="10" v-model="chartObj.wordcloud.minsize"></InputNumber>
+               - 
+              <InputNumber :min="10" v-model="chartObj.wordcloud.maxsize"></InputNumber>
+            </div>
+            <div class="chart-set-inner-line">
+              <label>角度范围</label>
+              <Input v-model="chartObj.wordcloud.minrotation" style="width: 60px;"></Input>
+               - 
+              <Input v-model="chartObj.wordcloud.maxrotation" style="width: 60px;"></Input>
+            </div>
+            <div class="chart-set-inner-line">
+              <label>角度步骤</label>
+              <InputNumber :min="1" v-model="chartObj.wordcloud.rotationStep"></InputNumber>
+            </div>
+          </div>
+          <div v-show="['map', 'mapLines'].includes(chartObj.type)">
             <div class="chart-set-inner-line">
               <label>地图中心点</label>
               <Input v-model="chartObj.map.centerX" style="width: 80px;"></Input>-
@@ -624,9 +676,37 @@
               <ColorPicker v-model="chartObj.map.arterialColor" />
             </div>
           </div>
-          <FormItem label="点大小" v-show="['scatter', 'map'].indexOf(chartObj.type) !== -1">
+          <FormItem label="点大小" v-show="['scatter', 'map', 'mapLines'].indexOf(chartObj.type) !== -1">
             <InputNumber :min="1" v-model="chartObj.symbolSize"></InputNumber>
           </FormItem>
+          <div v-show="['mapLines'].includes(chartObj.type)">
+            <div class="chart-set-inner-line">
+              <label>特效大小</label>
+              <InputNumber :min="1" v-model="chartObj.mapLines.effectSize"></InputNumber>
+              <label>特效颜色</label>
+              <ColorPicker v-model="chartObj.mapLines.effectColor" />
+            </div>
+            <div class="chart-set-inner-line">
+              <label>特效图形</label>
+              <Select v-model="chartObj.mapLines.effectSymbol" style="width: 80px;">
+                <Option value="circle">圆形</Option>
+                <Option value="rect">矩形</Option>
+                <Option value="roundRect">圆角矩形</Option>
+                <Option value="triangle">三角形</Option>
+                <Option value="diamond">菱形</Option>
+                <Option value="pin">针状</Option>
+                <Option value="arrow">箭头</Option>
+              </Select>
+              <label>线曲度</label>
+              <InputNumber :min="0" :max="1" v-model="chartObj.mapLines.curveness"></InputNumber>
+            </div>
+            <div class="chart-set-inner-line">
+              <label>线宽</label>
+              <InputNumber :min="1" v-model="chartObj.mapLines.lineWidth"></InputNumber>
+              <label>线颜色</label>
+              <ColorPicker v-model="chartObj.mapLines.lineColor" />
+            </div>
+          </div>
           <FormItem label="雷达样式" v-show="['radar'].indexOf(chartObj.type) !== -1">
             <RadioGroup v-model="chartObj.radarStyle">
               <Radio label="line"><span>线条</span></Radio>
@@ -988,6 +1068,41 @@
       </ul>
     </div>
   </Modal>
+  <!-- 视觉映射配置 -->
+  <Modal v-model="modalVisualMap" title="条件格式" @on-ok="saveVisualMap">
+    <div class="modal-field-con">
+      <div class="modal-condition-condition">
+        <div v-if="chartObj.visualMaps.length === 0" class="modal-condition-tips">
+          当前还没有设置条件 <Button type="button" @click="visualMapAdd">点此添加</Button>
+        </div>
+        <draggable v-model="chartObj.visualMaps" :options="dragGaugeOption">
+          <div v-for="(item, index) in chartObj.visualMaps" class="modal-gauge-condition" :key="index">
+            <span>区间</span>
+            <Input v-model="item.min" style="width:80px;"></Input> ~ 
+            <Input v-model="item.max" style="width:80px;"></Input>
+            <span>配色</span>
+            <span class="select-color" @click="showVisualMapColor($event, item)"><span :style="{background: item.color}"></span></span>
+            <template v-if="index === 0">
+              <a href="javascript:void(0)" @click="visualMapAdd" title="增加条件"><Icon type="md-add" /></a>
+            </template>
+            <a href="javascript:void(0)" @click="visualMapDel(index)" title="删除该条件"><Icon type="md-remove" /></a>
+          </div>
+        </draggable>
+      </div>
+    </div>
+  </Modal>
+  <!-- 视觉映射颜色配置 -->
+  <div v-show="modalVisualMapColor" class="gauge-condition-color-con" :style="{'top': modalVisualMapColorTop + 'px', 'left': modalVisualMapColorLeft + 'px'}">
+    <ul>
+      <li v-for="(item, index) in gaugeConditionsColors" @click="setCurrentVisualMapColor(item)" :key="index"><span :style="{background: item}"></span></li>
+      <div class="clear"></div>
+    </ul>
+    <div class="line"></div>
+    <div class="modal-condition-options-all">
+      <ColorPicker v-model="currentVisualMap.color" format="rgb" />自定义颜色
+    </div>
+    <a class="gauge-condition-color-close" @click="closeCurrentVisualMapColor"><Icon type="md-close" /></a>
+  </div>
   <!-- 矩形树图多层配置 -->
   <Modal v-model="modalTreemapLevels" title="矩形树图多层配置" @on-ok="saveTreemapLevels">
     <div class="modal-field-con">
@@ -1008,6 +1123,7 @@
 import Util from '@/utils/index'
 import draggable from 'vuedraggable'
 import echarts from 'echarts/lib/echarts'
+import 'echarts-liquidfill'
 require('echarts/lib/chart/pie')
 require('echarts/lib/chart/bar')
 require('echarts/lib/chart/line')
@@ -1020,6 +1136,7 @@ require('echarts/lib/chart/sunburst')
 require('echarts/lib/chart/sankey')
 require('echarts/lib/chart/candlestick')
 require('echarts/extension/bmap/bmap')
+require('echarts-wordcloud')
 require('echarts/lib/component/tooltip')
 require('echarts/lib/component/title')
 require('echarts/lib/component/legend')
@@ -1052,6 +1169,7 @@ export default {
         barWidth: 20,
         lineStyle: 'straight',
         lineStep: 'false',
+        markLine: { showMarkLine: false, markLines: '', color: 'rgb(204,0,51)' },
         pieStyle: 'pieShape',
         pieRose: 'false',
         radarStyle: 'line',
@@ -1059,6 +1177,7 @@ export default {
           position: 'top'
         },
         gauge: {'unit': '', 'rateDigit': 2, 'conditions': []},
+        visualMaps: [],
         treemap: {
           levels: [],
           borderWidth: 0,
@@ -1069,8 +1188,11 @@ export default {
         sunburst: {innerRadius: 0, outerRadius: 90},
         sankey: {lineColor: 'rgb(49,70,86)', nodeWidth: 20, label: {fontSize: '12', color: 'rgb(0, 0, 0)'}},
         k: {color: 'rgb(194,53,49)', borderColor: 'rgb(194,53,49)', color0: 'rgb(49,70,86)', borderColor0: 'rgb(49,70,86)'},
+        wordcloud: {shape: 'circle', minsize: 12, maxsize: 60, minrotation: -90, maxrotation: 90, rotationStep: 45, color: 'rgb(81, 130, 228)', radomColor: 'false'},
         map: {centerX: 104.114129, centerY: 37.550339, zoom: 5, landColor: '#fff', waterColor: '#BEDBF9', railwayColor: '#BEDBF9', highwayColor: '#F7D164', buildingColor: '#f8f7f3', arterialColor: '#fff'},
+        mapLines: {effectSize: 10, effectColor: 'rgb(81, 130, 228)', effectSymbol: 'circle', lineWidth: 1, lineColor: 'rgb(81, 130, 228)', curveness: 0.2},
         funnelAlign: 'center',
+        dataZoom: false,
         hasBackgroundColor: 'false',
         backgroundColor: 'rgb(255, 255, 255)'
       },
@@ -1108,16 +1230,22 @@ export default {
       modalSearchCondition: false, // 图内筛选器对话框是否显示
       modalGaugeCondition: false, // 仪表盘条件对话框是否显示
       modalGaugeConditionColor: false, // 仪表盘条件配色对话框是否显示
-      currentGaugeCondition: {color: ''},  // 选中仪表盘配置
+      currentGaugeCondition: {color: ''}, // 选中仪表盘配置
       modalGaugeConditionColorTop: 0, // 仪表盘条件配色对话框上距离
       modalGaugeConditionColorLeft: 0, // 仪表盘条件配色对话框左距离
       gaugeConditionsColors: this.$store.state.gaugeConditionsColors, // 仪表盘配置颜色
       modalRadarMax: false, // 雷达图最大值对话框是否显示
       radarMax: [], // 雷达图最大值
+      modalVisualMap: false, // 视觉映射对话框是否显示
+      modalVisualMapColor: false, // 视觉映射配色对话框是否显示
+      currentVisualMap: {color: ''}, // 选中视觉映射配置
+      modalVisualMapColorTop: 0, // 视觉映射配色对话框上距离
+      modalVisualMapColorLeft: 0, // 视觉映射配色对话框左距离
       modalTreemapLevels: false, // 矩形树图多层配置对话框是否显示
       fontSize: this.$store.state.fontSize, // 字体大小
       lineWidth: this.$store.state.lineWidth, // 图表线条宽度
-      lineType: this.$store.state.lineType // 图表线条类型
+      lineType: this.$store.state.lineType, // 图表线条类型
+      markLines: '' // 警戒线数值
     }
   },
   methods: {
@@ -1283,8 +1411,15 @@ export default {
       if ((this.x_field.length === 1 || this.x_field.length === 2) && this.y_field.length === 1) {
         this.enableChartType.push('k')
       }
+      if (this.x_field.length === 1 && this.y_field.length === 0) {
+        this.enableChartType.push('wordcloud')
+      }
+      if (this.x_field.length === 0 && this.y_field.length === 1) {
+        this.enableChartType.push('liquidfill')
+      }
       if (this.x_field.length === 1 && this.y_field.length === 1) {
         this.enableChartType.push('map')
+        this.enableChartType.push('mapLines')
       }
       if (this.x_field.length === 1 && this.y_field.length > 0) {
         this.enableChartType.push('radar')
@@ -1659,6 +1794,55 @@ export default {
       this.createChart()
     },
     /**
+    * @desc 显示视觉映射配置
+    */
+    showVisualMap: function () {
+      this.modalVisualMap = true
+    },
+    /**
+    * @desc 关闭视觉映射配置
+    */
+    saveVisualMap: function () {
+      this.modalVisualMap = false
+    },
+    /**
+    * @desc 增加一条视觉映射配置
+    */
+    visualMapAdd: function () {
+      this.chartObj.visualMaps.push({min: '', max: '', color: 'rgb(145, 199, 174)'})
+    },
+    /**
+    * @desc 删除一条视觉映射配置
+    * @param {Num} index 视觉映射配置位置
+    */
+    visualMapDel: function (index) {
+      this.chartObj.visualMaps.splice(index, 1)
+    },
+    /**
+    * @desc 显示视觉映射颜色配置
+    * @param {Object} event 事件
+    * @param {Object} item 视觉映射配置对象
+    */
+    showVisualMapColor: function (event, item) {
+      this.currentVisualMap = item
+      this.modalVisualMapColorTop = event.clientY
+      this.modalVisualMapColorLeft = event.clientX
+      this.modalVisualMapColor = true
+    },
+    /**
+    * @desc 设置视觉映射颜色配置
+    * @param {String} color 颜色值
+    */
+    setCurrentVisualMapColor: function (color) {
+      this.currentVisualMap.color = color
+    },
+    /**
+    * @desc 关闭视觉映射颜色配置
+    */
+    closeCurrentVisualMapColor: function () {
+      this.modalVisualMapColor = false
+    },
+    /**
     * @desc 显示矩形树图多层配置
     */
     showTreemapLevels: function () {
@@ -1683,6 +1867,12 @@ export default {
     saveTreemapLevels: function () {
       this.modalTreemapLevels = false
       this.createChart()
+    },
+    /**
+    * @desc 保存警戒线数值
+    */
+    setMarkLine: function () {
+      this.chartObj.markLine.markLines = this.markLines
     },
     /**
     * @desc 是否刷新图表
@@ -2055,7 +2245,16 @@ export default {
 .chart-icon-k{
   background: url(../../assets/img/svg-sprite_d1903b5.svg) -684px -1300px no-repeat;
 }
+.chart-icon-wordcloud{
+  background: url(../../assets/img/svg-sprite_d1903b5.svg) -709px -387px no-repeat;
+}
+.chart-icon-liquidfill{
+  background: url(../../assets/img/svg-sprite_d1903b5.svg) -333px -1300px no-repeat;
+}
 .chart-icon-map{
+  background: url(../../assets/img/svg-sprite_d1903b5.svg) -333px -1300px no-repeat;
+}
+.chart-icon-mapLines{
   background: url(../../assets/img/svg-sprite_d1903b5.svg) -333px -1300px no-repeat;
 }
 .active, .chart-type-list li a.selected{
@@ -2113,7 +2312,16 @@ export default {
   .chart-icon-k{
     background: url(../../assets/img/svg-sprite_d1903b5.svg) -716px -1300px no-repeat;
   }
+  .chart-icon-wordcloud{
+    background: url(../../assets/img/svg-sprite_d1903b5.svg) -672px -1520px no-repeat;
+  }
+  .chart-icon-liquidfill{
+    background: url(../../assets/img/svg-sprite_d1903b5.svg) -364px -1300px no-repeat;
+  }
   .chart-icon-map{
+    background: url(../../assets/img/svg-sprite_d1903b5.svg) -364px -1300px no-repeat;
+  }
+  .chart-icon-mapLines{
     background: url(../../assets/img/svg-sprite_d1903b5.svg) -364px -1300px no-repeat;
   }
 }
@@ -2418,7 +2626,7 @@ body .ivu-modal .ivu-color-picker .ivu-select-dropdown{
   width: 240px;
   padding: 20px;
   background-color: #ffffff;
-  z-index: 2000;
+  z-index: 10000;
   ul{
     li{
       float: left;
